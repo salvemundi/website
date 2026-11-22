@@ -30,7 +30,7 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                 {groups.length === 0 ? (
                     <Card padding="xl" ta="center">
                         <Stack align="center" gap="sm" py="lg">
-                            <ThemeIcon size={64}>
+                            <ThemeIcon size="xl">
                                 <MessageCircle size={32} />
                             </ThemeIcon>
                             <Text fw={600}>
@@ -47,7 +47,7 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                             <Card key={group.id} padding="lg" shadow="md">
                                 <Stack justify="space-between" h="100%" gap="md">
                                     <Group align="flex-start" wrap="nowrap" gap="md">
-                                        <ThemeIcon size={56}>
+                                        <ThemeIcon size="xl">
                                             <MessageCircle size={28} />
                                         </ThemeIcon>
                                         <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>

@@ -95,13 +95,13 @@ export default function SignupFormContent({
                     )}
                 </Group>
 
-                <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
+                <Box component="form" onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
                     <Stack gap="lg">
                         {isLoggedIn ? (
                             <>
                                 <Paper p="md" withBorder>
                                     <Group gap="md" wrap="nowrap">
-                                        <ThemeIcon size={48}>
+                                        <ThemeIcon size="lg">
                                             <Text fw={900} size="md">
                                                 {initials}
                                             </Text>
@@ -130,9 +130,9 @@ export default function SignupFormContent({
                                     </Group>
                                 </Paper>
 
-                                <input {...register('name')} type="hidden" />
-                                <input {...register('email')} type="hidden" />
-                                <input {...register('phoneNumber')} type="hidden" />
+                                <TextInput {...register('name')} display="none" />
+                                <TextInput {...register('email')} display="none" />
+                                <TextInput {...register('phoneNumber')} display="none" />
                             </>
                         ) : (
                             <Stack gap="md">
@@ -200,10 +200,10 @@ export default function SignupFormContent({
                         </Button>
 
                         <Box style={{ display: 'none' }}>
-                            <input {...register('website')} type="text" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
+                            <TextInput {...register('website')} type="text" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
                         </Box>
                     </Stack>
-                </form>
+                </Box>
             </Stack>
         </Card>
     );

@@ -175,7 +175,7 @@ export default function VacancySubmissionFormIsland() {
                         </Text>
                     </Stack>
 
-                    <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
+                    <Box component="form" onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
                         <Stack gap="lg">
                             <Controller
                                 name="type"
@@ -431,11 +431,10 @@ export default function VacancySubmissionFormIsland() {
                                     pointerEvents: 'none',
                                 }}
                             >
-                                <label htmlFor="hp_confirm">Website</label>
-                                <input {...register('hp_confirm')} id="hp_confirm" tabIndex={-1} autoComplete="off" style={{ display: 'none' }} suppressHydrationWarning />
+                                <TextInput {...register('hp_confirm')} id="hp_confirm" label="Website" tabIndex={-1} autoComplete="off" display="none" suppressHydrationWarning />
                             </Box>
                         </Stack>
-                    </form>
+                    </Box>
                 </Stack>
             </Card>
         </Stack>

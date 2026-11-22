@@ -44,19 +44,19 @@ const IntroInfoStudent = () => (
                 <Group gap="sm" align="flex-start" wrap="nowrap">
                     <Text fw={900} c="brand">01</Text>
                     <Text c="dimmed">
-                        <strong>Legendarische Feesten:</strong> Ontdek het Eindhovense nachtleven met mensen die dezelfde passie delen.
+                        <Text span fw={700}>Legendarische Feesten:</Text> Ontdek het Eindhovense nachtleven met mensen die dezelfde passie delen.
                     </Text>
                 </Group>
                 <Group gap="sm" align="flex-start" wrap="nowrap">
                     <Text fw={900} c="brand">02</Text>
                     <Text c="dimmed">
-                        <strong>Connecties:</strong> Leer de ouderejaars kennen; zij weten precies hoe je die lastige vakken straks haalt.
+                        <Text span fw={700}>Connecties:</Text> Leer de ouderejaars kennen; zij weten precies hoe je die lastige vakken straks haalt.
                     </Text>
                 </Group>
                 <Group gap="sm" align="flex-start" wrap="nowrap">
                     <Text fw={900} c="brand">03</Text>
                     <Text c="dimmed">
-                        <strong>Gezelligheid boven alles:</strong> Geen ontgroening, maar een warm welkom bij dè studievereniging van Fontys ICT.
+                        <Text span fw={700}>Gezelligheid boven alles:</Text> Geen ontgroening, maar een warm welkom bij dè studievereniging van Fontys ICT.
                     </Text>
                 </Group>
             </Stack>
@@ -93,19 +93,19 @@ const IntroInfoParent = () => (
                 <Group gap="sm" align="flex-start" wrap="nowrap">
                     <Text fw={900} c="brand">★</Text>
                     <Text c="dimmed">
-                        <strong>Begeleiden:</strong> Help kleine groepjes nieuwe leden tijdens activiteiten en zorg voor een veilige sfeer.
+                        <Text span fw={700}>Begeleiden:</Text> Help kleine groepjes nieuwe leden tijdens activiteiten en zorg voor een veilige sfeer.
                     </Text>
                 </Group>
                 <Group gap="sm" align="flex-start" wrap="nowrap">
                     <Text fw={900} c="brand">★</Text>
                     <Text c="dimmed">
-                        <strong>Mentorschap:</strong> Geef tips over studie, rooster en het vinden van de weg in Eindhoven.
+                        <Text span fw={700}>Mentorschap:</Text> Geef tips over studie, rooster en het vinden van de weg in Eindhoven.
                     </Text>
                 </Group>
                 <Group gap="sm" align="flex-start" wrap="nowrap">
                     <Text fw={900} c="brand">★</Text>
                     <Text c="dimmed">
-                        <strong>Gezelligheid:</strong> Organiseer leuke momenten binnen je groep – simpele spellen en samen eten doen wonderen.
+                        <Text span fw={700}>Gezelligheid:</Text> Organiseer leuke momenten binnen je groep – simpele spellen en samen eten doen wonderen.
                     </Text>
                 </Group>
             </Stack>
@@ -139,7 +139,7 @@ export default async function IntroPage() {
                         <Card>
                             <Group justify="space-between" wrap="nowrap" gap="md">
                                 <Group gap="md" wrap="nowrap">
-                                    <ThemeIcon size={48}>
+                                    <ThemeIcon size="lg">
                                         <CalendarClock size={22} />
                                     </ThemeIcon>
                                     <Stack gap={2}>
@@ -172,7 +172,7 @@ export default async function IntroPage() {
                                     <Card padding="xl" mih={300} style={{ flex: 1 }}>
                                         <Center h="100%">
                                             <Stack align="center" ta="center" gap="md">
-                                                <ThemeIcon size={72} color="success">
+                                                <ThemeIcon size="xl" color="success">
                                                     <CheckCircle2 size={36} />
                                                 </ThemeIcon>
                                                 <Title order={3}>Aangemeld!</Title>

@@ -29,7 +29,7 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
             size="md"
             title={
                 <Group gap="sm">
-                    <ThemeIcon size={40}>
+                    <ThemeIcon size="lg">
                         <CalendarIcon size={20} />
                     </ThemeIcon>
                     <Stack gap={0}>

@@ -177,7 +177,7 @@ export default function CalendarView({
                                     </Text>
                                 </Box>
                                 {dayEvents.length > 0 && (
-                                    <Text size="10px" fw={700} c="dimmed" visibleFrom="sm">
+                                    <Text size="xs" fw={700} c="dimmed" visibleFrom="sm">
                                         {dayEvents.length} act.
                                     </Text>
                                 )}
@@ -206,11 +206,11 @@ export default function CalendarView({
                                         >
                                             <Group gap={4} wrap="nowrap">
                                                 {event.event_time && (
-                                                    <Text size="10px" fw={900} c="brand" style={{ flexShrink: 0, opacity: 0.75 }}>
+                                                    <Text size="xs" fw={900} c="brand" style={{ flexShrink: 0, opacity: 0.75 }}>
                                                         {event.event_time.split(':').slice(0, 2).join(':')}
                                                     </Text>
                                                 )}
-                                                <Text size="11px" fw={700} c="brand" truncate>
+                                                <Text size="xs" fw={700} c="brand" truncate>
                                                     {event.name}
                                                 </Text>
                                             </Group>
@@ -219,7 +219,7 @@ export default function CalendarView({
                                 ))}
 
                                 {overflowCount > 0 && (
-                                    <Text size="10px" fw={700} c="brand" ta="center">
+                                    <Text size="xs" fw={700} c="brand" ta="center">
                                         +{overflowCount} meer
                                     </Text>
                                 )}

@@ -23,7 +23,7 @@ export default function StickerFilters({
                     <Text span c="brand" lh={1}>
                         <Search size={16} />
                     </Text>
-                    <Text size="xs" fw={900} tt="uppercase" style={{ letterSpacing: '0.1em' }}>
+                    <Text size="xs" fw={700} tt="uppercase" style={{ letterSpacing: '0.1em' }}>
                         Filteren
                     </Text>
                 </Group>

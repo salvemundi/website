@@ -80,7 +80,7 @@ export default function PaymentStatusIsland({
             <Stack align="center" gap="lg" py="md">
                 {status === 'loading' || status === 'open' ? (
                     <>
-                        <ThemeIcon size={80} color="accent">
+                        <ThemeIcon size="xl" color="accent">
                             <Loader size="lg" />
                         </ThemeIcon>
                         <Title order={2} size="h2">
@@ -96,7 +96,7 @@ export default function PaymentStatusIsland({
                     </>
                 ) : status === 'paid' ? (
                     <>
-                        <ThemeIcon size={80} color="success">
+                        <ThemeIcon size="xl" color="success">
                             <CheckCircle2 size={44} />
                         </ThemeIcon>
                         <Title order={2} size="h1">
@@ -117,7 +117,7 @@ export default function PaymentStatusIsland({
                     </>
                 ) : (
                     <>
-                        <ThemeIcon size={80} color="error">
+                        <ThemeIcon size="xl" color="error">
                             <XCircle size={44} />
                         </ThemeIcon>
                         <Title order={2} size="h2">

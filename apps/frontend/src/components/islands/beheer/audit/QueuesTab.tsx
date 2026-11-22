@@ -54,7 +54,7 @@ export default function QueuesTab({ queueData, isLoading = false, error, onRefre
             <Paper withBorder p="xl">
                 <Center py="md">
                     <Stack align="center" gap="md" ta="center">
-                        <ThemeIcon size={48} color="accent">
+                        <ThemeIcon size="lg" color="accent">
                             <AlertCircle size={24} />
                         </ThemeIcon>
                         <Stack gap={4} align="center">

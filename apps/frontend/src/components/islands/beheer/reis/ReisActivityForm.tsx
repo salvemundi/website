@@ -18,6 +18,7 @@ import {
     Button,
     Card,
     Divider,
+    FileButton,
     Grid,
     Group,
     Input,
@@ -132,7 +133,7 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
             <Stack gap="xl">
                 <Group justify="space-between">
                     <Group gap="sm">
-                        <ThemeIcon size={40}>
+                        <ThemeIcon size="lg">
                             {activity?.id ? <Save size={20} /> : <Plus size={20} />}
                         </ThemeIcon>
                         <Title order={2} size="h3">
@@ -149,9 +150,9 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                     </ActionIcon>
                 </Group>
 
-                <form onSubmit={handleSubmit}>
-                    {activity?.id && <input type="hidden" name="id" value={activity.id} />}
-                    <input type="hidden" name="existing_image_id" value={existingImageId || ''} />
+                <Box component="form" onSubmit={handleSubmit}>
+                    {activity?.id && <TextInput display="none" name="id" value={String(activity.id)} readOnly />}
+                    <TextInput display="none" name="existing_image_id" value={existingImageId || ''} readOnly />
 
                     <Stack gap="xl">
                         {imageError && (
@@ -242,14 +243,15 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                                         </Group>
                                                     </Paper>
                                                 )}
-                                                <input
+                                                <FileButton
                                                     ref={fileInputRef}
-                                                    type="file"
                                                     name="image_file"
                                                     accept="image/*"
-                                                    onChange={handleImageChange}
-                                                    style={{ display: 'none' }}
-                                                />
+                                                    onChange={() => {}}
+                                                    inputProps={{ onChange: handleImageChange }}
+                                                >
+                                                    {() => null}
+                                                </FileButton>
                                             </Box>
                                         </Input.Wrapper>
                                     </Grid.Col>
@@ -409,7 +411,7 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                             </Button>
                         </Group>
                     </Stack>
-                </form>
+                </Box>
             </Stack>
         </Card>
     );

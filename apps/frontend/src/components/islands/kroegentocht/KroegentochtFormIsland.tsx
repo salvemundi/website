@@ -116,7 +116,7 @@ export default function KroegentochtFormIsland({
                     </Text>
                 </Stack>
 
-                <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
+                <Box component="form" onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
                     <Stack gap="md">
                         <TextInput
                             id="field-email"
@@ -266,11 +266,10 @@ export default function KroegentochtFormIsland({
                                 pointerEvents: 'none',
                             }}
                         >
-                            <label htmlFor="website">Website</label>
-                            <input {...register('website')} id="website" tabIndex={-1} autoComplete="off" style={{ display: 'none' }} suppressHydrationWarning />
+                            <TextInput {...register('website')} id="website" label="Website" tabIndex={-1} autoComplete="off" display="none" suppressHydrationWarning />
                         </Box>
                     </Stack>
-                </form>
+                </Box>
             </Stack>
         </Card>
     );

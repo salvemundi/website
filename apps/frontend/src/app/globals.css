@@ -14,6 +14,10 @@
   --max-w-app: 80rem;
 }
 
+:root:has([data-impersonation-banner]) {
+  --impersonation-banner-height: 40px;
+}
+
 @theme {
   --font-sans: var(--mantine-font-family);
 
@@ -96,7 +100,8 @@
   transform: translateY(-4px);
 }
 
-.sponsor-logo {
+.sponsor-logo,
+[data-sponsor-logo] {
   max-height: 80px;
   height: auto;
   width: auto;
@@ -121,7 +126,8 @@
     gap: 2.5rem;
     padding-right: 2.5rem;
   }
-  .sponsor-logo {
+  .sponsor-logo,
+  [data-sponsor-logo] {
     max-height: 48px;
     max-width: 120px;
   }
@@ -187,8 +193,142 @@
   overflow: hidden;
   border-width: 2px;
   border-style: solid;
+  border-color: var(--surface-dark-glass-border);
+  background-color: var(--surface-dark-glass);
   border-radius: var(--mantine-radius-md);
   padding: 0.75rem;
+}
+
+[data-site-header] {
+  position: fixed;
+  top: var(--impersonation-banner-height, 0px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(80px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  background-color: color-mix(in srgb, var(--mantine-color-body) 80%, transparent);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: background-color 300ms ease, box-shadow 300ms ease, backdrop-filter 300ms ease;
+}
+
+[data-site-header][data-scrolled="true"] {
+  background-color: color-mix(in srgb, var(--mantine-color-body) 95%, transparent);
+  box-shadow: var(--mantine-shadow-md);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+[data-header-logo] {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  text-decoration: none;
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-header-logo]:hover {
+  transform: scale(1.03);
+}
+
+[data-header-logo]:active {
+  transform: scale(0.95);
+}
+
+[data-header-nav-link] {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--mantine-color-text);
+  transition: color 200ms ease;
+}
+
+[data-header-nav-link]:hover,
+[data-header-nav-link][aria-current="page"] {
+  color: var(--mantine-color-brand-text);
+}
+
+@keyframes slideDownIn {
+  0% { transform: translateY(-100%); opacity: 0; }
+  100% { transform: translateY(0%); opacity: 1; }
+}
+
+@keyframes slideDownOut {
+  0% { transform: translateY(0%); opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+[data-spin="true"] {
+  animation: spin 1s linear infinite;
+}
+
+[data-qr-reader] {
+  color: var(--mantine-color-text);
+}
+
+[data-qr-reader] :is(p, span, label, small, h1, h2, h3, h4, h5, h6) {
+  color: var(--mantine-color-text) !important;
+}
+
+[data-qr-reader] :is(button, select, input) {
+  color: var(--mantine-color-text) !important;
+  background: var(--mantine-color-default) !important;
+  border-color: var(--mantine-color-default-border) !important;
+}
+
+[data-qr-reader] button:hover,
+[data-qr-reader] button:focus-visible {
+  background: var(--mantine-color-default-hover) !important;
+}
+
+[data-qr-reader] #reader__dashboard,
+[data-qr-reader] #reader__dashboard_section,
+[data-qr-reader] #reader__dashboard_section_csr,
+[data-qr-reader] #reader__dashboard_section_swaplink,
+[data-qr-reader] #reader__status_span {
+  color: var(--mantine-color-text) !important;
+}
+
+[data-qr-reader] #reader__dashboard_section_csr select,
+[data-qr-reader] #reader__dashboard_section_csr button,
+[data-qr-reader] #reader__dashboard_section_swaplink {
+  background: var(--mantine-color-default) !important;
+  color: var(--mantine-color-text) !important;
+  border: 1px solid var(--mantine-color-default-border) !important;
+}
+
+[data-qr-reader] #reader__scan_region {
+  border-color: var(--mantine-color-default-border) !important;
+}
+
+[data-sticker-map] .maplibregl-popup-close-button {
+  display: none !important;
+}
+
+[data-sticker-map] .maplibregl-popup-content {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+[data-sticker-map] .maplibregl-popup-tip {
+  display: none !important;
 }
 
 [data-footer-link] {
@@ -390,4 +530,10 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 .mantine-Switch-input:not(:checked):not(:disabled) + .mantine-Switch-track {
   --switch-bg: var(--surface-subtle);
   border: 1px solid var(--surface-subtle-border);
+}
+
+.mantine-AspectRatio-root {
+  position: relative;
+  aspect-ratio: var(--ar-ratio, 1);
+  width: 100%;
 }

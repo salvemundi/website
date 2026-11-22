@@ -91,7 +91,8 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                                         alt="avatar"
                                         width={128}
                                         height={128}
-                                        className="size-full object-cover"
+                                        className="object-cover"
+                                        style={{ width: '100%', height: '100%' }}
                                     />
                                 ) : (
                                     <Center h="100%" style={{ backgroundColor: 'var(--surface-subtle)' }}>
@@ -105,7 +106,7 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                                     pos="absolute"
                                     inset={0}
                                     style={{
-                                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                        backgroundColor: 'var(--overlay-scrim-strong)',
                                         color: 'var(--mantine-color-white)',
                                         opacity: avatarHovered ? 1 : 0,
                                         transition: 'opacity 150ms ease',

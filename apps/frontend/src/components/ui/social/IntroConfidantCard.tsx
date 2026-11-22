@@ -19,7 +19,7 @@ export default function IntroConfidantCard({ confidant }: IntroConfidantCardProp
         <Card h="100%" padding="md" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <CardSection pos="relative" bg="var(--mantine-color-body)" style={{ aspectRatio: '4 / 3', overflow: 'hidden' }}>
                 {imageUrl ? (
-                    <Image src={imageUrl} alt={confidant.name} fill unoptimized className="object-cover object-top" />
+                    <Image src={imageUrl} alt={confidant.name} fill unoptimized className="object-cover" style={{ objectPosition: 'top' }} />
                 ) : (
                     <FallbackLogo alt={confidant.name} className="object-cover" />
                 )}

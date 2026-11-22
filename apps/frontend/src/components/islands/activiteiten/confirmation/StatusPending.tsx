@@ -37,7 +37,7 @@ export default function StatusPending({ signupData, initialId, isLoggedIn }: Sta
 
     return (
         <Stack align="center" gap="xl" py="xl" ta="center">
-            <ThemeIcon size={96} color="accent">
+            <ThemeIcon size="xl" color="accent">
                 {isTimeout ? <RefreshCw size={44} /> : <Loader size="lg" />}
             </ThemeIcon>
 

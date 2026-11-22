@@ -44,7 +44,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                 )}
 
                 <Group gap="md">
-                    <ThemeIcon size={56}>
+                    <ThemeIcon size="xl">
                         <CheckCircle2 size={30} />
                     </ThemeIcon>
                     <Title order={3} size="h4" c="brand">

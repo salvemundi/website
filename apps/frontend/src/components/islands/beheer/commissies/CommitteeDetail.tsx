@@ -87,7 +87,7 @@ export default function CommitteeDetail({
                 <Stack gap="lg">
                     <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
                         <Group gap="md" align="center" style={{ flex: 1, minWidth: 0 }}>
-                            <ThemeIcon size={56} color="brand">
+                            <ThemeIcon size="xl">
                                 <Users size={28} />
                             </ThemeIcon>
                             <Stack gap={4} style={{ minWidth: 0 }}>
@@ -276,7 +276,6 @@ export default function CommitteeDetail({
                                                 {selected.azure_group_id && (
                                                     <ActionIcon
                                                         type="button"
-                                                        variant="subtle"
                                                         color="error"
                                                         onClick={() => onRemoveMember(member)}
                                                         disabled={!!actionLoading}

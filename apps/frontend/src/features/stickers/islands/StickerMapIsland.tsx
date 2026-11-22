@@ -89,8 +89,7 @@ export default function StickerMapIsland({
         window.history.replaceState({}, '', url);
     }, [searchParams, handlePlaceSticker]);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+    const handleImageChange = (file: File | null) => {
         if (!file) return;
 
         void (async () => {

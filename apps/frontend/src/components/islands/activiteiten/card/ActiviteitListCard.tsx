@@ -101,7 +101,7 @@ export default function ActiviteitListCard({
                             </Title>
                             {short_description ? (
                                 <Box visibleFrom="md">
-                                    <Text size="sm" c="dimmed" lineClamp={6} component="div">
+                                    <Text size="sm" c="dimmed" lineClamp={6}>
                                         <SafeMarkdown content={short_description} />
                                     </Text>
                                 </Box>

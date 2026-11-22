@@ -17,7 +17,7 @@ export function ThemeToggle() {
 
     if (!mounted) {
         return (
-            <ActionIcon size="lg" aria-hidden="true">
+            <ActionIcon size="lg" aria-label="Thema wisselen" aria-hidden="true">
                 <Sun size={20} />
             </ActionIcon>
         );

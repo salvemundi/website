@@ -248,7 +248,6 @@ export default function SystemManagementIsland({
                                         <Group justify="space-between" align="center" wrap="wrap" gap="sm">
                                             <Badge
                                                 color={setting.isActive ? 'success' : 'error'}
-                                                variant="dot"
                                                 size="md"
                                             >
                                                 {setting.isActive ? 'Actief' : 'Gepauzeerd'}
@@ -275,7 +274,7 @@ export default function SystemManagementIsland({
                     >
                         <Text size="xs" lh={1.6}>
                             Deze toggles beheren kritieke achtergrondprocessen. Wijzigingen treden onmiddellijk in werking.
-                            De <strong>Nachtelijke Sync</strong> draait dagelijks om 03:00 en zorgt dat alle Azure-rechten in de cockpit up-to-date zijn.
+                            De <Text span fw={700}>Nachtelijke Sync</Text> draait dagelijks om 03:00 en zorgt dat alle Azure-rechten in de cockpit up-to-date zijn.
                             Schakel processen alleen uit bij onderhoud of debugging om data-inconsistentie te voorkomen.
                         </Text>
                     </Alert>

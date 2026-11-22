@@ -173,11 +173,11 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
     };
 
     return (
-        <form onSubmit={(e) => e.preventDefault()}>
+        <Box component="form" onSubmit={(e) => e.preventDefault()}>
             <Stack gap="xl">
-                <input type="hidden" {...register('drop_window_id', { valueAsNumber: true })} />
-                <input type="hidden" {...register('lines.0.product_id', { valueAsNumber: true })} />
-                <input {...register('website')} type="text" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" suppressHydrationWarning />
+                <TextInput type="hidden" display="none" {...register('drop_window_id', { valueAsNumber: true })} />
+                <TextInput type="hidden" display="none" {...register('lines.0.product_id', { valueAsNumber: true })} />
+                <TextInput {...register('website')} display="none" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
 
                 <Paper p="md" withBorder>
                     <Group gap="md" wrap="nowrap">
@@ -466,6 +466,6 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                     </Stack>
                 </Group>
             </Stack>
-        </form>
+        </Box>
     );
 }

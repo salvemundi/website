@@ -25,7 +25,7 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
                     <Center mih="70vh">
                         <Card w="100%" padding="xl">
                             <Stack align="center" ta="center" gap="md">
-                                <ThemeIcon size={64} color="error">
+                                <ThemeIcon size="xl" color="error">
                                     <XCircle size={32} />
                                 </ThemeIcon>
                                 <Title order={1} size="h2" c="brand">
@@ -62,7 +62,7 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
                     {isPaid ? (
                         <Card w="100%" padding="xl">
                             <Stack align="center" ta="center" gap="lg">
-                                <ThemeIcon size={80} color="success">
+                                <ThemeIcon size="xl" color="success">
                                     <CheckCircle2 size={44} />
                                 </ThemeIcon>
                                 <Title order={2} c="brand">

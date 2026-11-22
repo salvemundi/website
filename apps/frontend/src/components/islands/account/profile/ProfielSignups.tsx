@@ -85,7 +85,7 @@ export default function ProfielSignups({
                                 >
                                     <Group justify="space-between" wrap="nowrap" gap="md">
                                         <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
-                                            <ThemeIcon size={52}>
+                                            <ThemeIcon size="lg">
                                                 {icon}
                                             </ThemeIcon>
                                             <Stack gap={2} style={{ minWidth: 0 }}>

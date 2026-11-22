@@ -110,7 +110,7 @@ export default function GroupCard({
             <Stack gap="md">
                 <Group justify="space-between" align="flex-start" wrap="nowrap">
                     <Group gap="sm" wrap="nowrap" miw={0}>
-                        <ThemeIcon size={36} color={badgeColor}>
+                        <ThemeIcon size="md" color={badgeColor}>
                             <Users size={18} />
                         </ThemeIcon>
                         <Box miw={0}>

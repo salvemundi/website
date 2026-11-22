@@ -52,7 +52,9 @@ export const IntroLightboxIsland = () => {
                                 }}
                             >
                                 {isFailed ? (
-                                    <FallbackLogo className="object-contain p-6" />
+                                    <Box pos="relative" w="100%" h="100%" p="lg">
+                                        <FallbackLogo className="object-contain" />
+                                    </Box>
                                 ) : (
                                     <Image
                                         src={img.src}
@@ -80,7 +82,9 @@ export const IntroLightboxIsland = () => {
                 {lightboxSrc && (
                     <Box pos="relative" h="75vh" w="100%" style={{ borderRadius: 'var(--mantine-radius-md)', overflow: 'hidden' }}>
                         {failedImages.has(lightboxSrc) ? (
-                            <FallbackLogo className="object-contain p-12" />
+                            <Box pos="relative" w="100%" h="100%" p={48}>
+                                <FallbackLogo className="object-contain" />
+                            </Box>
                         ) : (
                             <Image
                                 src={lightboxSrc}

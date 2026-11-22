@@ -202,7 +202,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
         <Stack gap="lg">
             <Card withBorder padding="lg">
                 <Stack gap="md">
-                    <Title order={3} size="xs" c="dimmed" fw={700} tt="uppercase">
+                    <Title order={3} size="xs" c="dimmed" tt="uppercase">
                         Planning-afbeelding (bovenaan de publieke QR-code pagina)
                     </Title>
                     <Group align="flex-start" gap="lg" wrap="wrap">
@@ -232,7 +232,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                        backgroundColor: 'var(--overlay-scrim-strong)',
                                     }}
                                 >
                                     <Loader size="sm" />
@@ -280,7 +280,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
 
             <Card withBorder padding="lg">
                 <Stack gap="md">
-                    <Title order={3} size="xs" c="dimmed" fw={700} tt="uppercase">
+                    <Title order={3} size="xs" c="dimmed" tt="uppercase">
                         Infoboekje (PDF, downloadbaar op de publieke QR-code pagina)
                     </Title>
                     <Group align="flex-start" gap="lg" wrap="wrap">
@@ -308,7 +308,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                        backgroundColor: 'var(--overlay-scrim-strong)',
                                     }}
                                 >
                                     <Loader size="sm" />
@@ -437,7 +437,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                 <Card ref={editFormRef} withBorder padding="xl" style={{ scrollMarginTop: 96 }}>
                     <Stack gap="lg">
                         <Group justify="space-between" align="center">
-                            <Title order={3} size="xs" c="dimmed" fw={700} tt="uppercase">
+                            <Title order={3} size="xs" c="dimmed" tt="uppercase">
                                 {editingPlanning.id ? 'Planning Bewerken' : 'Nieuw Planning Item'}
                             </Title>
                             <ActionIcon type="button" onClick={() => setEditingPlanning(null)} aria-label="Sluiten">
@@ -589,7 +589,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         {sorted.map(day => (
                             <Card key={day} withBorder padding="lg">
                                 <Stack gap="md">
-                                    <Title order={3} size="xs" c="accent" fw={700} tt="capitalize">
+                                    <Title order={3} size="xs" c="accent" tt="capitalize">
                                         {day}
                                     </Title>
                                     <Divider />

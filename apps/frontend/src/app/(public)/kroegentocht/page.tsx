@@ -28,7 +28,7 @@ async function RegistrationSection() {
         return (
             <Card padding="xl">
                 <Stack align="center" ta="center" gap="md">
-                    <ThemeIcon size={64}>
+                    <ThemeIcon size="xl">
                         <Calendar size={32} />
                     </ThemeIcon>
                     <Title order={2} size="h3" c="brand">
@@ -160,7 +160,7 @@ async function RegistrationSection() {
                                 <Stack gap={4}>
                                     <Text size="xs" fw={700} tt="uppercase" c="dimmed">Lidmaatschap</Text>
                                     <Text size="sm" fw={500}>
-                                        Je hoeft <strong>geen lid</strong> te zijn om deel te nemen.
+                                        Je hoeft <Text span fw={700}>geen lid</Text> te zijn om deel te nemen.
                                     </Text>
                                 </Stack>
                                 <Stack gap={4}>

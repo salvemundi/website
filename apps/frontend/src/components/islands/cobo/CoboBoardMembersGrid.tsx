@@ -105,7 +105,9 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
                                                 unoptimized
                                             />
                                         ) : (
-                                            <FallbackLogo className="object-contain p-4 opacity-45" />
+                                            <Box pos="relative" w="100%" h="100%" p="md" style={{ opacity: 0.45 }}>
+                                                <FallbackLogo className="object-contain" />
+                                            </Box>
                                         )}
                                     </Box>
 

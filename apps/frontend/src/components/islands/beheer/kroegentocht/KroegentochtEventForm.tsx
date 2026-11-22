@@ -167,7 +167,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
 
     return (
         <Box maw={896} mx="auto">
-            <form onSubmit={handleSubmit}>
+            <Box component="form" onSubmit={handleSubmit}>
                 <Stack gap="lg">
                     <Card p="xl" shadow="sm">
                         <Stack gap="lg">
@@ -394,7 +394,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                     <Stack gap={4}>
                                                         <Text
                                                             size="xs"
-                                                            fw={700}
+                                                            fw={600}
                                                             c="dimmed"
                                                             tt="uppercase"
                                                         >
@@ -500,7 +500,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                         </Button>
                     </Group>
                 </Stack>
-            </form>
+            </Box>
         </Box>
     );
 }

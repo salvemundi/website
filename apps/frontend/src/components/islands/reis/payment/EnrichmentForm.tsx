@@ -44,7 +44,7 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
 
     return (
         <Stack gap="lg">
-            <input type="hidden" {...register('is_bus_trip')} />
+            <TextInput type="hidden" display="none" {...register('is_bus_trip')} />
             {!hideHeader && (
                 <Stack gap={4}>
                     <Group gap="sm">
@@ -213,7 +213,7 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
                         <Paper p="md" withBorder>
                             <Group justify="space-between" align="center" gap="md">
                                 <Group gap="sm">
-                                    <ThemeIcon size={40}>
+                                    <ThemeIcon size="lg">
                                         <Bus size={20} />
                                     </ThemeIcon>
                                     <Stack gap={2}>
@@ -242,7 +242,7 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
                         <Paper p="md" withBorder>
                             <Group justify="space-between" align="center" gap="md">
                                 <Group gap="sm">
-                                    <ThemeIcon size={40}>
+                                    <ThemeIcon size="lg">
                                         <Briefcase size={20} />
                                     </ThemeIcon>
                                     <Stack gap={2}>

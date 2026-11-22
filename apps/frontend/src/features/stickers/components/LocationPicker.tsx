@@ -33,7 +33,7 @@ export const LocationPicker = ({
 }: LocationPickerProps) => {
     return (
         <Stack gap="xs">
-            <Text size="xs" fw={900} tt="uppercase" c="dimmed" style={{ letterSpacing: '0.08em' }}>
+            <Text size="xs" fw={700} tt="uppercase" c="dimmed" style={{ letterSpacing: '0.08em' }}>
                 Locatie
             </Text>
 

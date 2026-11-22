@@ -77,7 +77,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                 </Container>
             )}
 
-            <Container component="main" size="xl" w="100%" py="xl">
+            <Container size="xl" w="100%" py="xl">
                 <Grid gap="xl" align="stretch">
                     <GridCol span={{ base: 12, lg: 6 }}>
                         <Stack gap="lg">
@@ -128,7 +128,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                             <Text span c="brand" lh={1}><Mail size={16} /></Text>
                                             <Text size="xs" fw={900} tt="uppercase" c="dimmed">Contact</Text>
                                         </Group>
-                                        <Text size="sm" fw={700} c="brand" component="div">
+                                        <Text size="sm" fw={700} c="brand">
                                             <ObfuscatedEmail email={committeeEmail || 'bestuur@salvemundi.nl'} showIcon={false} />
                                         </Text>
                                     </Stack>

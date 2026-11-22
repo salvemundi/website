@@ -146,7 +146,7 @@ export default function CameraCalendar({
 
             <SimpleGrid cols={7} spacing={4}>
                 {WEEKDAYS.map((w) => (
-                    <Text key={w} ta="center" size="xs" fw={700} c="dimmed" tt="uppercase">
+                    <Text key={w} ta="center" size="xs" fw={600} c="dimmed" tt="uppercase">
                         {w}
                     </Text>
                 ))}
@@ -204,7 +204,7 @@ export default function CameraCalendar({
 
             <Card withBorder padding="md">
                 <Stack gap="xs">
-                    <Title order={4} size="xs" fw={700}>
+                    <Title order={4} size="xs">
                         {formatDate(selected, 'EEEE d MMMM yyyy')}
                     </Title>
                     {selectedEntries.length === 0 ? (

@@ -8,7 +8,7 @@ export default function StatusFull() {
     return (
         <Paper p="xl" withBorder ta="center" h="100%" style={{ borderStyle: 'dashed' }}>
             <Stack align="center" justify="center" gap="md" h="100%" py="lg">
-                <ThemeIcon size={48}>
+                <ThemeIcon size="lg">
                     <Users size={24} />
                 </ThemeIcon>
                 <Stack gap={4} align="center">

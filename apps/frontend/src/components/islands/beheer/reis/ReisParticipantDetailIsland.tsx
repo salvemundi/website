@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import {
     ActionIcon,
+    Box,
     Button,
     Card,
     Container,
@@ -24,6 +25,7 @@ import {
     SimpleGrid,
     Stack,
     Text,
+    TextInput,
     ThemeIcon,
     Title,
 } from '@mantine/core';
@@ -174,7 +176,7 @@ export default function ReisParticipantDetailIsland({
 
     return (
         <>
-            <Paper radius={0} shadow="xs" py="md">
+            <Paper shadow="xs" py="md">
                 <Container size="xl" py={0}>
                     <Group justify="space-between" wrap="wrap" gap="md">
                         <Group gap="md">
@@ -232,8 +234,8 @@ export default function ReisParticipantDetailIsland({
                         ))}
                     </SimpleGrid>
 
-                    <form action={formAction}>
-                        <input type="hidden" name="id" value={initialSignup.id} />
+                    <Box component="form" action={formAction}>
+                        <TextInput display="none" name="id" value={String(initialSignup.id)} readOnly />
                         <Grid gap="xl">
                             <Grid.Col span={{ base: 12, lg: 8 }}>
                                 <ReisSignupForm
@@ -320,7 +322,7 @@ export default function ReisParticipantDetailIsland({
                                 </Stack>
                             </Grid.Col>
                         </Grid>
-                    </form>
+                    </Box>
                 </Stack>
             </Container>
         </>

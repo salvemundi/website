@@ -81,9 +81,11 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                                     priority
                                 />
                             ) : (
-                                <FallbackLogo
-                                    className="object-contain opacity-60"
-                                />
+                                <Box pos="relative" w="100%" h="100%" style={{ opacity: 0.6 }}>
+                                    <FallbackLogo
+                                        className="object-contain"
+                                    />
+                                </Box>
                             )}
                         </Box>
                     </GridCol>
@@ -131,7 +133,9 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                                                 className="object-cover"
                                             />
                                         ) : (
-                                            <FallbackLogo className="object-contain p-4 opacity-45" />
+                                            <Box pos="relative" w="100%" h="100%" p="md" style={{ opacity: 0.45 }}>
+                                                <FallbackLogo className="object-contain" />
+                                            </Box>
                                         )}
                                     </Box>
                                     <Title order={3} size="h4" ta="center">

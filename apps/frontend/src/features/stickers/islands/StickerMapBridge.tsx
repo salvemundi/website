@@ -16,7 +16,7 @@ const StickerMapIsland = dynamic(
                 w="100%"
                 bg="var(--mantine-color-default)"
                 style={{
-                    borderRadius: 'var(--mantine-radius-lg)',
+                    borderRadius: 'var(--mantine-radius-md)',
                     border: '1px solid var(--mantine-color-default-border)',
                 }}
             >

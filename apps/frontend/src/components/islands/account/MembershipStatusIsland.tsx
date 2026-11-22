@@ -99,12 +99,12 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                         <Text size="xl" fw={700}>
                             {user.first_name} {user.last_name}
                         </Text>
-                        <Text size="sm" c="dimmed" style={{ wordBreak: 'break-word' }}>
+                        <Text size="sm" c="dimmed" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                             E-mailadres:{' '}
                             {user.email.split('').map((char, i) => (
                                 <Text span inherit key={i}>
                                     {char}
-                                    {(char === '@' || char === '.' || char === '-' || char === '_') && <wbr />}
+                                    {(char === '@' || char === '.' || char === '-' || char === '_') && '\u200B'}
                                 </Text>
                             ))}
                         </Text>

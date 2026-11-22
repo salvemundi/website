@@ -188,13 +188,13 @@ export default function ReisForm({
 
     return (
         <Box mb="xl">
-            <form action={editingTrip ? updateAction : createAction} onSubmit={handleSubmit}>
-                {editingTrip && <input type="hidden" name="id" value={editingTrip.id} />}
-                <input type="hidden" name="registration_open" value={registrationOpen ? 'on' : 'off'} />
-                <input type="hidden" name="allow_final_payments" value={allowFinalPayments ? 'on' : 'off'} />
-                <input type="hidden" name="allow_deposit_payments" value={allowDepositPayments ? 'on' : 'off'} />
-                <input type="hidden" name="is_bus_trip" value={isBusTrip ? 'on' : 'off'} />
-                <input type="hidden" name="existing_image_id" value={existingImageId || ''} />
+            <Box component="form" action={editingTrip ? updateAction : createAction} onSubmit={handleSubmit}>
+                {editingTrip && <TextInput display="none" name="id" value={String(editingTrip.id)} readOnly />}
+                <TextInput display="none" name="registration_open" value={registrationOpen ? 'on' : 'off'} readOnly />
+                <TextInput display="none" name="allow_final_payments" value={allowFinalPayments ? 'on' : 'off'} readOnly />
+                <TextInput display="none" name="allow_deposit_payments" value={allowDepositPayments ? 'on' : 'off'} readOnly />
+                <TextInput display="none" name="is_bus_trip" value={isBusTrip ? 'on' : 'off'} readOnly />
+                <TextInput display="none" name="existing_image_id" value={existingImageId || ''} readOnly />
 
                 {imageError && (
                     <Alert color="error" icon={<Info size={16} />} mb="lg">
@@ -248,7 +248,7 @@ export default function ReisForm({
                                 <Stack gap="lg">
                                     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
                                         <Box>
-                                            <input type="hidden" name="start_date" value={startDate ?? ''} />
+                                            <TextInput display="none" name="start_date" value={startDate ?? ''} readOnly />
                                             <DateInput
                                                 id="start_date"
                                                 label="Startdatum"
@@ -262,7 +262,7 @@ export default function ReisForm({
                                             />
                                         </Box>
                                         <Box>
-                                            <input type="hidden" name="end_date" value={endDate ?? ''} />
+                                            <TextInput display="none" name="end_date" value={endDate ?? ''} readOnly />
                                             <DateInput
                                                 id="end_date"
                                                 label="Einddatum"
@@ -292,10 +292,11 @@ export default function ReisForm({
                                             error={formErrors.max_participants?.[0]}
                                         />
                                         <Box>
-                                            <input
-                                                type="hidden"
+                                            <TextInput
+                                                display="none"
                                                 name="registration_start_date"
                                                 value={toAmsterdamLocalString(regStartDate)}
+                                                readOnly
                                             />
                                             <DateTimePicker
                                                 id="registration_start_date"
@@ -380,7 +381,7 @@ export default function ReisForm({
                         />
                     </Grid.Col>
                 </Grid>
-            </form>
+            </Box>
         </Box>
     );
 }

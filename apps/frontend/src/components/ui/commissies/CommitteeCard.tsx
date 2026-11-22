@@ -74,15 +74,18 @@ export const CommitteeCard = ({
                             src={imageUrl}
                             alt=""
                             fill
-                            className="pointer-events-none object-cover opacity-25 blur-xl select-none"
+                            className="object-cover"
+                            style={{ pointerEvents: 'none', opacity: 0.25, filter: 'blur(24px)', userSelect: 'none' }}
                         />
                     )}
                     {!hasImage ? (
-                        <FallbackLogo
-                            alt={committee.name || 'Committee'}
-                            className="object-contain p-12 opacity-40"
-                            priority={index < 4}
-                        />
+                        <Box pos="relative" w="100%" h="100%" p={48} style={{ opacity: 0.4 }}>
+                            <FallbackLogo
+                                alt={committee.name || 'Committee'}
+                                className="object-contain"
+                                priority={index < 4}
+                            />
+                        </Box>
                     ) : (
                         <Image
                             src={imageUrl}
@@ -97,7 +100,7 @@ export const CommitteeCard = ({
                         inset={0}
                         style={{
                             pointerEvents: 'none',
-                            background: 'linear-gradient(to top, rgba(0, 0, 0, 0.2), transparent)',
+                            background: 'linear-gradient(to top, var(--overlay-scrim-subtle), transparent)',
                         }}
                     />
 

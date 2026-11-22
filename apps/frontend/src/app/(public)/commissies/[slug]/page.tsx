@@ -47,7 +47,7 @@ export default async function CommitteePage(props: { params: Promise<{ slug: str
                             Terug
                         </Button>
                     </Group>
-                    <Box component="main">
+                    <Box>
                         <CommitteeDetail committee={committee} />
                     </Box>
                 </Stack>

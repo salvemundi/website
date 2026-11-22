@@ -110,7 +110,7 @@ export default function ActiviteitGridCard({
                     </Stack>
 
                     {short_description ? (
-                        <Text size="sm" c="dimmed" lineClamp={5} component="div">
+                        <Text size="sm" c="dimmed" lineClamp={5}>
                             <SafeMarkdown content={short_description} />
                         </Text>
                     ) : description ? (

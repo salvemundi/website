@@ -28,7 +28,7 @@ export default function StickerActionPanel({ user, onPlaceSticker, compact = fal
                         </ThemeIcon>
                     )}
                     <Box ta={compact ? 'center' : 'left'}>
-                        <Text size="xs" fw={900} tt="uppercase" lh={1.2}>
+                        <Text size="xs" fw={700} tt="uppercase" lh={1.2}>
                             Login om sticker te plakken
                         </Text>
                         {!compact && (

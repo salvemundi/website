@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Mail, Send, XCircle, CheckCircle, Users } from 'lucide-react';
 import {
     Alert,
+    Box,
     Button,
     Checkbox,
     Divider,
@@ -125,7 +126,7 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
                     </Alert>
                 )}
 
-                <form onSubmit={(e) => { void handleSubmit(e); }} autoComplete="off">
+                <Box component="form" onSubmit={(e) => { void handleSubmit(e); }} autoComplete="off">
                     <Stack gap="md">
                         <TextInput
                             label="Onderwerp"
@@ -179,7 +180,7 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
                             </Button>
                         </Group>
                     </Stack>
-                </form>
+                </Box>
             </Stack>
         </Modal>
     );

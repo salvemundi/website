@@ -124,7 +124,7 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                 <Card withBorder padding="xl">
                     <Stack gap="lg">
                         <Group justify="space-between" align="center">
-                            <Title order={3} size="xs" c="dimmed" fw={700} tt="uppercase">
+                            <Title order={3} size="xs" c="dimmed" tt="uppercase">
                                 {editing.id ? 'Vertrouwenspersoon Bewerken' : 'Nieuwe Vertrouwenspersoon'}
                             </Title>
                             <ActionIcon type="button" onClick={stopEditing} aria-label="Sluiten">
@@ -189,7 +189,7 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                                    backgroundColor: 'var(--overlay-scrim-strong)',
                                                 }}
                                             >
                                                 <Loader size="sm" />

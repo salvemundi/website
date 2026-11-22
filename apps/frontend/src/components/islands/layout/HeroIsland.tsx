@@ -60,9 +60,8 @@ export function HeroIsland({ banners = [], activiteiten = [], initialSession }: 
                     <Stack gap="xl">
                         <Stack gap="md">
                             <Title order={1} fz={{ base: '2.5rem', md: '4rem' }} lh={1.1}>
-                                Studievereniging
-                                <br />
-                                <Text span inherit c="brand">Salve Mundi</Text>
+                                <Text span inherit display="block">Studievereniging</Text>
+                                <Text span inherit c="brand" display="block">Salve Mundi</Text>
                             </Title>
                             <Text size="lg" c="dimmed" maw={560}>
                                 Dè studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd.

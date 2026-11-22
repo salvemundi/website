@@ -17,12 +17,12 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
 
     if (media.length === 0) {
         return (
-            <AspectRatio ratio={1}>
+            <AspectRatio ratio={1} pos="relative">
                 <Center
                     w="100%"
                     h="100%"
                     style={{
-                        borderRadius: 'var(--mantine-radius-xl)',
+                        borderRadius: 'var(--mantine-radius-md)',
                         backgroundColor: 'var(--surface-subtle)',
                     }}
                 >
@@ -47,20 +47,23 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
             >
                 <AspectRatio
                     ratio={1}
+                    pos="relative"
                     style={{
-                        borderRadius: 'var(--mantine-radius-xl)',
+                        borderRadius: 'var(--mantine-radius-md)',
                         overflow: 'hidden',
                         backgroundColor: 'var(--surface-subtle)',
                     }}
                 >
-                    <MediaAsset
-                        asset={{ id: active.asset, type: active.asset_type }}
-                        alt={`${productName} - foto ${activeIndex + 1}`}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        objectFit="cover"
-                        priority
-                    />
+                    <Box pos="relative" w="100%" h="100%">
+                        <MediaAsset
+                            asset={{ id: active.asset, type: active.asset_type }}
+                            alt={`${productName} - foto ${activeIndex + 1}`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                            objectFit="cover"
+                            priority
+                        />
+                    </Box>
                 </AspectRatio>
             </UnstyledButton>
 
@@ -77,6 +80,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                         >
                             <AspectRatio
                                 ratio={1}
+                                pos="relative"
                                 style={{
                                     borderRadius: 'var(--mantine-radius-md)',
                                     overflow: 'hidden',
@@ -85,13 +89,15 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                                         : '2px solid transparent',
                                 }}
                             >
-                                <MediaAsset
-                                    asset={{ id: item.asset, type: item.asset_type }}
-                                    alt={`${productName} - miniatuur ${idx + 1}`}
-                                    fill
-                                    sizes="20vw"
-                                    objectFit="cover"
-                                />
+                                <Box pos="relative" w="100%" h="100%">
+                                    <MediaAsset
+                                        asset={{ id: item.asset, type: item.asset_type }}
+                                        alt={`${productName} - miniatuur ${idx + 1}`}
+                                        fill
+                                        sizes="20vw"
+                                        objectFit="cover"
+                                    />
+                                </Box>
                             </AspectRatio>
                         </UnstyledButton>
                     ))}

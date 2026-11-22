@@ -192,7 +192,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
 
     return (
         <>
-            <Paper radius={0} shadow="xs" py="md">
+            <Paper shadow="xs" py="md">
                 <Container size="xl" py={0}>
                     <Group gap="md">
                         <Button
@@ -259,8 +259,8 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                     <Button
                                                         key={v.label}
                                                         size="compact-xs"
-                                                        variant={isVariantActive ? 'filled' : 'light'}
-                                                        color={isVariantActive ? 'brand' : done ? 'success' : 'gray'}
+                                                        variant={isVariantActive ? 'filled' : done ? 'light' : 'default'}
+                                                        color={isVariantActive ? 'brand' : done ? 'success' : undefined}
                                                         onClick={() => selectVariant(group.key, v.label)}
                                                         title={`${v.pickedUp} van ${v.total} opgehaald`}
                                                     >
@@ -345,7 +345,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                     </Box>
                                                     <Group gap={6} wrap="nowrap">
                                                         {line.variant_label_snapshot && (
-                                                            <Badge tt="none">
+                                                            <Badge>
                                                                 {line.variant_label_snapshot}
                                                             </Badge>
                                                         )}
@@ -417,7 +417,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                             </Table.Td>
                                                             <Table.Td>
                                                                 {line.variant_label_snapshot ? (
-                                                                    <Badge tt="none">
+                                                                    <Badge>
                                                                         {line.variant_label_snapshot}
                                                                     </Badge>
                                                                 ) : (
@@ -475,7 +475,6 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                 <Paper
                     hiddenFrom="sm"
                     shadow="lg"
-                    radius={0}
                     p="sm"
                     withBorder
                     style={{

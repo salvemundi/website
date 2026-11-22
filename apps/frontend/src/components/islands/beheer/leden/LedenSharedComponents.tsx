@@ -32,7 +32,7 @@ export function InfoRow({
 }) {
     return (
         <Group gap="md" wrap="nowrap">
-            <ThemeIcon size={40}>
+            <ThemeIcon size="lg">
                 <Icon size={18} />
             </ThemeIcon>
             <Box miw={0} flex={1}>
@@ -57,7 +57,7 @@ export function CommitteeCard({
     return (
         <Card p="md" shadow="sm">
             <Group gap="md" wrap="nowrap">
-                <ThemeIcon size={40}>
+                <ThemeIcon size="lg">
                     <Shield size={18} />
                 </ThemeIcon>
                 <Box miw={0} flex={1}>
@@ -90,7 +90,7 @@ export function GroupCard({
     return (
         <Card p="sm" shadow="sm">
             <Group gap="md" wrap="nowrap">
-                <ThemeIcon size={40}>
+                <ThemeIcon size="lg">
                     <Hash size={18} />
                 </ThemeIcon>
                 <Text size="sm" fw={600} truncate>
@@ -129,7 +129,7 @@ export function EmptyState({ icon: Icon, message }: { icon: LucideIcon; message:
     return (
         <Paper p="xl" withBorder style={{ borderStyle: 'dashed' }} ta="center">
             <Stack align="center" gap="xs" py="md">
-                <ThemeIcon size={48}>
+                <ThemeIcon size="lg">
                     <Icon size={22} />
                 </ThemeIcon>
                 <Text size="sm" fw={500} c="dimmed" fs="italic">

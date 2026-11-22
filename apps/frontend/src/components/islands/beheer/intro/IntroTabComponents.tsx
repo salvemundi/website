@@ -41,7 +41,7 @@ export function EmptyState({ icon: Icon, text }: { icon: LucideIcon; text: strin
     return (
         <Paper withBorder p="xl" ta="center" style={{ borderStyle: 'dashed' }}>
             <Stack align="center" gap="md" py="xl">
-                <ThemeIcon size={64} color="accent">
+                <ThemeIcon size="xl" color="accent">
                     <Icon size={32} />
                 </ThemeIcon>
                 <Text size="sm" fw={600} c="dimmed">{text}</Text>

@@ -23,6 +23,7 @@ import {
     Checkbox,
     Container,
     Divider,
+    FileButton,
     Group,
     Input,
     NativeSelect,
@@ -133,7 +134,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
 
     return (
         <Box pb={64}>
-            <Paper radius={0} shadow="xs" py="md">
+            <Paper shadow="xs" py="md">
                 <Container size="xl" py={0}>
                     <Group gap="md">
                         <Button
@@ -163,7 +164,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                             </Title>
                         </Group>
 
-                        <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
+                        <Box component="form" onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
                             <Stack gap="lg">
                                 <Controller
                                     control={control}
@@ -314,13 +315,13 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                             >
                                                 {imageFile ? imageFile.name : 'Kies afbeelding'}
                                             </Button>
-                                            <input
+                                            <FileButton
                                                 ref={imageInputRef}
-                                                type="file"
                                                 accept="image/jpeg,image/jpg,image/png,image/webp"
-                                                onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
-                                                style={{ display: 'none' }}
-                                            />
+                                                onChange={(file) => handleImageChange(file)}
+                                            >
+                                                {() => null}
+                                            </FileButton>
                                             {(imagePreview || (initialData?.image && !removeExistingImage)) && (
                                                 <ActionIcon
                                                     type="button"
@@ -348,16 +349,16 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                             >
                                                 {documentFile ? documentFile.name : 'Kies bestand'}
                                             </Button>
-                                            <input
+                                            <FileButton
                                                 ref={documentInputRef}
-                                                type="file"
                                                 accept="application/pdf,.doc,.docx"
-                                                onChange={(e) => {
-                                                    setDocumentFile(e.target.files?.[0] || null);
+                                                onChange={(file) => {
+                                                    setDocumentFile(file);
                                                     setRemoveExistingDocument(false);
                                                 }}
-                                                style={{ display: 'none' }}
-                                            />
+                                            >
+                                                {() => null}
+                                            </FileButton>
                                             {(documentFile || (initialData?.document && !removeExistingDocument)) && (
                                                 <ActionIcon
                                                     type="button"
@@ -428,7 +429,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                     {isPending ? 'Opslaan...' : isEditing ? 'Wijzigingen opslaan' : 'Vacature aanmaken'}
                                 </Button>
                             </Stack>
-                        </form>
+                        </Box>
                     </Stack>
                 </Card>
             </Container>

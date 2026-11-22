@@ -69,13 +69,6 @@ export default function ImpersonationBanner({ targetName, adminName, committees 
                     </Button>
                 </Group>
             </Container>
-
-            {/* Standardize the height variable for layout header offsets */}
-            <style jsx global>{`
-                :root {
-                    --impersonation-banner-height: 40px;
-                }
-            `}</style>
         </Box>
     );
 }

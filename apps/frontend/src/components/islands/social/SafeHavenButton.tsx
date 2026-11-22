@@ -16,7 +16,7 @@ export default function SafeHavenButton() {
             <Card padding="lg" withBorder shadow="sm">
                 <Group justify="space-between" wrap="nowrap" gap="md">
                     <Group gap="md" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
-                        <ThemeIcon size={48}>
+                        <ThemeIcon size="lg">
                             <Shield size={24} />
                         </ThemeIcon>
                         <Stack gap={2} style={{ minWidth: 0 }}>

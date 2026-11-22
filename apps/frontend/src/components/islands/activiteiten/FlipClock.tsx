@@ -5,17 +5,6 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Box, Button, Group, Stack, Text, Title } from '@mantine/core';
 
-const flipStyles = `
-    @keyframes slideDownIn {
-        0% { transform: translateY(-100%); opacity: 0; }
-        100% { transform: translateY(0%); opacity: 1; }
-    }
-    @keyframes slideDownOut {
-        0% { transform: translateY(0%); opacity: 1; }
-        100% { transform: translateY(100%); opacity: 0; }
-    }
-`;
-
 interface FlipClockProps {
     targetDate: string;
     title?: string;
@@ -168,8 +157,6 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
 
     return (
         <Stack align="center" gap="lg">
-            <style>{flipStyles}</style>
-
             {title && (
                 <Stack align="center" gap={4} ta="center">
                     <Title order={2} c="brand" style={{ fontSize: 'clamp(1.5rem, 6cqw, 3rem)' }}>

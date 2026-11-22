@@ -38,10 +38,12 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
                         }}
                     >
                         {!board.image ? (
-                            <FallbackLogo
-                                alt={board.naam || 'Bestuur'}
-                                className="object-contain p-6 opacity-40"
-                            />
+                            <Box pos="relative" w="100%" h="100%" p="lg" style={{ opacity: 0.4 }}>
+                                <FallbackLogo
+                                    alt={board.naam || 'Bestuur'}
+                                    className="object-contain"
+                                />
+                            </Box>
                         ) : (
                             <Image
                                 src={getImageUrl(board.image)}
@@ -91,7 +93,7 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
                                                     />
                                                 </Box>
                                             ) : (
-                                                <ThemeIcon size={40}>
+                                                <ThemeIcon size="lg">
                                                     {isLeader ? <Medal size={16} /> : <User size={16} />}
                                                 </ThemeIcon>
                                             )}

@@ -54,7 +54,7 @@ export default function ReisActivitySignupsModal({
             centered
             title={
                 <Group gap="sm">
-                    <ThemeIcon size={40}>
+                    <ThemeIcon size="lg">
                         <Users size={20} />
                     </ThemeIcon>
                     <Box>
@@ -86,7 +86,7 @@ export default function ReisActivitySignupsModal({
                         ta="center"
                     >
                         <Stack align="center" gap="md">
-                            <ThemeIcon size={64}>
+                            <ThemeIcon size="xl">
                                 <Users size={28} />
                             </ThemeIcon>
                             <Text size="sm" fw={600} c="dimmed">

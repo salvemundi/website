@@ -207,7 +207,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
 function StatItem({ label, value, color }: { label: string; value: number; color?: string }) {
     return (
         <Stack gap={2} align="center" px={4}>
-            <Text size="xs" c="dimmed" fw={700} tt="uppercase" lh={1}>
+            <Text size="xs" c="dimmed" fw={600} tt="uppercase" lh={1}>
                 {label}
             </Text>
             <Text size="sm" fw={700} lh={1} c={color} style={{ fontVariantNumeric: 'tabular-nums' }}>
@@ -222,7 +222,7 @@ function NoTripsView() {
         <Center py="xl">
             <Card withBorder padding="xl" maw={560} w="100%" ta="center">
                 <Stack align="center" gap="md" py="lg">
-                    <ThemeIcon size={64}>
+                    <ThemeIcon size="xl">
                         <Plane size={32} />
                     </ThemeIcon>
                     <Title order={2} size="h3" c="brand">

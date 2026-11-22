@@ -136,7 +136,7 @@ export function ReisRegistrationForm({
                 }}
             >
                 <Stack align="center" gap="sm" py="md">
-                    <ThemeIcon size={64}>
+                    <ThemeIcon size="xl">
                         <Calendar size={32} />
                     </ThemeIcon>
                     <Title order={2} size="h3" c="brand">
@@ -163,7 +163,8 @@ export function ReisRegistrationForm({
                 onCancel={() => setShowNameConfirm(false)}
             />
 
-            <form
+            <Box
+                component="form"
                 onSubmit={(e) => { void handleSubmit(onSubmit)(e); }}
                 autoComplete="off"
                 suppressHydrationWarning
@@ -281,9 +282,7 @@ export function ReisRegistrationForm({
                         )}
                     />
 
-                    <Box style={{ display: 'none' }}>
-                        <input {...register('website')} type="text" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
-                    </Box>
+                    <TextInput {...register('website')} display="none" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
 
                     <Button
                         type="submit"
@@ -295,7 +294,7 @@ export function ReisRegistrationForm({
                         {loading ? 'Bezig met aanmelden...' : 'Aanmelden voor de reis'}
                     </Button>
                 </Stack>
-            </form>
+            </Box>
         </>
     );
 }

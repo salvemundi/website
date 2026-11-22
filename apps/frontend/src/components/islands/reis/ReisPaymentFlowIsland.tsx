@@ -213,7 +213,7 @@ export default function ReisPaymentFlowIsland({
     return (
         <FormProvider {...methods}>
             <Container size="lg" py="xl">
-                <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
+                <Box component="form" autoComplete="off" onSubmit={(e) => e.preventDefault()}>
                     <Stack gap="xl">
                         <Box>
                             <Group justify="space-between" align="center" pb="md" wrap="wrap" gap="md">
@@ -315,7 +315,7 @@ export default function ReisPaymentFlowIsland({
                             </>
                         )}
                     </Stack>
-                </form>
+                </Box>
             </Container>
 
             <NameConfirmModal

@@ -51,7 +51,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                             <Ticket size={16} />
                         </ThemeIcon>
                         <Stack gap={0}>
-                            <Text size="10px" fw={900} tt="uppercase" c="dimmed">
+                            <Text size="xs" fw={900} tt="uppercase" c="dimmed">
                                 Totaal aantal tickets
                             </Text>
                             <Text size="sm" fw={900}>
@@ -88,14 +88,14 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                             <Card padding="lg" withBorder shadow="sm" h="100%">
                                 <Stack gap="md" justify="space-between" h="100%">
                                     <Group justify="space-between" align="flex-start">
-                                        <ThemeIcon size={48}>
+                                        <ThemeIcon size="lg">
                                             <QrCode size={24} />
                                         </ThemeIcon>
                                         <Stack gap={0} ta="right">
-                                            <Text size="10px" fw={900} tt="uppercase" c="dimmed">
+                                            <Text size="xs" fw={900} tt="uppercase" c="dimmed">
                                                 {formatDate(ticket.date_created)}
                                             </Text>
-                                            <Text size="10px" fw={900} tt="uppercase" c="brand">
+                                            <Text size="xs" fw={900} tt="uppercase" c="brand">
                                                 #{ticket.id}
                                             </Text>
                                         </Stack>
@@ -161,7 +161,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                         <Divider w="100%" />
 
                         <Stack gap={2} w="100%" ta="left">
-                            <Text size="10px" fw={900} tt="uppercase" c="dimmed">
+                            <Text size="xs" fw={900} tt="uppercase" c="dimmed">
                                 Inschrijfdatum
                             </Text>
                             <Text size="sm" fw={700} tt="uppercase">

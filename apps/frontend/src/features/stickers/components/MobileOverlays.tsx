@@ -36,7 +36,7 @@ export const MobileOverlays = ({
             size="auto"
             title={
                 <Stack gap={2}>
-                    <Text size="xs" fw={900} tt="uppercase" c="dimmed" style={{ letterSpacing: '0.2em' }}>
+                    <Text size="xs" fw={700} tt="uppercase" c="dimmed" style={{ letterSpacing: '0.2em' }}>
                         Salve Mundi
                     </Text>
                     <Title order={4} tt="uppercase">

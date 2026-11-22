@@ -54,7 +54,7 @@ async function SafeHavensContent() {
                         <Card component="section" padding="xl">
                             <Stack gap="lg">
                                 <Group align="flex-start" gap="lg" wrap="nowrap">
-                                    <ThemeIcon size={56}>
+                                    <ThemeIcon size="xl">
                                         <Shield size={28} />
                                     </ThemeIcon>
 
@@ -124,7 +124,7 @@ async function SafeHavensContent() {
                                 ) : (
                                     <Paper p="xl" bg="var(--mantine-color-body)">
                                         <Stack align="center" ta="center" gap="sm">
-                                            <ThemeIcon size={48}>
+                                            <ThemeIcon size="lg">
                                                 <Shield size={24} />
                                             </ThemeIcon>
                                             <Text size="lg" fw={700} c="dimmed">
@@ -171,7 +171,7 @@ async function SafeHavensContent() {
                         <Card component="section" padding="xl">
                             <Stack gap="lg">
                                 <Stack align="center" ta="center" gap="sm">
-                                    <ThemeIcon size={56}>
+                                    <ThemeIcon size="xl">
                                         <MapPin size={28} />
                                     </ThemeIcon>
                                     <Title order={2} size="h3" c="brand">

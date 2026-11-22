@@ -182,7 +182,7 @@ export default function CalendarExportButton({
                                     {isMobile ? (
                                         <>
                                             De Google Agenda mobiele app ondersteunt internetagenda&apos;s (URL) helaas niet rechtstreeks.
-                                            Plak de link eenmalig op je computer in Google Agenda bij <strong>&quot;Andere agenda&apos;s &gt; Via URL&quot;</strong>.
+                                            Plak de link eenmalig op je computer in Google Agenda bij <Text span fw={700}>&quot;Andere agenda&apos;s &gt; Via URL&quot;</Text>.
                                             De agenda synchroniseert daarna vanzelf naar je telefoon!
                                         </>
                                     ) : (
@@ -239,7 +239,7 @@ export default function CalendarExportButton({
                             <Paper p="sm" withBorder>
                                 <Group justify="space-between" wrap="nowrap" gap="md">
                                     <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
-                                        <ThemeIcon size={40}>
+                                        <ThemeIcon size="lg">
                                             <CalendarPlus size={20} />
                                         </ThemeIcon>
                                         <Stack gap={0} style={{ minWidth: 0 }}>
@@ -258,7 +258,7 @@ export default function CalendarExportButton({
                             <Paper p="sm" withBorder>
                                 <Group justify="space-between" wrap="nowrap" gap="md">
                                     <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
-                                        <ThemeIcon size={40}>
+                                        <ThemeIcon size="lg">
                                             <Calendar size={20} />
                                         </ThemeIcon>
                                         <Stack gap={0} style={{ minWidth: 0 }}>
@@ -277,7 +277,7 @@ export default function CalendarExportButton({
                             <Paper p="sm" withBorder>
                                 <Group justify="space-between" wrap="nowrap" gap="md">
                                     <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
-                                        <ThemeIcon size={40}>
+                                        <ThemeIcon size="lg">
                                             <Calendar size={20} />
                                         </ThemeIcon>
                                         <Stack gap={0} style={{ minWidth: 0 }}>

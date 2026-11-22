@@ -24,7 +24,7 @@ export default function StatusFailed({ signupData, isMembership, isTrip }: Statu
 
     return (
         <Stack align="center" gap="xl" py="xl" ta="center">
-            <ThemeIcon size={96} color="error">
+            <ThemeIcon size="xl" color="error">
                 <XCircle size={48} />
             </ThemeIcon>
 

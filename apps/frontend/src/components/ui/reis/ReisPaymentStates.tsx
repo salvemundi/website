@@ -8,7 +8,7 @@ export function TripAccessDenied({ error }: { error?: string }) {
         <Container size="sm">
             <Center mih="70vh">
                 <Stack align="center" gap="lg" ta="center">
-                    <ThemeIcon size={80}>
+                    <ThemeIcon size="xl">
                         <Search size={40} />
                     </ThemeIcon>
 
@@ -39,7 +39,7 @@ export function TripWaitlisted() {
         <Container size="sm">
             <Center mih="70vh">
                 <Stack align="center" gap="lg" ta="center">
-                    <ThemeIcon size={80} color="accent">
+                    <ThemeIcon size="xl" color="accent">
                         <Search size={40} />
                     </ThemeIcon>
 
@@ -70,7 +70,7 @@ export function TripAlreadyPaid({ tripName }: { tripName: string }) {
         <Container size="sm">
             <Center mih="70vh">
                 <Stack align="center" gap="lg" ta="center">
-                    <ThemeIcon size={80} color="success">
+                    <ThemeIcon size="xl" color="success">
                         <CheckCircle2 size={40} />
                     </ThemeIcon>
 

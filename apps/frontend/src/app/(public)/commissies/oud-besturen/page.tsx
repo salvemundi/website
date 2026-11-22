@@ -33,10 +33,10 @@ export default async function BoardHistoryPage() {
                         </Button>
                     </Group>
 
-                    <Box component="main">
+                    <Box>
                         <Stack gap="xl">
                             <Stack align="center" ta="center" gap="md">
-                                <ThemeIcon size={64}>
+                                <ThemeIcon size="xl">
                                     <History size={32} />
                                 </ThemeIcon>
                                 <Title order={1} c="brand">

@@ -351,7 +351,7 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
 
             {isOpen && (
                 <Tile title={editing ? 'Bestelling bewerken' : 'Mijn bestelling'} icon={<Pizza size={22} />}>
-                    <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
+                    <Box component="form" onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
                         <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
                             {showFavorites && (
                                 <Stack gap="xs" style={{ gridColumn: '1 / -1' }}>
@@ -484,7 +484,7 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
                                 )}
                             </Group>
                         </SimpleGrid>
-                    </form>
+                    </Box>
                 </Tile>
             )}
 

@@ -44,7 +44,7 @@ export function ActionCard({
                 <Group gap="sm" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
                     {icon && (
                         <ThemeIcon
-                            size={38}
+                            size="md"
                             color={color}
                         >
                             {React.isValidElement(icon)

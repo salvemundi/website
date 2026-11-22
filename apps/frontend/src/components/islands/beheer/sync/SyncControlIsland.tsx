@@ -3,6 +3,7 @@
 import React from 'react';
 import { RefreshCw, X, Info } from 'lucide-react';
 import {
+    Box,
     Button,
     Card,
     Divider,
@@ -155,7 +156,7 @@ export default function SyncControlIsland() {
                         Synchroniseer een specifieke gebruiker op basis van their Entra ID (UUID).
                     </Text>
 
-                    <form onSubmit={(e) => { void handleUserSync(e); }}>
+                    <Box component="form" onSubmit={(e) => { void handleUserSync(e); }}>
                         <Stack gap="sm">
                             <TextInput
                                 value={userId}
@@ -174,7 +175,7 @@ export default function SyncControlIsland() {
                                 Sync Gebruiker
                             </Button>
                         </Stack>
-                    </form>
+                    </Box>
                 </Stack>
             </Card>
         </Stack>

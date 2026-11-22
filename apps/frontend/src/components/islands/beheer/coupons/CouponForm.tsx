@@ -48,7 +48,7 @@ export default function CouponForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} autoComplete="off">
+        <Box component="form" onSubmit={handleSubmit} autoComplete="off">
             <Stack gap="lg">
                 {error && (
                     <Alert color="error" icon={<AlertCircle size={16} />}>
@@ -122,7 +122,7 @@ export default function CouponForm({
                     />
 
                     <Box>
-                        <input type="hidden" name="valid_from" value={validFrom ?? ''} />
+                        <TextInput display="none" name="valid_from" value={validFrom ?? ''} readOnly />
                         <DateInput
                             label="Geldig Vanaf"
                             placeholder="Kies een datum"
@@ -134,7 +134,7 @@ export default function CouponForm({
                     </Box>
 
                     <Box>
-                        <input type="hidden" name="valid_until" value={validUntil ?? ''} />
+                        <TextInput display="none" name="valid_until" value={validUntil ?? ''} readOnly />
                         <DateInput
                             label="Geldig Tot"
                             placeholder="Kies een datum"
@@ -172,6 +172,6 @@ export default function CouponForm({
                     </Button>
                 </Group>
             </Stack>
-        </form>
+        </Box>
     );
 }

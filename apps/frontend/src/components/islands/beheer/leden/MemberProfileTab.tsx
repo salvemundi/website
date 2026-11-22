@@ -256,7 +256,7 @@ export default function MemberProfileTab({
                     <Card p="xl" shadow="sm">
                         <Stack gap="lg">
                             <Group gap="md">
-                                <ThemeIcon size={48} color="accent">
+                                <ThemeIcon size="lg" color="accent">
                                     <Award size={22} />
                                 </ThemeIcon>
                                 <Box>
@@ -291,7 +291,7 @@ export default function MemberProfileTab({
                     <Card p="xl" shadow="sm">
                         <Stack gap="lg">
                             <Group gap="md">
-                                <ThemeIcon size={48}>
+                                <ThemeIcon size="lg">
                                     <Layers size={22} />
                                 </ThemeIcon>
                                 <Box>

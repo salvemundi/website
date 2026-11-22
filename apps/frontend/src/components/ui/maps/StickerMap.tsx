@@ -256,21 +256,6 @@ export default function StickerMap({
                 boxShadow: 'var(--mantine-shadow-md)',
             }}
         >
-            <style jsx global>{`
-                .maplibregl-popup-close-button {
-                    display: none !important;
-                }
-                .maplibregl-popup-content {
-                    background: transparent !important;
-                    padding: 0 !important;
-                    box-shadow: none !important;
-                    border: none !important;
-                }
-                .maplibregl-popup-tip {
-                    display: none !important;
-                }
-            `}</style>
-
             <Box ref={mapContainerRef} w="100%" h="100%" />
 
             {!mapStyleObj && (
@@ -309,8 +294,8 @@ export default function StickerMap({
                                     borderRadius: '9999px',
                                     border: isMine ? '3px solid var(--mantine-color-accent-filled)' : '3px solid var(--mantine-color-white)',
                                     boxShadow: isMine
-                                        ? '0 0 0 4px rgba(240, 162, 2, 0.25), 0 8px 18px rgba(0, 0, 0, 0.3)'
-                                        : '0 6px 12px rgba(0, 0, 0, 0.25)',
+                                        ? 'var(--shadow-map-pin-mine)'
+                                        : 'var(--shadow-map-pin)',
                                 }}
                             >
                                 {hasAvatar ? (
@@ -319,11 +304,12 @@ export default function StickerMap({
                                         alt="User"
                                         width={128}
                                         height={128}
-                                        className="size-full object-cover"
+                                        className="object-cover"
+                                        style={{ width: '100%', height: '100%' }}
                                     />
                                 ) : (
-                                    <Box pos="relative" w="100%" h="100%" p={6}>
-                                        <FallbackLogo className="object-contain p-1" />
+                                    <Box pos="relative" w="100%" h="100%" p={10}>
+                                        <FallbackLogo className="object-contain" />
                                     </Box>
                                 )}
                             </Box>
@@ -337,7 +323,7 @@ export default function StickerMap({
                                 style={{
                                     borderRadius: '9999px',
                                     border: '2px solid var(--mantine-color-white)',
-                                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+                                    boxShadow: 'var(--shadow-map-badge)',
                                 }}
                             />
                         </Box>
@@ -402,7 +388,8 @@ export default function StickerMap({
                                             alt="avatar"
                                             width={128}
                                             height={128}
-                                            className="size-full object-cover"
+                                            className="object-cover"
+                                            style={{ width: '100%', height: '100%' }}
                                         />
                                     </Box>
                                 ) : (
@@ -410,6 +397,7 @@ export default function StickerMap({
                                         pos="relative"
                                         w={44}
                                         h={44}
+                                        p={6}
                                         bg="var(--mantine-color-body)"
                                         style={{
                                             flexShrink: 0,
@@ -418,7 +406,9 @@ export default function StickerMap({
                                             border: '2px solid var(--mantine-color-brand-light)',
                                         }}
                                     >
-                                        <FallbackLogo className="object-contain p-1.5" />
+                                        <Box pos="relative" w="100%" h="100%">
+                                            <FallbackLogo className="object-contain" />
+                                        </Box>
                                     </Box>
                                 )}
                                 <Stack gap={2} miw={0} flex={1}>

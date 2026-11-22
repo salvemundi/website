@@ -54,7 +54,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
             case 'paid':
                 return (
                     <Stack align="center" gap="md">
-                        <ThemeIcon size={96} color="success">
+                        <ThemeIcon size="xl" color="success">
                             <CheckCircle size={56} />
                         </ThemeIcon>
                         <Title order={1} size="h1" c="brand">
@@ -70,7 +70,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
             case 'failed':
                 return (
                     <Stack align="center" gap="md">
-                        <ThemeIcon size={96} color="error">
+                        <ThemeIcon size="xl" color="error">
                             <XCircle size={56} />
                         </ThemeIcon>
                         <Title order={1} size="h2" c="error">
@@ -87,7 +87,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
             default:
                 return (
                     <Stack align="center" gap="md">
-                        <ThemeIcon size={96} color="accent">
+                        <ThemeIcon size="xl" color="accent">
                             <AlertTriangle size={56} />
                         </ThemeIcon>
                         <Title order={1} size="h2">

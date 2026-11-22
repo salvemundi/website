@@ -177,7 +177,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                     </Title>
                     <Group align="flex-start" gap="lg" wrap="wrap">
                         <ThemeIcon
-                            size={64}
+                            size="xl"
                             variant={template?.document ? 'light' : 'default'}
                             color={template?.document ? 'brand' : undefined}
                         >

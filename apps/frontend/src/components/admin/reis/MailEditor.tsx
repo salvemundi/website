@@ -45,7 +45,7 @@ export default function MailEditor({
             <Card withBorder padding="xl">
                 <Stack gap="lg">
                     <Group gap="md" wrap="nowrap">
-                        <ThemeIcon size={48} color="accent">
+                        <ThemeIcon size="lg" color="accent">
                             <Mail size={22} />
                         </ThemeIcon>
                         <Title order={2} size="h4">

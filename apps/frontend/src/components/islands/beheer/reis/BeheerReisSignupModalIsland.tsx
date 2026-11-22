@@ -14,6 +14,7 @@ import {
     Modal,
     Stack,
     Text,
+    TextInput,
     ThemeIcon,
     Title,
 } from '@mantine/core';
@@ -70,7 +71,7 @@ export default function BeheerReisSignupModalIsland({
                 <Modal.Header>
                     <Modal.Title>
                         <Group gap="sm">
-                            <ThemeIcon size={36}>
+                            <ThemeIcon size="md">
                                 {isEditing ? <Pen size={16} /> : <Users size={16} />}
                             </ThemeIcon>
                             <Text fw={700} size="sm">
@@ -108,8 +109,8 @@ export default function BeheerReisSignupModalIsland({
                 <Modal.Body>
                     <Stack gap="lg">
                         {isEditing ? (
-                            <form ref={formRef} action={onSave}>
-                                <input type="hidden" name="id" value={selectedSignup.id} />
+                            <Box component="form" ref={formRef} action={onSave}>
+                                <TextInput display="none" name="id" value={String(selectedSignup.id)} readOnly />
 
                                 <Grid gap="xl" align="flex-start">
                                     <Grid.Col span={{ base: 12, md: 6, xl: 4 }}>
@@ -166,7 +167,7 @@ export default function BeheerReisSignupModalIsland({
                                         </Stack>
                                     </Grid.Col>
                                 </Grid>
-                            </form>
+                            </Box>
                         ) : (
                             <ReisSignupView
                                 signup={selectedSignup}

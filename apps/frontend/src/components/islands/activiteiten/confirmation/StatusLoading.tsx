@@ -5,7 +5,7 @@ import { Loader, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 export default function StatusLoading() {
     return (
         <Stack align="center" gap="xl" py="xl" ta="center">
-            <ThemeIcon size={96}>
+            <ThemeIcon size="xl">
                 <Loader size="lg" />
             </ThemeIcon>
             <Stack gap="xs" align="center">

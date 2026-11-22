@@ -165,7 +165,7 @@ export default function NdaOverviewIsland({
                     >
                         <Stack gap="md">
                             <Group gap="sm" wrap="nowrap">
-                                <ThemeIcon size={40}>
+                                <ThemeIcon size="lg">
                                     <FileSignature size={20} />
                                 </ThemeIcon>
                                 <Box miw={0} flex={1}>

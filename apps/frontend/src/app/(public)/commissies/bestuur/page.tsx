@@ -36,7 +36,7 @@ export default async function BestuurPage() {
                             Terug
                         </Button>
                     </Group>
-                    <Box component="main">
+                    <Box>
                         <CommitteeDetail committee={committee} />
                     </Box>
                 </Stack>

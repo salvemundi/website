@@ -152,7 +152,7 @@ export default function ActiviteitNieuwIsland({
                     </Title>
                 </Group>
 
-                <form action={formAction}>
+                <Box component="form" action={formAction}>
                     <Stack gap="lg">
                         <Grid gap="lg" align="flex-start">
                             <Grid.Col span={{ base: 12, lg: 8 }}>
@@ -196,7 +196,7 @@ export default function ActiviteitNieuwIsland({
                             {actionButtons}
                         </Box>
                     </Stack>
-                </form>
+                </Box>
             </Stack>
         </Container>
     );

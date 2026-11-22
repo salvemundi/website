@@ -21,7 +21,7 @@ export default function MembershipError({
         <Container size="sm" py="xl">
             <Center mih="70vh">
                 <Stack align="center" ta="center" gap="lg">
-                    <ThemeIcon size={72}>
+                    <ThemeIcon size="xl">
                         <AlertTriangle size={36} />
                     </ThemeIcon>
 

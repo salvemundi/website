@@ -137,7 +137,7 @@ export function KroegentochtClaimTicketsPopup({
             aria-label="Je bent ingeschreven!"
         >
             <Stack gap="md">
-                <ThemeIcon size={48}>
+                <ThemeIcon size="lg">
                     <Ticket size={24} />
                 </ThemeIcon>
 

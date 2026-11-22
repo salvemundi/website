@@ -6,7 +6,7 @@ import { ActionIcon, Group, Stack, Text, ThemeIcon } from '@mantine/core';
 export default function ToastHeader({ onDismiss }: { onDismiss: () => void }) {
     return (
         <Group align="center" gap="md" p="md" wrap="nowrap">
-            <ThemeIcon size={44}>
+            <ThemeIcon size="lg">
                 <Smartphone size={20} />
             </ThemeIcon>
 

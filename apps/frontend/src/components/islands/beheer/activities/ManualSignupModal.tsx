@@ -5,6 +5,7 @@ import type { SyntheticEvent } from 'react';
 import { User, UserPlus, XCircle, CheckCircle } from 'lucide-react';
 import {
     Alert,
+    Box,
     Button,
     Divider,
     Group,
@@ -137,7 +138,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                     </Alert>
                 )}
 
-                <form onSubmit={(e) => { void handleSubmit(e); }} autoComplete="off">
+                <Box component="form" onSubmit={(e) => { void handleSubmit(e); }} autoComplete="off">
                     <Stack gap="lg">
                         {activeTab === 'member' ? (
                             <MemberTab
@@ -176,7 +177,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                             </Button>
                         </Group>
                     </Stack>
-                </form>
+                </Box>
             </Stack>
         </Modal>
     );

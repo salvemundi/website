@@ -38,7 +38,7 @@ export default async function ProfielPage() {
                             <Card>
                                 <Group justify="space-between" wrap="nowrap" gap="md">
                                     <Group gap="md" wrap="nowrap">
-                                        <ThemeIcon size={48} color="accent">
+                                        <ThemeIcon size="lg" color="accent">
                                             <FileSignature size={22} />
                                         </ThemeIcon>
                                         <Stack gap={2}>
@@ -65,7 +65,7 @@ export default async function ProfielPage() {
                             <Card>
                                 <Group justify="space-between" wrap="nowrap" gap="md">
                                     <Group gap="md" wrap="nowrap">
-                                        <ThemeIcon size={48}>
+                                        <ThemeIcon size="lg">
                                             <ClipboardCheck size={22} />
                                         </ThemeIcon>
                                         <Stack gap={2}>

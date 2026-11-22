@@ -88,8 +88,8 @@ function StockBadge({ product }: { product: AdminProduct }) {
                         <Badge
                             key={v.id}
                             size="xs"
-                            color={v.stock_quantity === 0 ? 'error' : 'gray'}
-                            tt="none"
+                            variant={v.stock_quantity === 0 ? undefined : 'outline'}
+                            color={v.stock_quantity === 0 ? 'error' : undefined}
                         >
                             {variantLabel(v)}: {v.stock_quantity ?? '∞'}
                         </Badge>
@@ -125,7 +125,6 @@ function SalesCell({ product }: { product: AdminProduct }) {
                         <Badge
                             key={v.label}
                             size="xs"
-                            tt="none"
                             title={v.pending > 0 ? `${v.pending} wacht nog op betaling` : undefined}
                         >
                             {v.label}: {v.paid}

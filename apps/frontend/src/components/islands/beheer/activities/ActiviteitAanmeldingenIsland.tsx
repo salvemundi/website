@@ -254,7 +254,7 @@ export default function ActiviteitAanmeldingenIsland({
             <Card withBorder padding={0} style={{ overflow: 'hidden' }}>
                 {filteredSignups.length === 0 ? (
                     <Stack align="center" gap="sm" p="xl" py={64} ta="center">
-                        <ThemeIcon size={64}>
+                        <ThemeIcon size="xl">
                             <Search size={28} />
                         </ThemeIcon>
                         <Title order={3} size="h4">Geen resultaten</Title>

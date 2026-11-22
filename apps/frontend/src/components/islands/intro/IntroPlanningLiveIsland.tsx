@@ -66,13 +66,13 @@ const INLINE_FORMAT_PATTERN = /(\*\*.+?\*\*|__.+?__|\*.+?\*)/g;
 function renderInlineFormatting(line: string): React.ReactNode[] {
     return line.split(INLINE_FORMAT_PATTERN).filter(part => part !== '').map((part, idx) => {
         if (part.startsWith('**') && part.endsWith('**')) {
-            return <strong key={idx}>{part.slice(2, -2)}</strong>;
+            return <Text span inherit fw={700} key={idx}>{part.slice(2, -2)}</Text>;
         }
         if (part.startsWith('__') && part.endsWith('__')) {
-            return <u key={idx}>{part.slice(2, -2)}</u>;
+            return <Text span inherit td="underline" key={idx}>{part.slice(2, -2)}</Text>;
         }
         if (part.startsWith('*') && part.endsWith('*')) {
-            return <em key={idx}>{part.slice(1, -1)}</em>;
+            return <Text span inherit fs="italic" key={idx}>{part.slice(1, -1)}</Text>;
         }
         return part;
     });
@@ -81,14 +81,14 @@ function renderInlineFormatting(line: string): React.ReactNode[] {
 function FormattedText({ text }: { text: string }) {
     const lines = text.split('\n');
     return (
-        <>
+        <Text span inherit style={{ whiteSpace: 'pre-line' }}>
             {lines.map((line, idx) => (
                 <Fragment key={idx}>
-                    {idx > 0 && <br />}
+                    {idx > 0 && '\n'}
                     {renderInlineFormatting(line)}
                 </Fragment>
             ))}
-        </>
+        </Text>
     );
 }
 
@@ -343,7 +343,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                 <Card padding="lg" withBorder shadow="lg">
                     <Stack gap="md">
                         <Group gap="sm">
-                            <ThemeIcon size={40}>
+                            <ThemeIcon size="lg">
                                 <Sunrise size={20} />
                             </ThemeIcon>
                             <Stack gap={2}>
@@ -452,7 +452,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    backgroundColor: imageHovered ? 'rgba(0, 0, 0, 0.35)' : 'transparent',
+                                    backgroundColor: imageHovered ? 'var(--overlay-scrim)' : 'transparent',
                                     transition: 'background-color 150ms ease',
                                 }}
                             >
@@ -704,10 +704,10 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                                 boxShadow: isSelected ? '0 0 0 2px var(--mantine-color-accent-filled)' : 'var(--mantine-shadow-xs)',
                                                             }}
                                                         >
-                                                            <Text size="10px" fw={900} lh={1.2} c={isCurrentOrNext ? 'white' : 'brand'}>
+                                                            <Text size="xs" fw={900} lh={1.2} c={isCurrentOrNext ? 'white' : 'brand'}>
                                                                 {item.time_start.slice(0, 5)}
                                                             </Text>
-                                                            <Text size="11px" fw={700} lh={1.25} lineClamp={2}>
+                                                            <Text size="xs" fw={700} lh={1.25} lineClamp={2}>
                                                                 {item.title}
                                                             </Text>
                                                         </UnstyledButton>

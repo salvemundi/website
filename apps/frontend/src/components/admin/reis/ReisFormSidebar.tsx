@@ -11,6 +11,7 @@ import {
     Card,
     Checkbox,
     Divider,
+    FileButton,
     Group,
     Paper,
     Stack,
@@ -87,14 +88,15 @@ export default function ReisFormSidebar({
                         <Text size="xs" fw={600} c="dimmed" mt="xs" ta="center">
                             Upload banner (afbeelding of video)
                         </Text>
-                        <input
+                        <FileButton
                             ref={fileInputRef}
-                            type="file"
                             name="image_file"
                             accept="image/*,video/*"
-                            onChange={onImageChange}
-                            style={{ display: 'none' }}
-                        />
+                            onChange={() => {}}
+                            inputProps={{ onChange: onImageChange }}
+                        >
+                            {() => null}
+                        </FileButton>
                     </Paper>
                 ) : (
                     <Box
@@ -132,14 +134,15 @@ export default function ReisFormSidebar({
                                 <X size={14} />
                             </ActionIcon>
                         </Group>
-                        <input
+                        <FileButton
                             ref={fileInputRef}
-                            type="file"
                             name="image_file"
                             accept="image/*,video/*"
-                            onChange={onImageChange}
-                            style={{ display: 'none' }}
-                        />
+                            onChange={() => {}}
+                            inputProps={{ onChange: onImageChange }}
+                        >
+                            {() => null}
+                        </FileButton>
                     </Box>
                 )}
             </Card>

@@ -41,7 +41,7 @@ export default async function CoboWachtlijstPage() {
                 <Container size="sm" py="xl">
                     <Card padding="xl">
                         <Stack align="center" ta="center" gap="md">
-                            <ThemeIcon size={64}>
+                            <ThemeIcon size="xl">
                                 <Wine size={32} />
                             </ThemeIcon>
                             <Title order={2} c="brand">
@@ -66,7 +66,7 @@ export default async function CoboWachtlijstPage() {
                 <Container size="sm" py="xl">
                     <Card padding="xl">
                         <Stack align="center" ta="center" gap="md">
-                            <ThemeIcon size={64}>
+                            <ThemeIcon size="xl">
                                 <Calendar size={32} />
                             </ThemeIcon>
                             <Title order={2} c="brand">

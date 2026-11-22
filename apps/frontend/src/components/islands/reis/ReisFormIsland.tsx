@@ -68,7 +68,7 @@ export function ReisFormIsland({
                         title="Gegevens vernieuwen"
                         aria-label="Gegevens vernieuwen"
                     >
-                        <RefreshCcw size={18} className={refreshing ? 'animate-spin' : undefined} />
+                        <RefreshCcw size={18} style={refreshing ? { animation: 'spin 1s linear infinite' } : undefined} />
                     </ActionIcon>
                 </Group>
 

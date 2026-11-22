@@ -112,7 +112,7 @@ export default function MemberAdminTab({
                 <Card p="xl" shadow="sm" style={{ borderLeft: '6px solid var(--mantine-color-accent-filled)' }}>
                     <Stack gap="lg">
                         <Group gap="md">
-                            <ThemeIcon size={48} color="accent">
+                            <ThemeIcon size="lg" color="accent">
                                 <ShieldAlert size={22} />
                             </ThemeIcon>
                             <Box>
@@ -155,7 +155,7 @@ export default function MemberAdminTab({
                                 Lidmaatschappen direct in Azure AD aanpassen
                             </Text>
                         </Box>
-                        <ThemeIcon size={48}>
+                        <ThemeIcon size="lg">
                             <Shield size={22} />
                         </ThemeIcon>
                     </Group>
@@ -257,7 +257,7 @@ export default function MemberAdminTab({
             <Card p="xl" shadow="sm">
                 <Stack gap="lg">
                     <Group gap="md">
-                        <ThemeIcon size={48} color="success">
+                        <ThemeIcon size="lg" color="success">
                             <CalendarPlus size={22} />
                         </ThemeIcon>
                         <Box>

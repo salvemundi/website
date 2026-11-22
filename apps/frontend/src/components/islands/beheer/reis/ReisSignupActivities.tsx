@@ -40,7 +40,7 @@ export default function SignupActivities({
         <Stack gap="md">
             {!minimal && (
                 <Group gap="md">
-                    <ThemeIcon size={40}>
+                    <ThemeIcon size="lg">
                         <Utensils size={20} />
                     </ThemeIcon>
                     <Box>

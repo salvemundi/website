@@ -92,7 +92,7 @@ export default function CoboPublicQueueIsland({
             {!hasAnyActive && (
                 <Card padding="xl" withBorder ta="center">
                     <Stack align="center" gap="sm">
-                        <ThemeIcon size={56}>
+                        <ThemeIcon size="xl">
                             <UserCheck size={28} />
                         </ThemeIcon>
                         <Title order={3} size="h4">
@@ -158,7 +158,7 @@ export default function CoboPublicQueueIsland({
                                         <Group justify="space-between" wrap="nowrap" gap="md">
                                             <Group gap="sm" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
                                                 <ThemeIcon
-                                                    size={32}
+                                                    size="md"
                                                     color={isLate ? 'error' : 'brand'}
                                                 >
                                                     <Text size="xs" fw={900}>

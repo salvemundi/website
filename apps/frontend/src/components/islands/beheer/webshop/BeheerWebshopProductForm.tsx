@@ -199,7 +199,7 @@ export default function BeheerWebshopProductForm({
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit}>
             <Stack gap="lg">
                 {error && (
                     <Alert color="error" icon={<AlertCircle size={16} />}>
@@ -586,6 +586,6 @@ export default function BeheerWebshopProductForm({
                     </Button>
                 </Group>
             </Stack>
-        </form>
+        </Box>
     );
 }

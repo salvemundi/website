@@ -6,6 +6,7 @@ import {
     Card,
     Divider,
     Group,
+    NativeSelect,
     Paper,
     SimpleGrid,
     Stack,
@@ -18,7 +19,6 @@ import { parseBoolean } from '@salvemundi/validations';
 import { toISODate, formatShortDate } from '@/lib/utils/date-utils';
 import {
     Input,
-    Select,
     Textarea,
     Checkbox,
     DateAndLabel,
@@ -50,7 +50,7 @@ export default function StandardSignupForm({
                 section === 'personal_extended') && (
                 <Box p={minimal ? 0 : 'xl'}>
                     <Group gap="md" mb={compact ? 'md' : 'xl'}>
-                        <ThemeIcon size={40}>
+                        <ThemeIcon size="lg">
                             <FileText size={20} />
                         </ThemeIcon>
                         <Box>
@@ -114,17 +114,18 @@ export default function StandardSignupForm({
                             section === 'personal_extended') &&
                             !isBusTrip && (
                                 <>
-                                    <Select
+                                    <NativeSelect
                                         label="Type ID Bewijs"
                                         name="id_document"
                                         defaultValue={
                                             initialData?.id_document || signup.id_document || ''
                                         }
-                                    >
-                                        <option value="">Niet opgegeven</option>
-                                        <option value="passport">Paspoort</option>
-                                        <option value="id_card">Identiteitskaart (ID)</option>
-                                    </Select>
+                                        data={[
+                                            { value: '', label: 'Niet opgegeven' },
+                                            { value: 'passport', label: 'Paspoort' },
+                                            { value: 'id_card', label: 'Identiteitskaart (ID)' },
+                                        ]}
+                                    />
                                     <Input
                                         label="Document Nummer"
                                         name="document_number"
@@ -229,7 +230,7 @@ export default function StandardSignupForm({
                 <Box p={minimal ? 0 : 'xl'}>
                     {minimal && section === 'all' && <Divider mb={compact ? 'md' : 'lg'} />}
                     <Group gap="md" mb={compact ? 'md' : 'xl'}>
-                        <ThemeIcon size={40}>
+                        <ThemeIcon size="lg">
                             <CreditCard size={20} />
                         </ThemeIcon>
                         <Box>
@@ -244,24 +245,26 @@ export default function StandardSignupForm({
 
                     <SimpleGrid cols={{ base: 1, md: 2 }} spacing={compact ? 'md' : 'xl'}>
                         <Stack gap={compact ? 'md' : 'lg'}>
-                            <Select
+                            <NativeSelect
                                 label="Registratie Status"
                                 name="status"
                                 defaultValue={initialData?.status || signup.status}
-                            >
-                                <option value="registered">Geregistreerd (Nieuw)</option>
-                                <option value="confirmed">Bevestigd (Gaat mee)</option>
-                                <option value="waitlist">Wachtlijst</option>
-                                <option value="cancelled">Geannuleerd</option>
-                            </Select>
-                            <Select
+                                data={[
+                                    { value: 'registered', label: 'Geregistreerd (Nieuw)' },
+                                    { value: 'confirmed', label: 'Bevestigd (Gaat mee)' },
+                                    { value: 'waitlist', label: 'Wachtlijst' },
+                                    { value: 'cancelled', label: 'Geannuleerd' },
+                                ]}
+                            />
+                            <NativeSelect
                                 label="Deelnemer Rol"
                                 name="role"
                                 defaultValue={initialData?.role || signup.role}
-                            >
-                                <option value="participant">Reguliere Reiziger</option>
-                                <option value="crew">Crew / Organisatie</option>
-                            </Select>
+                                data={[
+                                    { value: 'participant', label: 'Reguliere Reiziger' },
+                                    { value: 'crew', label: 'Crew / Organisatie' },
+                                ]}
+                            />
                         </Stack>
 
                         <Stack gap={compact ? 'md' : 'lg'}>

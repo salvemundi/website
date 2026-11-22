@@ -24,7 +24,7 @@ export default function StatusPaidActivity({
     return (
         <Stack gap="xl">
             <Stack align="center" gap="md" ta="center">
-                <ThemeIcon size={96} color="success">
+                <ThemeIcon size="xl" color="success">
                     <CheckCircle2 size={48} />
                 </ThemeIcon>
                 <Title order={1} fz={{ base: '2.25rem', md: '3.75rem' }} lh={1}>

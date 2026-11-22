@@ -20,7 +20,7 @@ export function RegistrationClosed({ registrationStartText }: RegistrationClosed
             }}
         >
             <Stack align="center" gap="sm" py="md">
-                <ThemeIcon size={48}>
+                <ThemeIcon size="lg">
                     {isWaitingForDate ? <Clock size={24} /> : <Lock size={24} />}
                 </ThemeIcon>
                 <Title order={3} size="h4">

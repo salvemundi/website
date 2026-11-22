@@ -29,7 +29,7 @@ export function ActiviteitenSection({ activities = [], count = 4 }: Activiteiten
                 {!hasActivities ? (
                     <Card p="xl">
                         <Stack align="center" gap="md" py="xl">
-                            <ThemeIcon size={64}>
+                            <ThemeIcon size="xl">
                                 <Calendar size={32} />
                             </ThemeIcon>
                             <Text size="lg" fw={700} fs="italic">

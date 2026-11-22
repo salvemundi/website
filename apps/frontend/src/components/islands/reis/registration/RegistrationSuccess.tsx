@@ -20,7 +20,7 @@ export function RegistrationSuccess({ currentUser, email }: RegistrationSuccessP
             }}
         >
             <Stack align="center" gap="md" py="md">
-                <ThemeIcon size={64}>
+                <ThemeIcon size="xl">
                     <Check size={32} strokeWidth={3} />
                 </ThemeIcon>
                 <Title order={2} size="h3" c="brand">

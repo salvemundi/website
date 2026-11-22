@@ -239,7 +239,7 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
     return (
         <Stack gap="xl">
             <Tile title="Camera aanvragen" icon={<Camera size={22} />}>
-                <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
+                <Box component="form" onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
                     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
                         {events.length > 0 && (
                             <Box style={{ gridColumn: '1 / -1' }}>
@@ -389,7 +389,7 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
                             </Button>
                         </Box>
                     </SimpleGrid>
-                </form>
+                </Box>
             </Tile>
 
             <Tile title="Mijn aanvragen" icon={<CalendarClock size={22} />}>

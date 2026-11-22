@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Alert, Button, Card, Group, InputWrapper, SimpleGrid, Stack, Text, TextInput, ThemeIcon, Title } from '@mantine/core';
+import { Alert, Box, Button, Card, Group, InputWrapper, SimpleGrid, Stack, Text, TextInput, ThemeIcon, Title } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { submitIntroSignup } from '@/server/actions/public/intro.actions';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
@@ -76,7 +76,7 @@ export const IntroStudentIsland = ({ isOpen = true }: IntroStudentIslandProps) =
         return (
             <Card flex={1} padding="xl" shadow="xl" withBorder ta="center" mih={300}>
                 <Stack align="center" justify="center" gap="md" h="100%">
-                    <ThemeIcon size={72}>
+                    <ThemeIcon size="xl">
                         <Lock size={36} />
                     </ThemeIcon>
                     <Title order={3} size="h2">
@@ -94,7 +94,7 @@ export const IntroStudentIsland = ({ isOpen = true }: IntroStudentIslandProps) =
         return (
             <Card flex={1} padding="xl" shadow="lg" withBorder ta="center">
                 <Stack align="center" gap="md">
-                    <ThemeIcon size={72}>
+                    <ThemeIcon size="xl">
                         <CheckCircle2 size={36} />
                     </ThemeIcon>
                     <Title order={2} size="h2">
@@ -125,9 +125,9 @@ export const IntroStudentIsland = ({ isOpen = true }: IntroStudentIslandProps) =
                     </Text>
                 </Stack>
 
-                <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
+                <Box component="form" onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
                     <Stack gap="md">
-                        <input {...register('website')} type="text" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
+                        <TextInput {...register('website')} type="text" display="none" tabIndex={-1} autoComplete="off" />
 
                         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                             <TextInput
@@ -227,7 +227,7 @@ export const IntroStudentIsland = ({ isOpen = true }: IntroStudentIslandProps) =
                             {isSubmitting ? 'Bezig...' : 'Verstuur'}
                         </Button>
                     </Stack>
-                </form>
+                </Box>
             </Stack>
         </Card>
     );

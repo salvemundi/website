@@ -247,7 +247,7 @@ export default function NdaSignatureLayoutEditor({ templateId, documentFileId, i
                 pos="relative"
                 w="100%"
                 maw={672}
-                bg="white"
+                bg="var(--mantine-color-white)"
                 style={{ overflow: 'hidden' }}
             >
                 {loading && (

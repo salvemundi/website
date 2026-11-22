@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Badge,
+    Box,
     Button,
     Card,
     Divider,
@@ -185,7 +186,9 @@ export default function CoboBoardPreferencesManager({
                                                     unoptimized
                                                 />
                                             ) : (
-                                                <FallbackLogo className="object-contain p-2 opacity-45" />
+                                                <Box p={8} style={{ width: '100%', height: '100%', opacity: 0.45, position: 'relative' }}>
+                                                    <FallbackLogo className="object-contain" />
+                                                </Box>
                                             )}
                                         </Paper>
                                         <Stack gap={4} style={{ minWidth: 0, flex: 1 }}>

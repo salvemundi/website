@@ -33,7 +33,7 @@ export default function StatusSignedUp({
             <Stack justify="center" gap="xl" h="100%">
                 <Stack align="center" gap="md" ta="center">
                     <ThemeIcon
-                        size={80}
+                        size="xl"
                         variant={isPaidStatus ? 'light' : 'default'}
                         color={isPaidStatus ? 'success' : undefined}
                     >

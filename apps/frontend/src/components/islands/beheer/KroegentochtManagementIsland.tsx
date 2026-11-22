@@ -202,7 +202,7 @@ export default function KroegentochtManagementIsland({
                             aria-label="Vernieuwen"
                             title="Vernieuwen"
                         >
-                            <RefreshCw size={16} className={isPending ? 'animate-spin' : undefined} />
+                            <RefreshCw size={16} style={{ animation: isPending ? 'spin 1s linear infinite' : undefined }} />
                         </ActionIcon>
 
                         <BeheerVisibilityToggle

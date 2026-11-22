@@ -51,7 +51,7 @@ export default async function MyNdasPage() {
                         <Card key={nda.id}>
                             <Group justify="space-between" gap="md" wrap="wrap">
                                 <Group gap="md">
-                                    <ThemeIcon size={40}>
+                                    <ThemeIcon size="lg">
                                         <FileSignature size={20} />
                                     </ThemeIcon>
                                     <Stack gap={2}>

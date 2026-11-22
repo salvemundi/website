@@ -2,7 +2,7 @@
 
 import { Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Button, Modal, SimpleGrid, Stack, Text, Textarea, TextInput, Title } from '@mantine/core';
+import { Box, Button, Modal, SimpleGrid, Stack, Text, Textarea, TextInput, Title } from '@mantine/core';
 import { searchLocations, reverseGeocode, type LocationSearchResult } from '@/shared/lib/utils/geolocation';
 import { LocationPicker } from '../LocationPicker';
 import { PhotoUploader } from '../PhotoUploader';
@@ -26,7 +26,7 @@ interface AddStickerModalProps {
         country: string;
         image: File | null;
     }>>;
-    handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleImageChange: (file: File | null) => void;
     onRemoveImage?: () => void;
     imagePreview: string | null;
     selectedLocation: { lat: number; lng: number } | null;
@@ -188,7 +188,7 @@ export default function AddStickerModal({
                 </Stack>
             }
         >
-            <form onSubmit={onSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other">
+            <Box component="form" onSubmit={onSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other">
                 <Stack gap="md">
                     <LocationPicker
                         selectedLocation={selectedLocation}
@@ -267,7 +267,7 @@ export default function AddStickerModal({
                         Sticker Registreren
                     </Button>
                 </Stack>
-            </form>
+            </Box>
         </Modal>
     );
 }

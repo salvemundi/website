@@ -62,7 +62,7 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
                     {isPaid ? (
                         <Card w="100%" padding="xl">
                             <Stack align="center" ta="center" gap="lg">
-                                <ThemeIcon size={80} color="success">
+                                <ThemeIcon size="xl" color="success">
                                     <CheckCircle2 size={44} />
                                 </ThemeIcon>
                                 <Title order={2} c="brand">

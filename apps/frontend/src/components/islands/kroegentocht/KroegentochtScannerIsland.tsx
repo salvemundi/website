@@ -124,7 +124,7 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
             : warning
                 ? { borderColor: 'var(--mantine-color-accent-filled)', backgroundColor: 'color-mix(in srgb, var(--mantine-color-accent-filled) 20%, var(--mantine-color-darkBase-filled))' }
                 : { borderColor: 'var(--mantine-color-error-filled)', backgroundColor: 'color-mix(in srgb, var(--mantine-color-error-filled) 25%, var(--mantine-color-darkBase-filled))' }
-        : { borderColor: 'rgba(255, 255, 255, 0.15)', backgroundColor: 'rgba(255, 255, 255, 0.06)' };
+        : { borderColor: 'var(--surface-dark-glass-border)', backgroundColor: 'var(--surface-dark-glass)' };
 
     return (
         <Box component="section" mod={{ 'scanner-screen': true }} aria-label="Kroegentocht ticketscanner">
@@ -138,7 +138,7 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
                             <Title order={1} size="h4" c="white">
                                 Tickets scannen
                             </Title>
-                            <Text size="sm" truncate style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                            <Text size="sm" truncate style={{ color: 'var(--text-on-dark-muted)' }}>
                                 {eventName}
                             </Text>
                         </Box>
@@ -160,7 +160,7 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
                             input: {
                                 backgroundColor: 'var(--mantine-color-darkBase-filled)',
                                 color: 'var(--mantine-color-white)',
-                                borderColor: 'rgba(255, 255, 255, 0.25)',
+                                borderColor: 'var(--surface-dark-glass-border-strong)',
                             },
                         }}
                     />
@@ -186,7 +186,7 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
                         <Text span c="lightPurple" lh={1}>
                             <Camera size={48} aria-hidden="true" />
                         </Text>
-                        <Text size="md" maw={360} style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+                        <Text size="md" maw={360} style={{ color: 'var(--text-on-dark-soft)' }}>
                             {error || (running ? 'Camera openen…' : !groups.length ? 'Er zijn nog geen groepen ingesteld. Vraag de organisatie om groepen toe te voegen.' : !group ? 'Kies hierboven je groep om te beginnen.' : 'Klaar om te scannen. De achtercamera opent automatisch.')}
                         </Text>
                         {error && (
@@ -228,7 +228,7 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
                                 </Box>
                             </>
                         ) : (
-                            <Text size="sm" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>
+                            <Text size="sm" style={{ color: 'var(--text-on-dark-muted)' }}>
                                 {ready ? 'Houd een QR-code in het kader. De uitslag verschijnt hier; je kunt direct verder scannen.' : running ? 'Geef toestemming om je camera te gebruiken.' : 'Alleen tickets van jouw groep worden ingecheckt.'}
                             </Text>
                         )}

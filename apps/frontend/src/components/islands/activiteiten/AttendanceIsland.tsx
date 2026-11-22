@@ -221,16 +221,6 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                     <Button type="button" fullWidth onClick={handleCancelScanner}>
                         Annuleren
                     </Button>
-                    <style jsx global>{`
-                        #reader { color: var(--mantine-color-text); }
-                        #reader :is(p, span, label, small, h1, h2, h3, h4, h5, h6) { color: var(--mantine-color-text) !important; }
-                        #reader :is(button, select, input) { color: var(--mantine-color-text) !important; background: var(--mantine-color-default) !important; border-color: var(--mantine-color-default-border) !important; }
-                        #reader button:hover, #reader button:focus-visible { background: var(--mantine-color-default-hover) !important; }
-                        #reader #reader__dashboard, #reader #reader__dashboard_section { color: var(--mantine-color-text) !important; }
-                        #reader #reader__dashboard_section_csr, #reader #reader__dashboard_section_swaplink, #reader #reader__status_span { color: var(--mantine-color-text) !important; }
-                        #reader #reader__dashboard_section_csr select, #reader #reader__dashboard_section_csr button, #reader #reader__dashboard_section_swaplink { background: var(--mantine-color-default) !important; color: var(--mantine-color-text) !important; border: 1px solid var(--mantine-color-default-border) !important; }
-                        #reader #reader__scan_region { border-color: var(--mantine-color-default-border) !important; }
-                    `}</style>
                 </Stack>
             </Modal>
 

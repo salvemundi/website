@@ -100,7 +100,7 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                 <Card withBorder padding="xl">
                     <Stack gap="lg">
                         <Group justify="space-between" align="center">
-                            <Title order={3} size="xs" c="dimmed" fw={700} tt="uppercase">
+                            <Title order={3} size="xs" c="dimmed" tt="uppercase">
                                 Nieuw Groepje
                             </Title>
                             <ActionIcon type="button" onClick={() => setCreating(false)} aria-label="Sluiten">

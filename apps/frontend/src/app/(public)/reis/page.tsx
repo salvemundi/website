@@ -103,7 +103,7 @@ export default async function ReisPage() {
         const isPast = !nextTrip;
 
         const infoItems = [
-            { icon: <ShieldCheck size={20} />, title: 'Lidmaatschap', content: <>Je hoeft <strong>geen lid</strong> te zijn om mee te gaan.</> },
+            { icon: <ShieldCheck size={20} />, title: 'Lidmaatschap', content: <>Je hoeft <Text span fw={700}>geen lid</Text> te zijn om mee te gaan.</> },
             { icon: <Mail size={20} />, title: 'Bevestiging', content: <>Je krijgt direct een mail na je inschrijving.</> },
             { icon: <Info size={20} />, title: 'Leeftijd', content: <>Minimumleeftijd voor deelname is 18 jaar.</> },
             {
@@ -128,7 +128,7 @@ export default async function ReisPage() {
                         <Stack gap="lg">
                             <Card padding="xl">
                                 <Stack align="center" ta="center" gap="md">
-                                    <ThemeIcon size={64}>
+                                    <ThemeIcon size="xl">
                                         <Lock size={32} />
                                     </ThemeIcon>
                                     <Title order={2} c="brand">
@@ -149,7 +149,7 @@ export default async function ReisPage() {
                                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
                                         {infoItems.map((item) => (
                                             <Group key={item.title} align="flex-start" gap="md" wrap="nowrap">
-                                                <ThemeIcon size={40}>
+                                                <ThemeIcon size="lg">
                                                     {item.icon}
                                                 </ThemeIcon>
                                                 <Stack gap={2}>

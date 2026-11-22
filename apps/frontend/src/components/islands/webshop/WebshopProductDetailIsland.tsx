@@ -44,9 +44,9 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
             </Stack>
 
             {product.description && (
-                <Text c="dimmed" component="div">
+                <Box c="dimmed">
                     <SafeMarkdown content={product.description} />
-                </Text>
+                </Box>
             )}
 
             <Paper p="md" withBorder>

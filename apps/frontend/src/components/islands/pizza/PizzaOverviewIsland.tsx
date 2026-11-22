@@ -151,7 +151,7 @@ export function PizzaOverviewIsland({ open, mine }: Props) {
             </Tile>
 
             <Tile title="Nieuwe ronde" icon={<Plus size={22} />}>
-                <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
+                <Box component="form" onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
                     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
                         <TextInput
                             label="Titel"
@@ -211,7 +211,7 @@ export function PizzaOverviewIsland({ open, mine }: Props) {
                             </Button>
                         </Box>
                     </SimpleGrid>
-                </form>
+                </Box>
             </Tile>
         </Stack>
     );

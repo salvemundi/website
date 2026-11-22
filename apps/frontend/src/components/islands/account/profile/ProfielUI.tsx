@@ -120,7 +120,7 @@ export const formatForBreak = (text: string | null | undefined) => {
     return text.split('').map((char, i) => (
         <Text span inherit key={i}>
             {char}
-            {(char === '@' || char === '.' || char === '-' || char === '_') && <wbr />}
+            {(char === '@' || char === '.' || char === '-' || char === '_') && '\u200B'}
         </Text>
     ));
 };

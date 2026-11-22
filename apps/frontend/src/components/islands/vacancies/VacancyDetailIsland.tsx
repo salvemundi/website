@@ -34,8 +34,10 @@ export default function VacancyDetailIsland({ vacancy }: VacancyDetailIslandProp
 
                 <Card padding={0} shadow="lg" withBorder style={{ overflow: 'hidden' }}>
                     {vacancy.image && (
-                        <AspectRatio ratio={16 / 9} w="100%">
-                            <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" priority />
+                        <AspectRatio ratio={16 / 9} w="100%" pos="relative">
+                            <Box pos="relative" w="100%" h="100%">
+                                <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" priority />
+                            </Box>
                         </AspectRatio>
                     )}
 

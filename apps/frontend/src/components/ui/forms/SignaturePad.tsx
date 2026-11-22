@@ -4,6 +4,7 @@ import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import SignaturePadLib from 'signature_pad';
 import { RotateCcw } from 'lucide-react';
 import { Button, Center, Paper, Text } from '@mantine/core';
+import { BRAND_COLORS } from '@/lib/config/theme';
 
 export interface SignaturePadHandle {
     isEmpty: () => boolean;
@@ -24,7 +25,7 @@ export const SignaturePad = React.forwardRef<SignaturePadHandle, SignaturePadPro
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const pad = new SignaturePadLib(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
+        const pad = new SignaturePadLib(canvas, { backgroundColor: BRAND_COLORS.lightSurface });
         padRef.current = pad;
 
         const handleChange = () => setIsEmpty(pad.isEmpty());
@@ -70,7 +71,7 @@ export const SignaturePad = React.forwardRef<SignaturePadHandle, SignaturePadPro
 
     return (
         <Paper
-            bg="white"
+            bg="var(--mantine-color-white)"
             pos="relative"
             style={{
                 border: '1px solid var(--mantine-color-default-border)',

@@ -10,6 +10,7 @@ import {
     Card,
     Checkbox,
     Divider,
+    FileButton,
     Group,
     NumberInput,
     Paper,
@@ -217,7 +218,7 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
             <Stack gap="lg" style={{ flex: 1 }}>
                 <Group align="flex-start" gap="md" wrap="wrap">
                     <Box style={{ flex: 1, minWidth: 180 }}>
-                        <input type="hidden" name="event_date" value={startDate ?? ''} />
+                        <TextInput display="none" name="event_date" value={startDate ?? ''} readOnly />
                         <DateInput
                             id="event_date"
                             label="Startdatum"
@@ -249,7 +250,7 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
 
                 <Group align="flex-start" gap="md" wrap="wrap">
                     <Box style={{ flex: 1, minWidth: 180 }}>
-                        <input type="hidden" name="event_date_end" value={endDate ?? ''} />
+                        <TextInput display="none" name="event_date_end" value={endDate ?? ''} readOnly />
                         <DateInput
                             id="event_date_end"
                             label="Einddatum"
@@ -277,7 +278,7 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
 
                 <Group align="flex-start" gap="md" wrap="wrap">
                     <Box style={{ flex: 1, minWidth: 180 }}>
-                        <input type="hidden" name="registration_deadline" value={deadlineValue} />
+                        <TextInput display="none" name="registration_deadline" value={deadlineValue} readOnly />
                         <Group justify="space-between" mb={4}>
                             <Text component="label" htmlFor="registration_deadline_date" size="sm" fw={500}>
                                 Inschrijfdeadline
@@ -402,7 +403,7 @@ export function CapacityCostsSection({
 
                 <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
                     <Box>
-                        <input type="hidden" name="committee_id" value={committeeId} />
+                        <TextInput display="none" name="committee_id" value={committeeId} readOnly />
                         <Select
                             id="committee_id"
                             label="Organiserende commissie"
@@ -475,13 +476,14 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
                     <Text size="sm" fw={600} c="dimmed" mt="xs" ta="center">
                         Upload banner
                     </Text>
-                    <input
+                    <FileButton
                         ref={fileInputRef}
-                        type="file"
                         accept="image/*,video/*"
-                        onChange={onFileChange}
-                        style={{ display: 'none' }}
-                    />
+                        onChange={() => {}}
+                        inputProps={{ onChange: onFileChange }}
+                    >
+                        {() => null}
+                    </FileButton>
                 </Paper>
             ) : (
                 <Box
@@ -524,13 +526,14 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
                             <X size={14} />
                         </ActionIcon>
                     </Group>
-                    <input
+                    <FileButton
                         ref={fileInputRef}
-                        type="file"
                         accept="image/*,video/*"
-                        onChange={onFileChange}
-                        style={{ display: 'none' }}
-                    />
+                        onChange={() => {}}
+                        inputProps={{ onChange: onFileChange }}
+                    >
+                        {() => null}
+                    </FileButton>
                 </Box>
             )}
         </Card>
@@ -555,7 +558,7 @@ export function StatusSection({ status, onStatusChange, initialData }: { status:
 
             {status === 'scheduled' && (
                 <Box mt="md">
-                    <input type="hidden" name="publish_date" value={toAmsterdamLocalString(publishDate)} />
+                    <TextInput display="none" name="publish_date" value={toAmsterdamLocalString(publishDate)} readOnly />
                     <DateTimePicker
                         label="Publicatiedatum & -tijd"
                         placeholder="Kies datum en tijd"

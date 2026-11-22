@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { AlertCircle, Save } from 'lucide-react';
 import {
     Alert,
+    Box,
     Button,
     Group,
     Input,
@@ -56,7 +57,7 @@ export default function BeheerWebshopDropWindowForm({
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit}>
             <Stack gap="lg">
                 {error && (
                     <Alert color="error" icon={<AlertCircle size={16} />}>
@@ -122,6 +123,6 @@ export default function BeheerWebshopDropWindowForm({
                     </Button>
                 </Group>
             </Stack>
-        </form>
+        </Box>
     );
 }

@@ -128,7 +128,8 @@ export default function ProfielDetails({
                                 <Phone size={20} />
                             </Text>
                             {isEditingPhoneNumber ? (
-                                <form
+                                <Box
+                                    component="form"
                                     onSubmit={(e) => {
                                         void handleSubmitPhone(onSavePhone)(e);
                                     }}
@@ -148,7 +149,7 @@ export default function ProfielDetails({
                                             <Save size={16} />
                                         </ActionIcon>
                                     </Group>
-                                </form>
+                                </Box>
                             ) : (
                                 <Text size="sm" fw={700}>
                                     {formatPhoneNumber(user.phone_number) || 'Niet ingesteld'}

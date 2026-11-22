@@ -49,13 +49,14 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                     </Text>
                 </Paper>
 
-                <Text size="md" c="dimmed">
-                    Komt dit <Text span fw={700} fs="italic" c="var(--mantine-color-text)">exact</Text> overeen met de naam op je paspoort of ID-kaart?
-                    <br />
-                    <Text span size="xs" mt="xs" display="inline-block">
+                <Stack gap={4}>
+                    <Text size="md" c="dimmed">
+                        Komt dit <Text span fw={700} fs="italic" c="var(--mantine-color-text)">exact</Text> overeen met de naam op je paspoort of ID-kaart?
+                    </Text>
+                    <Text size="xs" c="dimmed">
                         Een typefout kan leiden tot problemen bij de gate!
                     </Text>
-                </Text>
+                </Stack>
 
                 <Stack gap="xs">
                     <Button

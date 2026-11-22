@@ -23,7 +23,7 @@ function BlockedCard({ icon: Icon, title, message }: { icon: typeof Lock; title:
         <Center mih="60vh">
             <Card w="100%" maw={440} padding="xl">
                 <Stack align="center" ta="center" gap="lg">
-                    <ThemeIcon size={64}>
+                    <ThemeIcon size="xl">
                         <Icon size={32} />
                     </ThemeIcon>
                     <Title order={1} size="h2" c="brand">
