@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { selectEventsSchema, insertEventsSchema, selectEventSignupsSchema } from './db.zod.js';
-import { phoneNumberSchema } from './shared.zod.js';
-import { userBasicSchema } from './members.zod.js';
+import { selectEventsSchema, insertEventsSchema, selectEventSignupsSchema } from './db.zod.ts';
+import { phoneNumberSchema } from './shared.zod.ts';
+import { userBasicSchema } from './members.zod.ts';
 
 export type EventSignup = z.infer<typeof selectEventSignupsSchema>;
 

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { phoneNumberSchema } from './shared.zod.js';
+import { phoneNumberSchema } from './shared.zod.ts';
 import {
     selectWebshopProductsSchema,
     selectWebshopProductVariantsSchema,
@@ -7,7 +7,7 @@ import {
     selectWebshopDropWindowsSchema,
     selectWebshopPreordersSchema,
     selectWebshopPreorderLinesSchema,
-} from './db.zod.js';
+} from './db.zod.ts';
 
 export const webshopProductTypeSchema = z.enum(['clothing', 'item']);
 export type WebshopProductType = z.infer<typeof webshopProductTypeSchema>;

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.js';
+import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.ts';
 
 /**
  * Schema for the membership signup form

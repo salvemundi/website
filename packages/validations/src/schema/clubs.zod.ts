@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectClubsSchema } from './db.zod.js';
+import { selectClubsSchema } from './db.zod.ts';
 
 export const clubSchema = selectClubsSchema;
 export const clubsSchema = z.array(clubSchema);

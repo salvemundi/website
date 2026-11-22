@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectDirectusUsersSchema } from './db.zod.js';
+import { selectDirectusUsersSchema } from './db.zod.ts';
 
 export const memberSchema = z.object({
     id: z.string().uuid(),

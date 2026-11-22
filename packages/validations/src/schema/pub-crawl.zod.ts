@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectPubCrawlEventsSchema, selectPubCrawlSignupsSchema, selectPubCrawlTicketsSchema } from './db.zod.js';
+import { selectPubCrawlEventsSchema, selectPubCrawlSignupsSchema, selectPubCrawlTicketsSchema } from './db.zod.ts';
 
 export const PUB_CRAWL_ASSOCIATIONS = [
     'Salve Mundi',

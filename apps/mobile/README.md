@@ -35,7 +35,7 @@ identity, membership, pricing, capacity, payment and QR validity.
 
 ## Running the checks
 
-Run from the repository root (needs `pnpm install` and `pnpm --filter=@salvemundi/db build`, `pnpm --filter=@salvemundi/validations build` first):
+Run from the repository root (needs `bun install` first):
 
 ```sh
 node --experimental-strip-types --test apps/mobile/tests/mobile-security.test.mjs
