@@ -9,8 +9,6 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "declaration": true,
-        "declarationMap": true,
         "types": ["node"],
         "paths": {
             "drizzle-orm": ["../../node_modules/drizzle-orm"],
