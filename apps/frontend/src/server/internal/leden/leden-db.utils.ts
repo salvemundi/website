@@ -1,37 +1,15 @@
 import 'server-only';
 import { db, schema } from '@salvemundi/db';
 import { eq, sql } from 'drizzle-orm';
-import { z } from 'zod';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { type Committee } from '@/shared/lib/permissions';
 import {
     type DirectusUser,
-    type UserBasic
+    type UserBasic,
+    type UserProfile,
+    userProfileSchema
 } from '@salvemundi/validations';
-import { selectDirectusUsersSchema } from '@salvemundi/validations/schema/db.zod';
-export type { Committee, UserBasic };
-
-export const userProfileSchema = selectDirectusUsersSchema.pick({
-    id: true,
-    first_name: true,
-    last_name: true,
-    avatar: true,
-    membership_status: true,
-    phone_number: true,
-    date_of_birth: true,
-    entra_id: true,
-    membership_expiry: true,
-    description: true,
-    location: true,
-    title: true,
-}).extend({
-    email: z.string().email(),
-    date_of_birth: z.string().nullable().optional(),
-    membership_expiry: z.string().nullable().optional(),
-    tags: z.array(z.string()).nullable().optional()
-});
-
-export type UserProfile = z.infer<typeof userProfileSchema>;
+export type { Committee, UserBasic, UserProfile };
 
 export type UserMetadata = Partial<Pick<
     DirectusUser,

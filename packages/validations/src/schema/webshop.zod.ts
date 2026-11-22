@@ -1,13 +1,14 @@
 import { z } from 'zod';
-import { phoneNumberSchema } from './shared.zod.js';
-import {
-    selectWebshopProductsSchema,
-    selectWebshopProductVariantsSchema,
-    selectWebshopProductMediaSchema,
-    selectWebshopDropWindowsSchema,
-    selectWebshopPreordersSchema,
-    selectWebshopPreorderLinesSchema,
-} from './db.zod.js';
+import { phoneNumberSchema } from './shared.zod';
+import { createSelectSchema } from 'drizzle-zod';
+import { webshop_products as webshop_productsTable, webshop_product_variants as webshop_product_variantsTable, webshop_product_media as webshop_product_mediaTable, webshop_drop_windows as webshop_drop_windowsTable, webshop_preorders as webshop_preordersTable, webshop_preorder_lines as webshop_preorder_linesTable } from '@salvemundi/db/schema';
+
+const selectWebshopProductsSchema = createSelectSchema(webshop_productsTable);
+const selectWebshopProductVariantsSchema = createSelectSchema(webshop_product_variantsTable);
+const selectWebshopProductMediaSchema = createSelectSchema(webshop_product_mediaTable);
+const selectWebshopDropWindowsSchema = createSelectSchema(webshop_drop_windowsTable);
+const selectWebshopPreordersSchema = createSelectSchema(webshop_preordersTable);
+const selectWebshopPreorderLinesSchema = createSelectSchema(webshop_preorder_linesTable);
 
 export const webshopProductTypeSchema = z.enum(['clothing', 'item']);
 export type WebshopProductType = z.infer<typeof webshopProductTypeSchema>;

@@ -1,6 +1,10 @@
 import { z } from 'zod';
-import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.js';
-import { selectTripSignupsSchema, selectTripSignupActivitiesSchema } from './db.zod.js';
+import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod';
+import { createSelectSchema } from 'drizzle-zod';
+import { trip_signups as trip_signupsTable, trip_signup_activities as trip_signup_activitiesTable } from '@salvemundi/db/schema';
+
+const selectTripSignupsSchema = createSelectSchema(trip_signupsTable);
+const selectTripSignupActivitiesSchema = createSelectSchema(trip_signup_activitiesTable);
 
 export const reisSiteSettingsSchema = z.object({
     id: z.string().optional(),
