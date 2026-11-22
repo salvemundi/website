@@ -23,7 +23,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                     h="100%"
                     style={{
                         borderRadius: 'var(--mantine-radius-xl)',
-                        backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
+                        backgroundColor: 'var(--surface-subtle)',
                     }}
                 >
                     <Text span c="brand" opacity={0.3} lh={1}>
@@ -50,7 +50,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                     style={{
                         borderRadius: 'var(--mantine-radius-xl)',
                         overflow: 'hidden',
-                        backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
+                        backgroundColor: 'var(--surface-subtle)',
                     }}
                 >
                     <MediaAsset
@@ -81,7 +81,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                                     borderRadius: 'var(--mantine-radius-md)',
                                     overflow: 'hidden',
                                     border: idx === activeIndex
-                                        ? '2px solid var(--primary)'
+                                        ? '2px solid var(--mantine-color-brand-filled)'
                                         : '2px solid transparent',
                                 }}
                             >
@@ -103,7 +103,6 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                 onClose={() => setLightboxOpen(false)}
                 size="xl"
                 centered
-                radius="lg"
                 padding="xs"
                 aria-label={`${productName} - vergrote weergave`}
             >

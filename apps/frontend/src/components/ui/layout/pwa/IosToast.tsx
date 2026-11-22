@@ -53,15 +53,14 @@ export default function IosToast({ onDismiss }: { onDismiss: () => void }) {
                     <Paper
                         key={step.id}
                         p="xs"
-                        radius="md"
                         bg="var(--mantine-color-body)"
-                        style={{ border: '1px solid var(--border)' }}
+                        style={{ border: '1px solid var(--mantine-color-default-border)' }}
                     >
                         <Group gap="sm" wrap="nowrap">
-                            <Badge circle size="sm" variant="light" color="brand">
+                            <Badge circle size="sm">
                                 {step.id}
                             </Badge>
-                            <ThemeIcon variant="light" color="brand" size="md" radius="md">
+                            <ThemeIcon size="md">
                                 {step.icon}
                             </ThemeIcon>
                             <Stack gap={2} flex={1} miw={0}>
@@ -80,7 +79,7 @@ export default function IosToast({ onDismiss }: { onDismiss: () => void }) {
                 ))}
             </Stack>
 
-            <Alert variant="light" color="brand" mx="md" mb="md" p="xs" radius="md" icon={<Share size={14} />}>
+            <Alert mx="md" mb="md" p="xs" icon={<Share size={14} />}>
                 <Text size="xs" c="dimmed" lh={1.4}>
                     De <Text span fw={600} c="brand">Deel-knop</Text> staat in de Safari-werkbalk onderaan je scherm
                 </Text>

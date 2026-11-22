@@ -200,7 +200,6 @@ export default function StickerMapIsland({
                         <Button
                             type="button"
                             flex={1}
-                            variant="default"
                             size="sm"
                             leftSection={<Filter size={14} />}
                             onClick={() => {
@@ -213,7 +212,6 @@ export default function StickerMapIsland({
                         <Button
                             type="button"
                             flex={1}
-                            variant="default"
                             size="sm"
                             leftSection={<BarChart3 size={14} />}
                             onClick={() => {

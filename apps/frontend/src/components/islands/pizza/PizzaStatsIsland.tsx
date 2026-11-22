@@ -24,7 +24,7 @@ function StatTile({ label, value }: { label: string; value: string | number }) {
 export function PizzaStatsIsland({ stats }: { stats: PizzaStats | null }) {
     if (!stats || (stats.totalOrders === 0 && stats.roundsCreated === 0)) {
         return (
-            <Paper p="xl" radius="lg" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
+            <Paper p="xl" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
                 <Stack align="center" gap="md">
                     <Text size="sm" fw={700} c="dimmed">
                         Je hebt nog geen pizza&apos;s besteld. Doe mee met een ronde!
@@ -54,7 +54,7 @@ export function PizzaStatsIsland({ stats }: { stats: PizzaStats | null }) {
                 ) : (
                     <Stack gap="xs">
                         {stats.topPizzas.slice(0, 5).map((p, i) => (
-                            <Paper key={p.itemName} p="sm" radius="md" withBorder>
+                            <Paper key={p.itemName} p="sm" withBorder>
                                 <Group justify="space-between" gap="sm">
                                     <Text size="sm" fw={700}>
                                         <Text span c="brand" mr="xs">{i + 1}.</Text>
@@ -79,7 +79,7 @@ export function PizzaStatsIsland({ stats }: { stats: PizzaStats | null }) {
                     <Stack gap="xs">
                         {stats.recent.map((r) => (
                             <Anchor key={`${r.roundId}-${r.orderedAt}-${r.itemName}`} component={Link} href={`/pizza/${r.roundId}`} underline="never">
-                                <Paper p="sm" radius="md" withBorder>
+                                <Paper p="sm" withBorder>
                                     <Group justify="space-between" wrap="nowrap" gap="sm">
                                         <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
                                             <Text size="sm" fw={900} c="brand" truncate>

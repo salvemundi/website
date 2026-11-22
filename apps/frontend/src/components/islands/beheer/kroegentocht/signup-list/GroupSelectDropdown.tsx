@@ -25,7 +25,6 @@ export default function GroupSelectDropdown({
             <Menu.Target>
                 <Button
                     type="button"
-                    variant="default"
                     size={size === 'xs' ? 'compact-xs' : 'xs'}
                     rightSection={<ChevronDown size={12} />}
                 >

@@ -128,7 +128,7 @@ export default async function ReisPage() {
                         <Stack gap="lg">
                             <Card padding="xl">
                                 <Stack align="center" ta="center" gap="md">
-                                    <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                                    <ThemeIcon size={64}>
                                         <Lock size={32} />
                                     </ThemeIcon>
                                     <Title order={2} c="brand">
@@ -149,7 +149,7 @@ export default async function ReisPage() {
                                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
                                         {infoItems.map((item) => (
                                             <Group key={item.title} align="flex-start" gap="md" wrap="nowrap">
-                                                <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                                <ThemeIcon size={40}>
                                                     {item.icon}
                                                 </ThemeIcon>
                                                 <Stack gap={2}>

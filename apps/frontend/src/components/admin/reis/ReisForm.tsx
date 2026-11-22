@@ -197,7 +197,7 @@ export default function ReisForm({
                 <input type="hidden" name="existing_image_id" value={existingImageId || ''} />
 
                 {imageError && (
-                    <Alert color="error" variant="light" icon={<Info size={16} />} mb="lg">
+                    <Alert color="error" icon={<Info size={16} />} mb="lg">
                         {imageError}
                     </Alert>
                 )}
@@ -205,9 +205,9 @@ export default function ReisForm({
                 <Grid gap="lg" align="flex-start">
                     <Grid.Col span={{ base: 12, lg: 8 }}>
                         <Stack gap="lg">
-                            <Card withBorder radius="lg" padding="lg">
+                            <Card withBorder padding="lg">
                                 <Group gap="sm" mb="md">
-                                    <ThemeIcon size="md" radius="md" variant="light" color="accent">
+                                    <ThemeIcon size="md" color="accent">
                                         <Info size={16} />
                                     </ThemeIcon>
                                     <Title order={2} size="h5">Algemene Informatie</Title>
@@ -237,9 +237,9 @@ export default function ReisForm({
                                 </Stack>
                             </Card>
 
-                            <Card withBorder radius="lg" padding="lg">
+                            <Card withBorder padding="lg">
                                 <Group gap="sm" mb="md">
-                                    <ThemeIcon size="md" radius="md" variant="light" color="accent">
+                                    <ThemeIcon size="md" color="accent">
                                         <CalendarIcon size={16} />
                                     </ThemeIcon>
                                     <Title order={2} size="h5">Planning &amp; Capaciteit</Title>
@@ -311,9 +311,9 @@ export default function ReisForm({
                                 </Stack>
                             </Card>
 
-                            <Card withBorder radius="lg" padding="lg">
+                            <Card withBorder padding="lg">
                                 <Group gap="sm" mb="md">
-                                    <ThemeIcon size="md" radius="md" variant="light" color="accent">
+                                    <ThemeIcon size="md" color="accent">
                                         <Euro size={16} />
                                     </ThemeIcon>
                                     <Title order={2} size="h5">Financiën</Title>

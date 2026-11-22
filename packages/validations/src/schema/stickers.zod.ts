@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { selectStickersSchema, selectDirectusUsersSchema } from './db.zod.js';
+import { createSelectSchema } from 'drizzle-zod';
+import { Stickers as StickersTable, directus_users as directus_usersTable } from '@salvemundi/db/schema';
+
+const selectStickersSchema = createSelectSchema(StickersTable);
+const selectDirectusUsersSchema = createSelectSchema(directus_usersTable);
 
 export const stickerUserSchema = selectDirectusUsersSchema.pick({
     id: true,

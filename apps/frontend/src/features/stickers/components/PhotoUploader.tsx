@@ -31,7 +31,7 @@ export const PhotoUploader = ({
                     style={{
                         overflow: 'hidden',
                         borderRadius: 'var(--mantine-radius-lg)',
-                        border: '1px solid var(--border)',
+                        border: '1px solid var(--mantine-color-default-border)',
                     }}
                 >
                     <MediaAsset asset={imagePreview} className="size-full object-cover" alt="Preview" fill />
@@ -47,7 +47,6 @@ export const PhotoUploader = ({
                                 component="label"
                                 htmlFor="photo-upload"
                                 size="sm"
-                                variant="default"
                                 leftSection={<Camera size={16} />}
                             >
                                 Wijzigen
@@ -55,7 +54,6 @@ export const PhotoUploader = ({
                             <ActionIcon
                                 type="button"
                                 color="error"
-                                variant="filled"
                                 size="lg"
                                 onClick={onRemoveImage}
                                 aria-label="Foto verwijderen"
@@ -71,7 +69,6 @@ export const PhotoUploader = ({
                     htmlFor="photo-upload"
                     h={160}
                     w="100%"
-                    radius="lg"
                     bg="var(--mantine-color-body)"
                     style={{
                         display: 'flex',
@@ -79,7 +76,7 @@ export const PhotoUploader = ({
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        border: '2px dashed var(--border)',
+                        border: '2px dashed var(--mantine-color-default-border)',
                     }}
                 >
                     <Stack align="center" gap="xs">

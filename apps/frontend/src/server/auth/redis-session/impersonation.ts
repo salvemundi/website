@@ -60,6 +60,7 @@ export async function getImpersonatedUser(testToken: string, _pool?: Pool | null
             id: schema.committees.id,
             name: schema.committees.name,
             azure_group_id: schema.committees.azure_group_id,
+            is_visible: schema.committees.is_visible,
             is_leader: schema.committee_members.is_leader
         })
         .from(schema.committee_members)

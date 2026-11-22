@@ -74,9 +74,9 @@ export const IntroStudentIsland = ({ isOpen = true }: IntroStudentIslandProps) =
 
     if (!isOpen) {
         return (
-            <Card flex={1} padding="xl" radius="xl" shadow="xl" withBorder ta="center" mih={300}>
+            <Card flex={1} padding="xl" shadow="xl" withBorder ta="center" mih={300}>
                 <Stack align="center" justify="center" gap="md" h="100%">
-                    <ThemeIcon size={72} radius="xl" variant="light" color="brand">
+                    <ThemeIcon size={72}>
                         <Lock size={36} />
                     </ThemeIcon>
                     <Title order={3} size="h2">
@@ -92,9 +92,9 @@ export const IntroStudentIsland = ({ isOpen = true }: IntroStudentIslandProps) =
 
     if (submitted) {
         return (
-            <Card flex={1} padding="xl" radius="xl" shadow="lg" withBorder ta="center">
+            <Card flex={1} padding="xl" shadow="lg" withBorder ta="center">
                 <Stack align="center" gap="md">
-                    <ThemeIcon size={72} radius="xl" variant="light" color="brand">
+                    <ThemeIcon size={72}>
                         <CheckCircle2 size={36} />
                     </ThemeIcon>
                     <Title order={2} size="h2">
@@ -109,11 +109,11 @@ export const IntroStudentIsland = ({ isOpen = true }: IntroStudentIslandProps) =
     }
 
     return (
-        <Card flex={1} padding="xl" radius="xl" shadow="xl" withBorder>
+        <Card flex={1} padding="xl" shadow="xl" withBorder>
             <Stack gap="lg">
                 <Stack gap="xs">
                     <Group gap="sm" align="center">
-                        <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                        <ThemeIcon size="lg">
                             <Send size={20} />
                         </ThemeIcon>
                         <Title order={2} size="h2" c="brand">
@@ -218,7 +218,7 @@ export const IntroStudentIsland = ({ isOpen = true }: IntroStudentIslandProps) =
                         />
 
                         {error && (
-                            <Alert color="error" variant="light">
+                            <Alert color="error">
                                 {error}
                             </Alert>
                         )}

@@ -40,7 +40,7 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
     ];
 
     return (
-        <Card h="100%" padding="lg" radius="lg" style={{ display: 'flex', flexDirection: 'column' }}>
+        <Card h="100%" padding="lg" style={{ display: 'flex', flexDirection: 'column' }}>
             <Group justify="space-between" mb="lg">
                 <Title order={2} size="h3" c="brand">
                     Leaderboard
@@ -56,7 +56,7 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                     p="xl"
                     style={{
                         borderRadius: 'var(--mantine-radius-lg)',
-                        border: '2px dashed var(--border)',
+                        border: '2px dashed var(--mantine-color-default-border)',
                     }}
                 >
                     <Text size="sm" fw={500} c="dimmed" fs="italic" ta="center">
@@ -78,7 +78,7 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                                 : isSilver
                                     ? 'var(--mantine-color-lightPurple-filled)'
                                     : 'var(--mantine-color-purple-filled)';
-                            const fgColor = isGold ? '#1E1221' : '#FFFFFF';
+                            const fgColor = isGold ? 'var(--mantine-color-darkBase-filled)' : 'var(--mantine-color-white)';
                             const labelColor = isGold ? 'accent' : isSilver ? 'lightPurple' : 'brand';
 
                             return (
@@ -93,7 +93,7 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                                             fz={{ base: 'md', md: 'lg' }}
                                             style={{
                                                 borderRadius: '9999px',
-                                                border: isMe ? '3px solid #FFFFFF' : '2px solid transparent',
+                                                border: isMe ? '3px solid var(--mantine-color-white)' : '2px solid transparent',
                                                 transform: isGold ? 'scale(1.08)' : undefined,
                                                 boxShadow: 'var(--mantine-shadow-md)',
                                             }}
@@ -154,7 +154,6 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                                     <Paper
                                         key={c.id}
                                         p="xs"
-                                        radius="md"
                                         bg={isMe ? 'var(--mantine-color-accent-light)' : 'transparent'}
                                         style={isMe ? { border: '1px solid var(--mantine-color-accent-outline)' } : undefined}
                                     >

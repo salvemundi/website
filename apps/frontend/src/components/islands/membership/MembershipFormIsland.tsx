@@ -197,7 +197,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                         </Text>
                     )}
 
-                    <Paper p="lg" radius="lg" withBorder mt="md">
+                    <Paper p="lg" withBorder mt="md">
                         <Group justify="space-between" align="center">
                             <Text size="xl" fw={700} c="dimmed">
                                 Totaal:

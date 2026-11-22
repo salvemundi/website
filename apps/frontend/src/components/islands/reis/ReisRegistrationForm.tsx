@@ -128,16 +128,15 @@ export function ReisRegistrationForm({
         return (
             <Paper
                 p="xl"
-                radius="lg"
                 withBorder
                 ta="center"
                 style={{
-                    backgroundColor: 'color-mix(in srgb, var(--primary) 6%, transparent)',
-                    borderColor: 'color-mix(in srgb, var(--primary) 15%, transparent)',
+                    backgroundColor: 'var(--surface-subtle)',
+                    borderColor: 'var(--surface-subtle)',
                 }}
             >
                 <Stack align="center" gap="sm" py="md">
-                    <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                    <ThemeIcon size={64}>
                         <Calendar size={32} />
                     </ThemeIcon>
                     <Title order={2} size="h3" c="brand">
@@ -184,7 +183,7 @@ export function ReisRegistrationForm({
                             error={errors.first_name?.message}
                             {...register('first_name')}
                         />
-                        <Alert color="brand" variant="light" radius="md" icon={<AlertCircle size={16} />}>
+                        <Alert icon={<AlertCircle size={16} />}>
                             <Text size="xs" fw={600}>
                                 <Text span fw={700} c="brand">LET OP:</Text> Gebruik je volledige voornaam zoals op je paspoort/ID. Dit is essentieel voor je ticket!
                             </Text>

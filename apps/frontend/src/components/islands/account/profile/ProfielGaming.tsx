@@ -37,7 +37,6 @@ export default function ProfielGaming({
                     {!isEditingMinecraft && (
                         <ActionIcon
                             type="button"
-                            variant="subtle"
                             size="sm"
                             onClick={() => setIsEditingMinecraft(true)}
                             aria-label="Minecraft username bewerken"
@@ -69,7 +68,6 @@ export default function ProfielGaming({
                                     />
                                     <ActionIcon
                                         type="submit"
-                                        variant="filled"
                                         size="lg"
                                         loading={isPending}
                                         aria-label="Minecraft username opslaan"

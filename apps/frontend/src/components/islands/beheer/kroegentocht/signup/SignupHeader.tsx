@@ -8,7 +8,7 @@ export default function SignupHeader() {
         <>
             <Box p="xl">
                 <Group gap="sm">
-                    <ThemeIcon size="lg" variant="light" color="brand" radius="md">
+                    <ThemeIcon size="lg">
                         <User size={20} />
                     </ThemeIcon>
                     <Stack gap={2}>

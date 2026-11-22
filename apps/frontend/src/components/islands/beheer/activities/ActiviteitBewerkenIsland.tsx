@@ -141,7 +141,6 @@ export default function ActiviteitBewerkenIsland({
 
             <Button
                 type="button"
-                variant="default"
                 size="md"
                 fullWidth
                 onClick={() => router.back()}
@@ -154,7 +153,6 @@ export default function ActiviteitBewerkenIsland({
 
             <Button
                 type="button"
-                variant="light"
                 color="error"
                 size="md"
                 fullWidth
@@ -175,7 +173,6 @@ export default function ActiviteitBewerkenIsland({
                     <ActionIcon
                         component={Link}
                         href="/beheer/activiteiten"
-                        variant="default"
                         size="lg"
                         aria-label="Terug"
                     >

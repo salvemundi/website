@@ -54,7 +54,7 @@ export default function ReisActivitySignupsModal({
             centered
             title={
                 <Group gap="sm">
-                    <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                    <ThemeIcon size={40}>
                         <Users size={20} />
                     </ThemeIcon>
                     <Box>
@@ -72,7 +72,7 @@ export default function ReisActivitySignupsModal({
                 {loading ? (
                     <Center py={64}>
                         <Stack align="center" gap="sm">
-                            <Loader size="lg" color="brand" />
+                            <Loader size="lg" />
                             <Text size="xs" fw={600} c="dimmed">
                                 Data laden...
                             </Text>
@@ -82,12 +82,11 @@ export default function ReisActivitySignupsModal({
                     <Paper
                         withBorder
                         py={64}
-                        radius="lg"
                         style={{ borderStyle: 'dashed' }}
                         ta="center"
                     >
                         <Stack align="center" gap="md">
-                            <ThemeIcon size={64} radius="xl" variant="default">
+                            <ThemeIcon size={64}>
                                 <Users size={28} />
                             </ThemeIcon>
                             <Text size="sm" fw={600} c="dimmed">
@@ -141,8 +140,6 @@ export default function ReisActivitySignupsModal({
                                                                 <Badge
                                                                     key={i}
                                                                     size="xs"
-                                                                    variant="light"
-                                                                    color="brand"
                                                                 >
                                                                     {mapActivityOptionIdToName(
                                                                         optId,

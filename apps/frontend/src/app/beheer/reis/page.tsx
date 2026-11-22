@@ -113,7 +113,6 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
                             <Button
                                 component={Link}
                                 href="/beheer"
-                                variant="default"
                                 size="sm"
                                 leftSection={<ChevronLeft size={16} />}
                             >
@@ -151,7 +150,6 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
                         <Button
                             component={Link}
                             href="/beheer"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -163,7 +161,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
                     </Group>
 
                     <Group gap="md" wrap="wrap">
-                        <Paper withBorder px="md" py="xs" radius="lg" visibleFrom="xl">
+                        <Paper withBorder px="md" py="xs" visibleFrom="xl">
                             <Group gap="md" wrap="nowrap">
                                 <StatItem label="Aanmeldingen" value={stats.total} />
                                 <Divider orientation="vertical" />
@@ -185,7 +183,6 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
                             <Button
                                 component={Link}
                                 href="/beheer/reis/instellingen"
-                                variant="default"
                                 size="sm"
                                 leftSection={<Settings2 size={14} />}
                             >
@@ -223,9 +220,9 @@ function StatItem({ label, value, color }: { label: string; value: number; color
 function NoTripsView() {
     return (
         <Center py="xl">
-            <Card withBorder radius="lg" padding="xl" maw={560} w="100%" ta="center">
+            <Card withBorder padding="xl" maw={560} w="100%" ta="center">
                 <Stack align="center" gap="md" py="lg">
-                    <ThemeIcon size={64} radius="lg" variant="light" color="brand">
+                    <ThemeIcon size={64}>
                         <Plane size={32} />
                     </ThemeIcon>
                     <Title order={2} size="h3" c="brand">
@@ -237,7 +234,6 @@ function NoTripsView() {
                     <Button
                         component={Link}
                         href="/beheer/reis/instellingen"
-                        color="accent"
                         leftSection={<LayoutDashboard size={16} />}
                     >
                         Nieuwe reis aanmaken

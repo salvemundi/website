@@ -47,8 +47,8 @@ export const IntroLightboxIsland = () => {
                                 style={{
                                     borderRadius: 'var(--mantine-radius-md)',
                                     overflow: 'hidden',
-                                    border: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)',
-                                    backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
+                                    border: '1px solid var(--surface-subtle-border)',
+                                    backgroundColor: 'var(--surface-subtle)',
                                 }}
                             >
                                 {isFailed ? (
@@ -74,7 +74,6 @@ export const IntroLightboxIsland = () => {
                 onClose={closeLightbox}
                 size="xl"
                 centered
-                radius="lg"
                 padding="xs"
                 aria-label="Foto voorbeeld"
             >

@@ -1,10 +1,32 @@
-import { BeheerFeature, FEATURE_ACCESS, COMMITTEES } from './permissions-config';
+import { BeheerFeature, FEATURE_ACCESS, COMMITTEES, TEAM_GROUP_IDS } from './permissions-config';
 
 export interface Committee {
     id: number | string;
     name: string;
     azure_group_id?: string | null | undefined;
     is_leader?: boolean | null;
+    is_visible?: boolean | null | undefined;
+}
+
+export function isTeamGroup(committee: Pick<Committee, 'is_visible' | 'azure_group_id'>): boolean {
+    if (committee.azure_group_id && TEAM_GROUP_IDS.includes(committee.azure_group_id)) {
+        return true;
+    }
+    if (typeof committee.is_visible === 'boolean') {
+        return !committee.is_visible;
+    }
+    return false;
+}
+
+export function isCommitteeGroup(committee: Pick<Committee, 'is_visible' | 'azure_group_id'>): boolean {
+    return !isTeamGroup(committee);
+}
+
+export function hasActiveCommitteeMembership(
+    committees: Pick<Committee, 'is_visible' | 'azure_group_id'>[] | undefined | null
+): boolean {
+    if (!Array.isArray(committees)) return false;
+    return committees.some(isCommitteeGroup);
 }
 
 const featureAccessMap = new Map<string, readonly string[]>(Object.entries(FEATURE_ACCESS));
@@ -47,7 +69,7 @@ export function hasPermission(committees: Committee[] | undefined, feature: Behe
 export function getPermissions(committees: Committee[] = []): string[] {
     const safeCommittees = committees;
     const isICT = safeCommittees.some(c => c.azure_group_id === COMMITTEES.ICT);
-    const isLeader = isICT || safeCommittees.some(c => c.is_leader);
+    const isLeader = isICT || safeCommittees.some(c => isCommitteeGroup(c) && Boolean(c.is_leader));
     const permissions: string[] = [];
     const features = Object.keys(FEATURE_ACCESS) as BeheerFeature[];
 

@@ -59,7 +59,7 @@ export default function BeheerWebshopDropWindowForm({
         <form onSubmit={handleSubmit}>
             <Stack gap="lg">
                 {error && (
-                    <Alert color="error" variant="light" icon={<AlertCircle size={16} />}>
+                    <Alert color="error" icon={<AlertCircle size={16} />}>
                         {error}
                     </Alert>
                 )}
@@ -110,7 +110,7 @@ export default function BeheerWebshopDropWindowForm({
                 </SimpleGrid>
 
                 <Group justify="flex-end" gap="sm" pt="md">
-                    <Button type="button" variant="default" onClick={onCancel}>
+                    <Button type="button" onClick={onCancel}>
                         Annuleren
                     </Button>
                     <Button

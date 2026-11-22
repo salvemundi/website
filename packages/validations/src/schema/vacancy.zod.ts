@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { phoneNumberSchema } from './shared.zod.js';
+import { phoneNumberSchema } from './shared.zod';
 
 export const ICT_DIRECTIONS = [
     'Artificial Intelligence',

@@ -50,7 +50,6 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                                     <Button
                                         component={Link}
                                         href="/commissies/oud-besturen"
-                                        variant="default"
                                         size="lg"
                                         leftSection={<History size={18} />}
                                     >
@@ -60,7 +59,6 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                                     <Button
                                         component={Link}
                                         href="/contact"
-                                        variant="default"
                                         size="lg"
                                         leftSection={<LayoutGrid size={18} />}
                                     >
@@ -96,7 +94,7 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                 <Stack gap="xl" pt="md">
                     <Stack align="center" gap="sm">
                         <Group gap="sm">
-                            <ThemeIcon size="xl" radius="md" variant="light" color="brand">
+                            <ThemeIcon size="xl">
                                 <Users size={24} />
                             </ThemeIcon>
                             <Title order={2} c="brand">
@@ -139,7 +137,7 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                                     <Title order={3} size="h4" ta="center">
                                         {name}
                                     </Title>
-                                    <Badge variant="light" color="brand" size="sm">
+                                    <Badge size="sm">
                                         {roleLabel}
                                     </Badge>
                                 </Stack>

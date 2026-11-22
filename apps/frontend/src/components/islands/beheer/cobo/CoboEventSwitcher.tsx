@@ -62,7 +62,6 @@ export default function CoboEventSwitcher({
                 {activeEvent && (
                     <Button
                         type="button"
-                        variant="default"
                         size="sm"
                         onClick={handleEdit}
                         title="CoBo Instellingen & Tekst bewerken"

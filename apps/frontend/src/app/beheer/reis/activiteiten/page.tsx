@@ -53,7 +53,6 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
                             <Button
                                 component={Link}
                                 href="/beheer/reis"
-                                variant="default"
                                 size="sm"
                                 leftSection={<ChevronLeft size={16} />}
                             >
@@ -65,7 +64,7 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
                         </Group>
                     </Group>
 
-                    <Paper withBorder p="xl" radius="lg">
+                    <Paper withBorder p="xl">
                         <Center py="xl">
                             <Text fw={700} c="dimmed">
                                 Geen reizen gevonden.

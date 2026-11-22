@@ -16,7 +16,6 @@ export default async function NewKroegentochtPage() {
                         <Button
                             component={Link}
                             href="/beheer/kroegentocht"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

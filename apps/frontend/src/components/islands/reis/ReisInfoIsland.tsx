@@ -39,13 +39,13 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
     return (
         <Stack w={{ base: '100%', lg: '50%' }} gap="xl">
             {nextTrip && (
-                <Card padding={0} radius="xl" shadow="xl" withBorder style={{ overflow: 'hidden' }}>
+                <Card padding={0} shadow="xl" withBorder style={{ overflow: 'hidden' }}>
                     {nextTrip.image && (
                         <Box
                             pos="relative"
                             h={{ base: 300, sm: 420 }}
                             w="100%"
-                            style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 6%, transparent)' }}
+                            style={{ backgroundColor: 'var(--surface-subtle)' }}
                         >
                             <MediaAsset
                                 asset={nextTrip.image}
@@ -58,7 +58,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
 
                     <Box p={{ base: 'lg', sm: 'xl' }}>
                         <Group gap="md" wrap="nowrap">
-                            <ThemeIcon size={56} radius="md" variant="light" color="brand">
+                            <ThemeIcon size={56}>
                                 <Calendar size={28} />
                             </ThemeIcon>
                             <Text size="xl" fw={700} c="brand">
@@ -74,7 +74,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
             )}
 
             {nextTrip?.description && (
-                <Card padding="xl" radius="xl" shadow="xl" withBorder>
+                <Card padding="xl" shadow="xl" withBorder>
                     <Stack gap="md">
                         <Title order={3} size="h3" c="brand">
                             Over de Reis
@@ -86,7 +86,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                 </Card>
             )}
 
-            <Card padding="xl" radius="xl" shadow="xl" withBorder>
+            <Card padding="xl" shadow="xl" withBorder>
                 <Stack gap="lg">
                     <Title order={3} size="h3" c="brand">
                         Goed om te weten
@@ -100,7 +100,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                             { icon: <ExternalLink size={20} />, title: 'Vragen?', content: <>Mail ons op <Anchor href="mailto:reis@salvemundi.nl" fw={700} c="brand">reis@salvemundi.nl</Anchor></> },
                         ].map((item, i) => (
                             <Group key={i} align="flex-start" wrap="nowrap" gap="md">
-                                <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                <ThemeIcon size={40}>
                                     {item.icon}
                                 </ThemeIcon>
                                 <Stack gap={2}>

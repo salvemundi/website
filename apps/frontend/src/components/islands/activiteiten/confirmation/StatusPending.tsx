@@ -37,8 +37,8 @@ export default function StatusPending({ signupData, initialId, isLoggedIn }: Sta
 
     return (
         <Stack align="center" gap="xl" py="xl" ta="center">
-            <ThemeIcon size={96} radius="xl" variant="light" color="accent">
-                {isTimeout ? <RefreshCw size={44} /> : <Loader size="lg" color="accent" />}
+            <ThemeIcon size={96} color="accent">
+                {isTimeout ? <RefreshCw size={44} /> : <Loader size="lg" />}
             </ThemeIcon>
 
             <Stack gap="xs" align="center">
@@ -55,7 +55,6 @@ export default function StatusPending({ signupData, initialId, isLoggedIn }: Sta
             <Group justify="center" gap="md" wrap="wrap">
                 <Button
                     type="button"
-                    variant="default"
                     size="lg"
                     onClick={() => window.location.reload()}
                     leftSection={<RefreshCw size={16} />}
@@ -74,7 +73,6 @@ export default function StatusPending({ signupData, initialId, isLoggedIn }: Sta
                     <Button
                         component={Link}
                         href="/profiel/tickets"
-                        variant="default"
                         size="lg"
                     >
                         Mijn tickets

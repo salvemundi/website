@@ -26,7 +26,6 @@ export default async function BoardHistoryPage() {
                             component={Link}
                             href="/commissies/bestuur"
                             title="Terug naar Huidig Bestuur"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -37,7 +36,7 @@ export default async function BoardHistoryPage() {
                     <Box component="main">
                         <Stack gap="xl">
                             <Stack align="center" ta="center" gap="md">
-                                <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                                <ThemeIcon size={64}>
                                     <History size={32} />
                                 </ThemeIcon>
                                 <Title order={1} c="brand">

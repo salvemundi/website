@@ -34,7 +34,6 @@ export function ActionCard({
         <Card
             withBorder
             padding="sm"
-            radius="lg"
             style={{
                 opacity: disabled ? 0.5 : 1,
                 cursor: disabled ? 'not-allowed' : isLink ? 'pointer' : undefined,
@@ -46,8 +45,6 @@ export function ActionCard({
                     {icon && (
                         <ThemeIcon
                             size={38}
-                            radius="md"
-                            variant="light"
                             color={color}
                         >
                             {React.isValidElement(icon)

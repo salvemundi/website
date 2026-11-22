@@ -15,6 +15,7 @@ import {
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { checkBeheerAccess } from '@/server/actions/beheer/beheer-utils.actions';
 import { calculateMembershipStatus } from '@/lib/profile/profile-admin.utils';
+import { isCommitteeGroup } from '@/shared/lib/permissions';
 import { db, schema } from '@salvemundi/db';
 import { eq, or, desc } from 'drizzle-orm';
 import { fetchUserEventSignupsDb } from '@/server/internal/activiteiten/activiteiten-db.utils';
@@ -159,7 +160,7 @@ export async function getMyProfileView(): Promise<ProfileViewDTO | null> {
         membership_status: user.membership_status ?? null,
         membership_expiry: user.membership_expiry ?? null,
         membershipBadge: calculateMembershipStatus(user),
-        committees: user.committees.map((committee) => ({
+        committees: user.committees.filter(isCommitteeGroup).map((committee) => ({
             id: committee.id,
             name: committee.name,
             is_leader: 'is_leader' in committee ? Boolean(committee.is_leader) : false

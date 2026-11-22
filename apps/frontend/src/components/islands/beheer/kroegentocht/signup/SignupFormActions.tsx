@@ -19,7 +19,6 @@ export default function SignupFormActions({
             <Group gap="sm">
                 <Button
                     type="button"
-                    variant="default"
                     size="md"
                     onClick={onReset}
                     leftSection={<RefreshCw size={16} />}
@@ -29,7 +28,6 @@ export default function SignupFormActions({
 
                 <Button
                     type="button"
-                    variant="light"
                     color="error"
                     size="md"
                     onClick={onDelete}

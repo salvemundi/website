@@ -45,14 +45,12 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                 <Button
                     component={Link}
                     href={ROUTES.ACCOUNT}
-                    variant="default"
                     size="sm"
                     leftSection={
                         <Avatar
                             src={user.avatar ? getImageUrl(user.avatar) : undefined}
                             alt={user.name || 'Profiel'}
                             size={22}
-                            radius="xl"
                             color="brand"
                         >
                             <User size={14} />

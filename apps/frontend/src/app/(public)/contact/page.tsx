@@ -55,7 +55,6 @@ async function ContactContent() {
                                 href="https://www.instagram.com/sv.salvemundi/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                variant="default"
                                 size="md"
                                 leftSection={<SiInstagram className="size-5" aria-hidden="true" />}
                             >
@@ -66,7 +65,6 @@ async function ContactContent() {
                                 href="https://www.facebook.com/sv.salvemundi/?locale=nl_NL"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                variant="default"
                                 size="md"
                                 leftSection={<SiFacebook className="size-5" aria-hidden="true" />}
                             >
@@ -77,7 +75,6 @@ async function ContactContent() {
                                 href="https://nl.linkedin.com/company/salve-mundi"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                variant="default"
                                 size="md"
                                 leftSection={<FaLinkedin className="size-5" aria-hidden="true" />}
                             >
@@ -88,7 +85,6 @@ async function ContactContent() {
                                 href="https://www.tiktok.com/@salve.mundi"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                variant="default"
                                 size="md"
                                 leftSection={<SiTiktok className="size-5" aria-hidden="true" />}
                             >

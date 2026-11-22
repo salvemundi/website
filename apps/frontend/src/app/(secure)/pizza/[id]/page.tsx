@@ -36,7 +36,6 @@ export default async function PizzaRoundPage({ params }: { params: Promise<{ id:
                         <Button
                             component={Link}
                             href="/pizza"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

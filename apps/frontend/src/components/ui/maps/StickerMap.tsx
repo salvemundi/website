@@ -252,7 +252,7 @@ export default function StickerMap({
                 zIndex: 0,
                 overflow: 'hidden',
                 borderRadius: 'var(--mantine-radius-lg)',
-                border: '1px solid var(--border)',
+                border: '1px solid var(--mantine-color-default-border)',
                 boxShadow: 'var(--mantine-shadow-md)',
             }}
         >
@@ -276,7 +276,7 @@ export default function StickerMap({
             {!mapStyleObj && (
                 <Center pos="absolute" inset={0} bg="var(--mantine-color-default)" style={{ zIndex: 10 }}>
                     <Stack align="center" gap="sm">
-                        <Loader color="brand" size="md" />
+                        <Loader size="md" />
                         <Text size="xs" fw={700} tt="uppercase" c="dimmed" style={{ letterSpacing: '0.12em' }}>
                             Kaart Laden...
                         </Text>
@@ -307,7 +307,7 @@ export default function StickerMap({
                                 style={{
                                     overflow: 'hidden',
                                     borderRadius: '9999px',
-                                    border: isMine ? '3px solid var(--mantine-color-accent-filled)' : '3px solid #FFFFFF',
+                                    border: isMine ? '3px solid var(--mantine-color-accent-filled)' : '3px solid var(--mantine-color-white)',
                                     boxShadow: isMine
                                         ? '0 0 0 4px rgba(240, 162, 2, 0.25), 0 8px 18px rgba(0, 0, 0, 0.3)'
                                         : '0 6px 12px rgba(0, 0, 0, 0.25)',
@@ -336,7 +336,7 @@ export default function StickerMap({
                                 bg={isMine ? 'var(--mantine-color-accent-filled)' : 'var(--mantine-color-brand-filled)'}
                                 style={{
                                     borderRadius: '9999px',
-                                    border: '2px solid #FFFFFF',
+                                    border: '2px solid var(--mantine-color-white)',
                                     boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
                                 }}
                             />
@@ -354,7 +354,7 @@ export default function StickerMap({
                         c="white"
                         style={{
                             borderRadius: '9999px',
-                            border: '3px solid #FFFFFF',
+                            border: '3px solid var(--mantine-color-white)',
                             boxShadow: 'var(--mantine-shadow-xl)',
                         }}
                     >
@@ -370,10 +370,9 @@ export default function StickerMap({
                     longitude={popupInfo.longitude}
                     onClose={() => { setPopupInfo(null); setShowImage(false); }}
                 >
-                    <Card p="md" radius="lg" shadow="xl" w={{ base: 280, sm: 340 }} pos="relative">
+                    <Card p="md" shadow="xl" w={{ base: 280, sm: 340 }} pos="relative">
                         <ActionIcon
                             type="button"
-                            variant="subtle"
                             size="sm"
                             pos="absolute"
                             top={10}
@@ -435,7 +434,7 @@ export default function StickerMap({
                             </Group>
 
                             {popupInfo.description && (
-                                <Paper p="xs" radius="md" bg="var(--mantine-color-body)">
+                                <Paper p="xs" bg="var(--mantine-color-body)">
                                     <Text size="xs" style={{ overflowWrap: 'break-word' }}>
                                         {popupInfo.description}
                                     </Text>
@@ -451,7 +450,7 @@ export default function StickerMap({
                                         style={{
                                             overflow: 'hidden',
                                             borderRadius: 'var(--mantine-radius-md)',
-                                            border: '1px solid var(--border)',
+                                            border: '1px solid var(--mantine-color-default-border)',
                                         }}
                                     >
                                         <MediaAsset

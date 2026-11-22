@@ -77,11 +77,11 @@ export default function SignupFormContent({
     const initials = `${initialFirst}${initialLast}`.toUpperCase();
 
     return (
-        <Card padding="xl" radius="xl" shadow="xl" withBorder>
+        <Card padding="xl" shadow="xl" withBorder>
             <Stack gap="lg">
                 <Group justify="space-between" align="center" wrap="wrap" gap="md">
                     <Group gap="sm">
-                        <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                        <ThemeIcon size="lg">
                             <Users size={20} />
                         </ThemeIcon>
                         <Title order={2} size="h2" c="brand">
@@ -99,9 +99,9 @@ export default function SignupFormContent({
                     <Stack gap="lg">
                         {isLoggedIn ? (
                             <>
-                                <Paper p="md" radius="lg" withBorder>
+                                <Paper p="md" withBorder>
                                     <Group gap="md" wrap="nowrap">
-                                        <ThemeIcon size={48} radius="md" color="brand">
+                                        <ThemeIcon size={48}>
                                             <Text fw={900} size="md">
                                                 {initials}
                                             </Text>
@@ -113,8 +113,6 @@ export default function SignupFormContent({
                                                 </Text>
                                                 <Badge
                                                     size="xs"
-                                                    variant="light"
-                                                    color="brand"
                                                     leftSection={<CheckCircle2 size={12} />}
                                                 >
                                                     Ingelogd
@@ -182,7 +180,7 @@ export default function SignupFormContent({
                         )}
 
                         {serverError && (
-                            <Alert color="error" variant="light" icon={<AlertCircle size={18} />}>
+                            <Alert color="error" icon={<AlertCircle size={18} />}>
                                 {serverError}
                             </Alert>
                         )}

@@ -41,10 +41,10 @@ export default function CoboAddBoardForm({ onAddBoard, isPending = false }: Prop
     };
 
     return (
-        <Card withBorder padding="lg" radius="lg">
+        <Card withBorder padding="lg">
             <Stack gap="md">
                 <Group gap="xs">
-                    <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                    <ThemeIcon size="md">
                         <Plus size={16} />
                     </ThemeIcon>
                     <Title order={3} size="sm" fw={700}>

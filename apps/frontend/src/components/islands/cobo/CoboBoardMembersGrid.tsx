@@ -65,7 +65,7 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
                     h={6}
                     style={{
                         borderRadius: '9999px',
-                        background: 'linear-gradient(to right, transparent, var(--primary), transparent)',
+                        background: 'linear-gradient(to right, transparent, var(--mantine-color-brand-filled), transparent)',
                     }}
                 />
                 <Text size="sm" fw={500} c="dimmed" maw={560}>
@@ -81,7 +81,7 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
                         : [];
 
                     return (
-                        <Card key={member.user_id || member.id} padding="lg" radius="xl" withBorder>
+                        <Card key={member.user_id || member.id} padding="lg" withBorder>
                             <Stack gap="md">
                                 <Stack align="center" gap="xs" ta="center">
                                     <Box
@@ -93,7 +93,7 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
                                             borderRadius: 'var(--mantine-radius-lg)',
                                             overflow: 'hidden',
                                             boxShadow: 'var(--mantine-shadow-md)',
-                                            border: '4px solid color-mix(in srgb, var(--primary) 15%, transparent)',
+                                            border: '4px solid var(--surface-subtle)',
                                         }}
                                     >
                                         {member.user?.avatar ? (
@@ -112,12 +112,12 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
                                     <Title order={3} size="h5">
                                         {memberName}
                                     </Title>
-                                    <Badge variant="default" size="sm" radius="xl">
+                                    <Badge size="sm">
                                         {member.user?.functie || 'Bestuurslid'}
                                     </Badge>
                                 </Stack>
 
-                                <Paper p="sm" radius="md" withBorder>
+                                <Paper p="sm" withBorder>
                                     <Group justify="space-between" align="center">
                                         <Group gap="xs">
                                             <Text span c={member.drinks_alcohol ? 'success' : 'dimmed'} lh={1}>
@@ -128,11 +128,11 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
                                             </Text>
                                         </Group>
                                         {member.drinks_alcohol ? (
-                                            <Badge color="success" variant="light" size="sm">
+                                            <Badge color="success" size="sm">
                                                 Drinkt alcohol
                                             </Badge>
                                         ) : (
-                                            <Badge color="error" variant="light" size="sm">
+                                            <Badge color="error" size="sm">
                                                 Geen alcohol (0.0%)
                                             </Badge>
                                         )}
@@ -146,7 +146,7 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
                                     {vetoList.length > 0 ? (
                                         <Group gap={6} wrap="wrap">
                                             {vetoList.map((veto) => (
-                                                <Badge key={veto} color="error" variant="light" radius="md" size="md">
+                                                <Badge key={veto} color="error" size="md">
                                                     {veto}
                                                 </Badge>
                                             ))}
@@ -165,11 +165,10 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
                                         </Text>
                                         <Paper
                                             p="sm"
-                                            radius="md"
                                             withBorder
                                             style={{
-                                                backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)',
-                                                borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)',
+                                                backgroundColor: 'color-mix(in srgb, var(--mantine-color-accent-filled) 10%, transparent)',
+                                                borderColor: 'color-mix(in srgb, var(--mantine-color-accent-filled) 25%, transparent)',
                                             }}
                                         >
                                             <Text size="xs" fw={500}>
@@ -186,11 +185,10 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
                                         </Text>
                                         <Paper
                                             p="sm"
-                                            radius="md"
                                             withBorder
                                             style={{
-                                                backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
-                                                borderColor: 'color-mix(in srgb, var(--primary) 25%, transparent)',
+                                                backgroundColor: 'var(--surface-subtle)',
+                                                borderColor: 'var(--surface-subtle-border)',
                                             }}
                                         >
                                             <Text size="xs" fw={500}>

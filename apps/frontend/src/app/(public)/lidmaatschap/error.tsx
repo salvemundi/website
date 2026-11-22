@@ -21,7 +21,7 @@ export default function MembershipError({
         <Container size="sm" py="xl">
             <Center mih="70vh">
                 <Stack align="center" ta="center" gap="lg">
-                    <ThemeIcon size={72} radius="xl" variant="light" color="brand">
+                    <ThemeIcon size={72}>
                         <AlertTriangle size={36} />
                     </ThemeIcon>
 
@@ -47,7 +47,6 @@ export default function MembershipError({
                         <Button
                             component={Link}
                             href="/"
-                            variant="default"
                             size="md"
                             leftSection={<Home size={16} />}
                         >

@@ -210,10 +210,10 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
 
                 <Box style={{ gridColumn: '1 / -1' }}>
                     {trip.is_bus_trip ? (
-                        <Paper p="md" radius="lg" withBorder>
+                        <Paper p="md" withBorder>
                             <Group justify="space-between" align="center" gap="md">
                                 <Group gap="sm">
-                                    <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                    <ThemeIcon size={40}>
                                         <Bus size={20} />
                                     </ThemeIcon>
                                     <Stack gap={2}>
@@ -239,10 +239,10 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
                             </Group>
                         </Paper>
                     ) : (
-                        <Paper p="md" radius="lg" withBorder>
+                        <Paper p="md" withBorder>
                             <Group justify="space-between" align="center" gap="md">
                                 <Group gap="sm">
-                                    <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                    <ThemeIcon size={40}>
                                         <Briefcase size={20} />
                                     </ThemeIcon>
                                     <Stack gap={2}>

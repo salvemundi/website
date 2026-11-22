@@ -181,7 +181,6 @@ export default function ReisParticipantDetailIsland({
                             <Button
                                 component={Link}
                                 href="/beheer/reis"
-                                variant="default"
                                 size="sm"
                                 leftSection={<ChevronLeft size={16} />}
                             >
@@ -201,7 +200,6 @@ export default function ReisParticipantDetailIsland({
                         <Button
                             type="button"
                             color="error"
-                            variant="light"
                             loading={isPending}
                             leftSection={<Trash size={16} />}
                             onClick={() => {
@@ -220,7 +218,7 @@ export default function ReisParticipantDetailIsland({
                         {adminStats.map((stat) => (
                             <Card key={stat.label} p="md" shadow="xs">
                                 <Group gap="xs">
-                                    <ThemeIcon size="sm" variant="light" color="brand">
+                                    <ThemeIcon size="sm">
                                         <stat.icon size={14} />
                                     </ThemeIcon>
                                     <Text size="xs" fw={600} c="dimmed">
@@ -298,7 +296,6 @@ export default function ReisParticipantDetailIsland({
                                         <Group gap="sm" wrap="nowrap">
                                             <Button
                                                 type="button"
-                                                variant="default"
                                                 flex={1}
                                                 size="md"
                                                 onClick={() => router.push('/beheer/reis')}
@@ -308,7 +305,6 @@ export default function ReisParticipantDetailIsland({
                                             </Button>
                                             <ActionIcon
                                                 type="button"
-                                                variant="light"
                                                 color="error"
                                                 size="xl"
                                                 loading={isPending}

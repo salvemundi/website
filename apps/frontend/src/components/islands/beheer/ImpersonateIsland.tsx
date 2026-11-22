@@ -85,7 +85,6 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                         <ActionIcon
                             component={Link}
                             href="/beheer"
-                            variant="default"
                             size="lg"
                             aria-label="Terug"
                         >
@@ -100,7 +99,6 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                         <Button
                             type="button"
                             color="error"
-                            variant="light"
                             onClick={handleClear}
                             loading={isPending}
                             leftSection={<Trash size={16} />}
@@ -111,7 +109,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                 </Group>
 
                 {activeToken && (
-                    <Alert color="accent" variant="light" title="Actieve Sessie" icon={<Shield size={18} />}>
+                    <Alert color="accent" title="Actieve Sessie" icon={<Shield size={18} />}>
                         <Stack gap="sm">
                             <Text size="sm" fw={600}>
                                 Je navigeert nu over de website met de rechten van{' '}
@@ -121,7 +119,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                             {impersonatedCommittees.length > 0 && (
                                 <Group gap="xs" wrap="wrap">
                                     {impersonatedCommittees.map((c) => (
-                                        <Badge key={c} color="accent" variant="light" size="md">
+                                        <Badge key={c} color="accent" size="md">
                                             {c}
                                         </Badge>
                                     ))}

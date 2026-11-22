@@ -16,13 +16,13 @@ export function Tile({
     title, icon, children, actions
 }: TileProps) {
     return (
-        <Card padding="xl" radius="lg" shadow="md">
+        <Card padding="xl" shadow="md">
             <Stack gap="lg">
                 {(title || actions) && (
                     <Group justify="space-between" align="center" wrap="wrap" gap="md">
                         <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
                             {icon && (
-                                <ThemeIcon variant="light" color="brand" size="lg" radius="md">
+                                <ThemeIcon size="lg">
                                     {icon}
                                 </ThemeIcon>
                             )}
@@ -87,7 +87,6 @@ export function QuickLink({
                 href={href}
                 target={external ? '_blank' : undefined}
                 rel={external ? 'noopener noreferrer' : undefined}
-                variant="light"
                 fullWidth
                 size="md"
                 h="auto"
@@ -104,7 +103,6 @@ export function QuickLink({
         <Button
             type="button"
             onClick={onClick}
-            variant="light"
             fullWidth
             size="md"
             h="auto"

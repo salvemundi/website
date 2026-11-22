@@ -5,6 +5,7 @@ import MembershipFormIsland from '@/components/islands/membership/MembershipForm
 import MembershipStatusIsland from '@/components/islands/account/MembershipStatusIsland';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { fetchUserCommitteesDb, type Committee } from '@/server/internal/leden/leden-db.utils';
+import { hasActiveCommitteeMembership } from '@/shared/lib/permissions';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export const metadata = {
@@ -29,7 +30,7 @@ export default async function MembershipPage() {
         }
     }
 
-    const isCommitteeMember = committees.length > 0;
+    const isCommitteeMember = hasActiveCommitteeMembership(committees);
     const baseAmount = isCommitteeMember ? 10.00 : 20.00;
 
     return (

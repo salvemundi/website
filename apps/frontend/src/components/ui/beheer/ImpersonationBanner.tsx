@@ -41,9 +41,7 @@ export default function ImpersonationBanner({ targetName, adminName, committees 
                             </Text>
                             <Badge
                                 color="darkBase"
-                                variant="filled"
                                 size="md"
-                                radius="sm"
                                 leftSection={<User size={12} />}
                             >
                                 {targetName}
@@ -62,8 +60,6 @@ export default function ImpersonationBanner({ targetName, adminName, committees 
                     <Button
                         type="button"
                         size="xs"
-                        variant="white"
-                        color="darkBase"
                         onClick={handleStop}
                         loading={isPending}
                         leftSection={<X size={12} />}

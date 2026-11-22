@@ -79,7 +79,6 @@ export default function ActivityFilters({
                     <SegmentedControl
                         value={filter}
                         onChange={(val) => onFilterChange(val as 'all' | 'upcoming' | 'past')}
-                        color="accent"
                         fullWidth
                         data={[
                             { value: 'all', label: 'Alle' },

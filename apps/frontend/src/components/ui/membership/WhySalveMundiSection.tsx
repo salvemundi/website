@@ -91,7 +91,7 @@ export function WhySalveMundiSection() {
                         <Card key={pijler.name}>
                             <Stack gap="md">
                                 <Group gap="sm">
-                                    <ThemeIcon size="lg" radius="md" variant="light" color={pijler.color}>
+                                    <ThemeIcon size="lg" color={pijler.color}>
                                         {pijler.icon}
                                     </ThemeIcon>
                                     <Title order={3} size="h4">

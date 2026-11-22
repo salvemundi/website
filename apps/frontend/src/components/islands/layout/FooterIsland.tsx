@@ -148,8 +148,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                     component={Link}
                                     href={ROUTES.COMMITTEES}
                                     size="xs"
-                                    variant="light"
-                                    color="brand"
                                 >
                                     Alle commissies bekijken
                                 </Button>
@@ -183,8 +181,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                         component={Link}
                                         href={ROUTES.SAFE_HAVENS}
                                         size="xs"
-                                        variant="light"
-                                        color="brand"
                                     >
                                         Safe Havens
                                     </Button>
@@ -230,8 +226,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         size="lg"
-                                        variant="light"
-                                        color="brand"
                                         aria-label="Instagram"
                                     >
                                         <SiInstagram className="size-5" />
@@ -242,8 +236,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         size="lg"
-                                        variant="light"
-                                        color="brand"
                                         aria-label="Facebook"
                                     >
                                         <SiFacebook className="size-5" />
@@ -254,8 +246,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         size="lg"
-                                        variant="light"
-                                        color="brand"
                                         aria-label="LinkedIn"
                                     >
                                         <FaLinkedin className="size-5" />
@@ -266,8 +256,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         size="lg"
-                                        variant="light"
-                                        color="brand"
                                         aria-label="TikTok"
                                     >
                                         <SiTiktok className="size-5" />

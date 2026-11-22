@@ -11,7 +11,7 @@ interface PaymentSuccessProps {
 export function PaymentSuccess({ trip }: PaymentSuccessProps) {
     return (
         <Stack align="center" gap="xl" py="xl" ta="center">
-            <ThemeIcon size={96} radius="xl" variant="light" color="success">
+            <ThemeIcon size={96} color="success">
                 <CheckCircle2 size={48} />
             </ThemeIcon>
 

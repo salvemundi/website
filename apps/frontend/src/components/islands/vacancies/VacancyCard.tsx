@@ -31,7 +31,6 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                 tabIndex={0}
                 onKeyDown={(e) => { if (e.key === 'Enter') router.push(loginUrl); }}
                 padding={0}
-                radius="xl"
                 withBorder
                 shadow="sm"
                 style={{ cursor: 'pointer', overflow: 'hidden' }}
@@ -42,7 +41,7 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                             {vacancy.image ? (
                                 <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" />
                             ) : (
-                                <Center h="100%" style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)' }}>
+                                <Center h="100%" style={{ backgroundColor: 'var(--surface-subtle)' }}>
                                     <Text span c="brand" opacity={0.3} lh={1}>
                                         <Briefcase size={40} />
                                     </Text>
@@ -71,7 +70,6 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/bijbanenbank/${vacancy.id}`); }}
             padding={0}
-            radius="xl"
             withBorder
             shadow="sm"
             h="100%"
@@ -141,7 +139,7 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                         {isInternship && vacancy.directions.length > 0 && (
                             <Group gap={6} wrap="wrap">
                                 {vacancy.directions.map((direction) => (
-                                    <Badge key={direction} size="xs" variant="outline" color="brand">
+                                    <Badge key={direction} size="xs">
                                         {direction}
                                     </Badge>
                                 ))}
@@ -151,7 +149,7 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                         {vacancy.skills.length > 0 && (
                             <Group gap={6} wrap="wrap">
                                 {vacancy.skills.slice(0, 6).map((skill) => (
-                                    <Badge key={skill} size="xs" variant="light" color="brand">
+                                    <Badge key={skill} size="xs">
                                         {skill}
                                     </Badge>
                                 ))}
@@ -181,8 +179,6 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         onClick={(e) => e.stopPropagation()}
-                                        variant="light"
-                                        color="brand"
                                         size="md"
                                         title="Website"
                                         aria-label="Website"
@@ -195,8 +191,6 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                                         component="a"
                                         href={`tel:${vacancy.contact_phone}`}
                                         onClick={(e) => e.stopPropagation()}
-                                        variant="light"
-                                        color="brand"
                                         size="md"
                                         title="Bellen"
                                         aria-label="Bellen"
@@ -208,8 +202,6 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                                     component="a"
                                     href={`mailto:${vacancy.contact_email}`}
                                     onClick={(e) => e.stopPropagation()}
-                                    variant="filled"
-                                    color="brand"
                                     size="md"
                                     title="E-mailen"
                                     aria-label="E-mailen"

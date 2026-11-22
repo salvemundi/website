@@ -23,19 +23,17 @@ export default function StatusSignedUp({
     return (
         <Card
             padding="xl"
-            radius="xl"
             withBorder
             shadow="xl"
             h="100%"
             style={{
-                borderColor: isPaidStatus ? 'color-mix(in srgb, var(--success) 35%, transparent)' : undefined,
+                borderColor: isPaidStatus ? 'color-mix(in srgb, var(--mantine-color-success-filled) 35%, transparent)' : undefined,
             }}
         >
             <Stack justify="center" gap="xl" h="100%">
                 <Stack align="center" gap="md" ta="center">
                     <ThemeIcon
                         size={80}
-                        radius="xl"
                         variant={isPaidStatus ? 'light' : 'default'}
                         color={isPaidStatus ? 'success' : undefined}
                     >
@@ -62,7 +60,7 @@ export default function StatusSignedUp({
 
                     {!isPaidStatus && (
                         <Stack gap="sm" w="100%" align="center">
-                            <Badge variant="default" size="lg" radius="md">
+                            <Badge size="lg">
                                 Wachten op bevestiging van betaling...
                             </Badge>
                             <Text size="xs" fw={600} c="dimmed" maw={320}>
@@ -80,7 +78,7 @@ export default function StatusSignedUp({
                             </Button>
 
                             {serverError && (
-                                <Alert color="error" variant="light" icon={<AlertCircle size={18} />} w="100%" ta="left">
+                                <Alert color="error" icon={<AlertCircle size={18} />} w="100%" ta="left">
                                     {serverError}
                                 </Alert>
                             )}
@@ -89,9 +87,9 @@ export default function StatusSignedUp({
                 </Stack>
 
                 {isPaidStatus ? (
-                    <Paper p="xl" radius="xl" withBorder>
+                    <Paper p="xl" withBorder>
                         <Stack align="center" gap="md">
-                            <Box p="sm" bg="#FFFFFF" style={{ borderRadius: 'var(--mantine-radius-lg)', boxShadow: 'var(--mantine-shadow-lg)' }}>
+                            <Box p="sm" bg="var(--mantine-color-white)" style={{ borderRadius: 'var(--mantine-radius-lg)', boxShadow: 'var(--mantine-shadow-lg)' }}>
                                 <QRDisplay qrToken={qrToken || 'PENDING_VERIFICATION'} size={240} />
                             </Box>
                             <Group gap={6} c="dimmed">
@@ -103,9 +101,9 @@ export default function StatusSignedUp({
                         </Stack>
                     </Paper>
                 ) : (
-                    <Paper p="xl" radius="xl" withBorder style={{ borderStyle: 'dashed', opacity: 0.7 }}>
+                    <Paper p="xl" withBorder style={{ borderStyle: 'dashed', opacity: 0.7 }}>
                         <Stack align="center" gap="sm">
-                            <Paper p="xl" radius="lg" withBorder>
+                            <Paper p="xl" withBorder>
                                 <Text span c="dimmed" opacity={0.3} lh={1}>
                                     <Ticket size={64} />
                                 </Text>

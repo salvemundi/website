@@ -54,7 +54,7 @@ export function ReisFormIsland({
     };
 
     return (
-        <Card padding="xl" radius="xl" shadow="xl" withBorder w={{ base: '100%', lg: '50%' }}>
+        <Card padding="xl" shadow="xl" withBorder w={{ base: '100%', lg: '50%' }}>
             <Stack gap="lg">
                 <Group justify="space-between" align="center" gap="md">
                     <Title order={2} size="h2" c="brand">
@@ -62,8 +62,6 @@ export function ReisFormIsland({
                     </Title>
                     <ActionIcon
                         type="button"
-                        variant="light"
-                        color="brand"
                         size="xl"
                         onClick={() => { void handleRefresh(); }}
                         disabled={refreshing}

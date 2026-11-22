@@ -77,7 +77,7 @@ const toAmsterdamLocalString = (val: string | null): string => {
 function SectionTitle({ icon, title }: { icon: React.ReactNode; title: string }) {
     return (
         <Group gap="sm" mb="md">
-            <ThemeIcon size="md" radius="md" variant="light" color="accent">
+            <ThemeIcon size="md" color="accent">
                 {icon}
             </ThemeIcon>
             <Title order={2} size="h5">{title}</Title>
@@ -93,7 +93,7 @@ export function GeneralInfoSection({
     formErrors?: FormErrorsMap
 }) {
     return (
-        <Card withBorder radius="lg" padding="lg">
+        <Card withBorder padding="lg">
             <SectionTitle icon={<Info size={16} />} title="Beschrijving" />
             <Divider mb="lg" />
             <Stack gap="lg">
@@ -211,7 +211,7 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
     };
 
     return (
-        <Card withBorder radius="lg" padding="lg" h="100%">
+        <Card withBorder padding="lg" h="100%">
             <SectionTitle icon={<CalendarIcon size={16} />} title="Planning & locatie" />
             <Divider mb="lg" />
             <Stack gap="lg" style={{ flex: 1 }}>
@@ -285,7 +285,6 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                             {(deadlineDate || deadlineTime) && (
                                 <Button
                                     type="button"
-                                    variant="subtle"
                                     color="error"
                                     size="compact-xs"
                                     onClick={handleClearDeadline}
@@ -364,7 +363,7 @@ export function CapacityCostsSection({
     const [committeeId, setCommitteeId] = React.useState<string>(toInputSafe(initialData?.committee_id));
 
     return (
-        <Card withBorder radius="lg" padding="lg" h="100%">
+        <Card withBorder padding="lg" h="100%">
             <SectionTitle icon={<Euro size={16} />} title="Kosten & capaciteit" />
             <Divider mb="lg" />
             <Stack gap="lg" style={{ flex: 1 }}>
@@ -433,13 +432,12 @@ export function CapacityCostsSection({
                     />
                 </SimpleGrid>
 
-                <Paper withBorder radius="md" p="md" mt="auto">
+                <Paper withBorder p="md" mt="auto">
                     <Checkbox
                         id="only_members"
                         checked={onlyMembers}
                         onChange={(e) => onOnlyMembersChange(e.currentTarget.checked)}
                         label="Alleen toegankelijk voor leden"
-                        color="accent"
                     />
                 </Paper>
             </Stack>
@@ -455,13 +453,12 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }) {
     return (
-        <Card withBorder radius="lg" padding="lg">
+        <Card withBorder padding="lg">
             <SectionTitle icon={<Upload size={16} />} title="Banner" />
             <Divider mb="md" />
             {!imagePreview ? (
                 <Paper
                     withBorder
-                    radius="md"
                     p="xl"
                     onClick={onUploadClick}
                     style={{
@@ -511,7 +508,6 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
                     >
                         <ActionIcon
                             type="button"
-                            variant="default"
                             size="md"
                             onClick={onUploadClick}
                             aria-label="Banner wijzigen"
@@ -521,7 +517,6 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
                         <ActionIcon
                             type="button"
                             color="error"
-                            variant="filled"
                             size="md"
                             onClick={onRemoveClick}
                             aria-label="Banner verwijderen"
@@ -547,14 +542,14 @@ export function StatusSection({ status, onStatusChange, initialData }: { status:
     const [publishDate, setPublishDate] = React.useState<string | null>(initialPublishDate || null);
 
     return (
-        <Card withBorder radius="lg" padding="lg">
+        <Card withBorder padding="lg">
             <SectionTitle icon={<Eye size={16} />} title="Status" />
             <Divider mb="md" />
             <Radio.Group value={status} onChange={onStatusChange}>
                 <Stack gap="sm">
-                    <Radio value="published" label="Gepubliceerd" color="accent" />
-                    <Radio value="draft" label="Concept" color="accent" />
-                    <Radio value="scheduled" label="Inplannen" color="accent" />
+                    <Radio value="published" label="Gepubliceerd" />
+                    <Radio value="draft" label="Concept" />
+                    <Radio value="scheduled" label="Inplannen" />
                 </Stack>
             </Radio.Group>
 

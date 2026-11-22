@@ -88,7 +88,6 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                 <Group>
                     <Button
                         type="button"
-                        color="accent"
                         onClick={() => setCreating(true)}
                         leftSection={<Plus size={16} />}
                     >
@@ -98,13 +97,13 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
             )}
 
             {creating && (
-                <Card withBorder padding="xl" radius="lg">
+                <Card withBorder padding="xl">
                     <Stack gap="lg">
                         <Group justify="space-between" align="center">
                             <Title order={3} size="xs" c="dimmed" fw={700} tt="uppercase">
                                 Nieuw Groepje
                             </Title>
-                            <ActionIcon type="button" variant="subtle" onClick={() => setCreating(false)} aria-label="Sluiten">
+                            <ActionIcon type="button" onClick={() => setCreating(false)} aria-label="Sluiten">
                                 <X size={18} />
                             </ActionIcon>
                         </Group>
@@ -127,7 +126,6 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                         <Group gap="sm">
                             <Button
                                 type="button"
-                                color="accent"
                                 onClick={() => { void handleCreate(); }}
                                 loading={saving}
                                 disabled={!newName.trim()}
@@ -137,7 +135,6 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                             </Button>
                             <Button
                                 type="button"
-                                variant="subtle"
                                 onClick={() => setCreating(false)}
                                 leftSection={<X size={16} />}
                             >
@@ -155,7 +152,7 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                     {groups.map(group => {
                         const isExpanded = expandedIds.includes(group.id);
                         return (
-                            <Card key={group.id} withBorder padding={0} radius="lg" style={{ overflow: 'hidden' }}>
+                            <Card key={group.id} withBorder padding={0} style={{ overflow: 'hidden' }}>
                                 <Group justify="space-between" align="center" px="lg" py="md" wrap="nowrap" gap="sm">
                                     <UnstyledButton
                                         type="button"
@@ -200,7 +197,6 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                         />
                                         <ActionIcon
                                             type="button"
-                                            variant="subtle"
                                             onClick={() => toggleExpand(group.id)}
                                             aria-label={isExpanded ? 'Inklappen' : 'Uitklappen'}
                                         >
@@ -235,7 +231,6 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                                             </Button>
                                                             <Button
                                                                 type="button"
-                                                                variant="subtle"
                                                                 size="xs"
                                                                 onClick={() => setEditingId(null)}
                                                                 leftSection={<X size={14} />}
@@ -265,7 +260,6 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                                     <Button
                                                         component={Link}
                                                         href={`/profiel/intro-attendance?group=${group.id}`}
-                                                        variant="default"
                                                         size="xs"
                                                         leftSection={<ClipboardCheck size={14} />}
                                                     >
@@ -281,13 +275,11 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                                 {group.leaders.map(leader => (
                                                     <Badge
                                                         key={leader.user_id}
-                                                        variant="default"
                                                         size="lg"
                                                         rightSection={
                                                             <ActionIcon
                                                                 type="button"
                                                                 size="xs"
-                                                                variant="transparent"
                                                                 color="error"
                                                                 onClick={() => { void onRemoveLeader(group.id, leader.user_id); }}
                                                                 title="Verwijderen"
@@ -322,7 +314,6 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                                     />
                                                     <Button
                                                         type="button"
-                                                        variant="subtle"
                                                         size="xs"
                                                         onClick={() => setPickerGroupId(null)}
                                                         leftSection={<X size={14} />}
@@ -334,7 +325,6 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                                 <Group>
                                                     <Button
                                                         type="button"
-                                                        variant="default"
                                                         size="xs"
                                                         onClick={() => setPickerGroupId(group.id)}
                                                         leftSection={<UserPlus size={14} />}

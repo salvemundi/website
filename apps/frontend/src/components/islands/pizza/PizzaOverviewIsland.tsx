@@ -47,7 +47,7 @@ function getStatusColor(status: string): string {
 function RoundList({ rounds, empty }: { rounds: PizzaRoundSummary[]; empty: string }) {
     if (rounds.length === 0) {
         return (
-            <Paper p="xl" radius="lg" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
+            <Paper p="xl" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
                 <Text size="sm" fw={700} c="dimmed">
                     {empty}
                 </Text>
@@ -65,7 +65,7 @@ function RoundList({ rounds, empty }: { rounds: PizzaRoundSummary[]; empty: stri
                                     <Text size="sm" fw={900} truncate>
                                         {r.title}
                                     </Text>
-                                    <Badge size="xs" variant="light" color={getStatusColor(r.status)}>
+                                    <Badge size="xs" color={getStatusColor(r.status)}>
                                         {STATUS_LABEL[r.status]}
                                     </Badge>
                                 </Group>

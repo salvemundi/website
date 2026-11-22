@@ -34,7 +34,6 @@ export const MobileOverlays = ({
             hiddenFrom="md"
             zIndex={210}
             size="auto"
-            radius="lg"
             title={
                 <Stack gap={2}>
                     <Text size="xs" fw={900} tt="uppercase" c="dimmed" style={{ letterSpacing: '0.2em' }}>

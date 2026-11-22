@@ -27,7 +27,7 @@
     "type-check": "pnpm -r --parallel --if-present run type-check",
     "validate": "pnpm type-check && pnpm lint && pnpm knip && pnpm build",
     "setup": "pnpm install && pnpm validate",
-    "db:sync": "pnpm --filter @salvemundi/db pull && node packages/db/scripts/normalize-schema.mjs && pnpm --filter @salvemundi/db build && pnpm --filter @salvemundi/validations generate:zod && pnpm --filter @salvemundi/validations build"
+    "db:sync": "pnpm --filter @salvemundi/db pull && node packages/db/scripts/normalize-schema.mjs && pnpm --filter @salvemundi/db build && pnpm --filter @salvemundi/validations build"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

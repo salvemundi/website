@@ -8,7 +8,7 @@ export function TripAccessDenied({ error }: { error?: string }) {
         <Container size="sm">
             <Center mih="70vh">
                 <Stack align="center" gap="lg" ta="center">
-                    <ThemeIcon size={80} radius="lg" variant="light" color="brand">
+                    <ThemeIcon size={80}>
                         <Search size={40} />
                     </ThemeIcon>
 
@@ -23,7 +23,6 @@ export function TripAccessDenied({ error }: { error?: string }) {
                     <Button
                         component={Link}
                         href="/reis"
-                        variant="default"
                         size="md"
                         leftSection={<Home size={16} />}
                     >
@@ -40,7 +39,7 @@ export function TripWaitlisted() {
         <Container size="sm">
             <Center mih="70vh">
                 <Stack align="center" gap="lg" ta="center">
-                    <ThemeIcon size={80} radius="lg" variant="light" color="accent">
+                    <ThemeIcon size={80} color="accent">
                         <Search size={40} />
                     </ThemeIcon>
 
@@ -55,7 +54,6 @@ export function TripWaitlisted() {
                     <Button
                         component={Link}
                         href="/reis"
-                        variant="default"
                         size="md"
                         leftSection={<Home size={16} />}
                     >
@@ -72,7 +70,7 @@ export function TripAlreadyPaid({ tripName }: { tripName: string }) {
         <Container size="sm">
             <Center mih="70vh">
                 <Stack align="center" gap="lg" ta="center">
-                    <ThemeIcon size={80} radius="xl" variant="light" color="success">
+                    <ThemeIcon size={80} color="success">
                         <CheckCircle2 size={40} />
                     </ThemeIcon>
 
@@ -89,7 +87,6 @@ export function TripAlreadyPaid({ tripName }: { tripName: string }) {
                         <Button
                             component={Link}
                             href="/reis"
-                            variant="default"
                             size="md"
                             leftSection={<Home size={16} />}
                         >
@@ -98,7 +95,6 @@ export function TripAlreadyPaid({ tripName }: { tripName: string }) {
                         <Button
                             component={Link}
                             href="/lidmaatschap"
-                            color="accent"
                             size="md"
                         >
                             Bekijk je lidmaatschap

@@ -52,7 +52,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                     <Container size="xl" pos="absolute" bottom={0} left={0} right={0} pb="xl">
                         <Stack gap="sm" maw={768}>
                             <Box>
-                                <Badge color="brand" size="lg">
+                                <Badge size="lg">
                                     {activity.committee_name || 'Algemene Activiteit'}
                                 </Badge>
                             </Box>
@@ -66,7 +66,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                 <Container size="xl" w="100%" pt="xl" pb="md">
                     <Stack gap="sm">
                         <Box>
-                            <Badge color="brand" size="lg">
+                            <Badge size="lg">
                                 {activity?.committee_name || 'Algemene Activiteit'}
                             </Badge>
                         </Box>
@@ -83,7 +83,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                         <Stack gap="lg">
                             {children}
                             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                                <Paper p="md" radius="lg" withBorder shadow="sm">
+                                <Paper p="md" withBorder shadow="sm">
                                     <Stack gap={4}>
                                         <Group gap="xs">
                                             <Text span c="brand" lh={1}><CalendarClock size={16} /></Text>
@@ -97,7 +97,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                 </Paper>
 
                                 {activity?.location && (
-                                    <Paper p="md" radius="lg" withBorder shadow="sm">
+                                    <Paper p="md" withBorder shadow="sm">
                                         <Stack gap={4}>
                                             <Group gap="xs">
                                                 <Text span c="brand" lh={1}><MapPin size={16} /></Text>
@@ -110,7 +110,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                     </Paper>
                                 )}
 
-                                <Paper p="md" radius="lg" withBorder shadow="sm">
+                                <Paper p="md" withBorder shadow="sm">
                                     <Stack gap={4}>
                                         <Group gap="xs">
                                             <Text span c="brand" lh={1}><User size={16} /></Text>
@@ -122,7 +122,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                     </Stack>
                                 </Paper>
 
-                                <Paper p="md" radius="lg" withBorder shadow="sm">
+                                <Paper p="md" withBorder shadow="sm">
                                     <Stack gap={4}>
                                         <Group gap="xs">
                                             <Text span c="brand" lh={1}><Mail size={16} /></Text>
@@ -138,10 +138,10 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                     </GridCol>
 
                     <GridCol span={{ base: 12, lg: 6 }}>
-                        <Card padding="xl" radius="xl" withBorder shadow="lg" h="100%">
+                        <Card padding="xl" withBorder shadow="lg" h="100%">
                             <Stack gap="lg">
                                 <Group gap="sm">
-                                    <Box w={8} h={32} style={{ borderRadius: '9999px', backgroundColor: 'var(--primary)' }} />
+                                    <Box w={8} h={32} style={{ borderRadius: '9999px', backgroundColor: 'var(--mantine-color-brand-filled)' }} />
                                     <Title order={2} size="h3" tt="uppercase" c="brand">
                                         Over deze activiteit
                                     </Title>

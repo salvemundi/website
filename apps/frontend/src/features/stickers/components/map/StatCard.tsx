@@ -9,7 +9,7 @@ interface StatCardProps {
 
 export default function StatCard({ label, value }: StatCardProps) {
     return (
-        <Card padding="md" radius="lg" h="100%">
+        <Card padding="md" h="100%">
             <Stack gap={4} justify="center" h="100%">
                 <Text size="xs" fw={800} tt="uppercase" c="dimmed" style={{ letterSpacing: '0.08em' }}>
                     {label}

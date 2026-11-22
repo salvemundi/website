@@ -54,7 +54,6 @@ export const CommitteeCard = ({
             <Card
                 h="100%"
                 padding="lg"
-                radius="lg"
                 style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -103,7 +102,7 @@ export const CommitteeCard = ({
                     />
 
                     {isBestuur && (
-                        <Badge pos="absolute" top={16} right={16} variant="filled" color="brand" size="md">
+                        <Badge pos="absolute" top={16} right={16} size="md">
                             Huidig Bestuur
                         </Badge>
                     )}
@@ -166,7 +165,6 @@ export const CommitteeCard = ({
                         <Group justify="space-between" align="center">
                             <Button
                                 component="div"
-                                variant="light"
                                 size="sm"
                                 rightSection={<ChevronRight size={14} />}
                             >
@@ -174,7 +172,7 @@ export const CommitteeCard = ({
                             </Button>
 
                             {hasHistory && !isBestuur && (
-                                <ThemeIcon size="lg" radius="md" variant="default" title="Historie">
+                                <ThemeIcon size="lg" title="Historie">
                                     <History size={18} />
                                 </ThemeIcon>
                             )}

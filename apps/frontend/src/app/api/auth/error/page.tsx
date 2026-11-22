@@ -8,7 +8,7 @@ export default function Page() {
             <Center mih="75vh">
                 <Card w="100%" padding="xl">
                     <Stack align="center" ta="center" gap="lg">
-                        <ThemeIcon size={64} radius="xl" variant="light" color="error">
+                        <ThemeIcon size={64} color="error">
                             <AlertTriangle size={32} />
                         </ThemeIcon>
 
