@@ -62,9 +62,9 @@ export const IntroParentIsland = ({ initialPhone, isOpen = true }: IntroParentIs
 
     if (!isOpen) {
         return (
-            <Card flex={1} padding="xl" radius="xl" shadow="xl" withBorder ta="center" mih={300}>
+            <Card flex={1} padding="xl" shadow="xl" withBorder ta="center" mih={300}>
                 <Stack align="center" justify="center" gap="md" h="100%">
-                    <ThemeIcon size={72} radius="xl" variant="light" color="brand">
+                    <ThemeIcon size={72}>
                         <Lock size={36} />
                     </ThemeIcon>
                     <Title order={3} size="h2">
@@ -80,7 +80,7 @@ export const IntroParentIsland = ({ initialPhone, isOpen = true }: IntroParentIs
 
     if (submitted) {
         return (
-            <Card flex={1} padding="xl" radius="xl" shadow="lg" withBorder ta="center">
+            <Card flex={1} padding="xl" shadow="lg" withBorder ta="center">
                 <Stack gap="sm" align="center">
                     <Title order={3} size="h3">
                         Je hebt je aangemeld als Intro Ouder
@@ -94,11 +94,11 @@ export const IntroParentIsland = ({ initialPhone, isOpen = true }: IntroParentIs
     }
 
     return (
-        <Card flex={1} padding="xl" radius="xl" shadow="xl" withBorder>
+        <Card flex={1} padding="xl" shadow="xl" withBorder>
             <Stack gap="lg" h="100%">
                 <Stack gap="xs">
                     <Group gap="sm" align="center">
-                        <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                        <ThemeIcon size="lg">
                             <Heart size={20} />
                         </ThemeIcon>
                         <Title order={2} size="h2" c="brand">
@@ -155,7 +155,7 @@ export const IntroParentIsland = ({ initialPhone, isOpen = true }: IntroParentIs
                     </Stack>
 
                     {error && (
-                        <Alert color="error" variant="light">
+                        <Alert color="error">
                             {error}
                         </Alert>
                     )}

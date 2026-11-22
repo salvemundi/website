@@ -53,7 +53,6 @@ export default async function AttendancePage({ params }: PageProps) {
                         <Button
                             component={Link}
                             href={`/beheer/activiteiten/${id}/aanmeldingen`}
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

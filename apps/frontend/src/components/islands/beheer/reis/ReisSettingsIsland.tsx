@@ -127,7 +127,6 @@ export default function ReisSettingsIsland({
                             <Button
                                 component={Link}
                                 href="/beheer/reis"
-                                variant="default"
                                 size="sm"
                                 leftSection={<ChevronLeft size={16} />}
                             >

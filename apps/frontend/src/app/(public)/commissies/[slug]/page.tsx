@@ -41,7 +41,6 @@ export default async function CommitteePage(props: { params: Promise<{ slug: str
                             component={Link}
                             href="/commissies"
                             title="Terug naar overzicht"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

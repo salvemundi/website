@@ -108,7 +108,6 @@ export default function NdaOverviewIsland({
                             }}
                             disabled={togglingActive}
                             aria-label="NDA-systeem actief"
-                            size="md"
                         />
                     </Group>
 
@@ -136,7 +135,6 @@ export default function NdaOverviewIsland({
                         <Stack gap={6} align="flex-end">
                             <Button
                                 type="button"
-                                variant="default"
                                 loading={checking}
                                 leftSection={<RefreshCw size={16} />}
                                 onClick={() => {
@@ -167,7 +165,7 @@ export default function NdaOverviewIsland({
                     >
                         <Stack gap="md">
                             <Group gap="sm" wrap="nowrap">
-                                <ThemeIcon size={40} radius="xl" variant="light" color="brand">
+                                <ThemeIcon size={40}>
                                     <FileSignature size={20} />
                                 </ThemeIcon>
                                 <Box miw={0} flex={1}>

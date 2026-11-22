@@ -6,9 +6,9 @@ import { Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 
 export default function StatusPast() {
     return (
-        <Paper p="xl" radius="xl" withBorder ta="center" h="100%" style={{ borderStyle: 'dashed' }}>
+        <Paper p="xl" withBorder ta="center" h="100%" style={{ borderStyle: 'dashed' }}>
             <Stack align="center" justify="center" gap="md" h="100%" py="lg">
-                <ThemeIcon size={48} radius="xl" variant="default">
+                <ThemeIcon size={48}>
                     <AlertCircle size={24} />
                 </ThemeIcon>
                 <Stack gap={4} align="center">

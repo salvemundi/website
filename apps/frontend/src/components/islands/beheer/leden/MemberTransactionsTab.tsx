@@ -33,26 +33,26 @@ export function TransactionStatus({ status }: { status: string }) {
     switch (status) {
         case 'paid':
             return (
-                <Badge size="sm" variant="light" color="success">
+                <Badge size="sm" color="success">
                     Betaald
                 </Badge>
             );
         case 'expired':
             return (
-                <Badge size="sm" variant="default">
+                <Badge size="sm">
                     Verlopen
                 </Badge>
             );
         case 'failed':
         case 'canceled':
             return (
-                <Badge size="sm" variant="light" color="error">
+                <Badge size="sm" color="error">
                     Mislukt
                 </Badge>
             );
         default:
             return (
-                <Badge size="sm" variant="light" color="accent">
+                <Badge size="sm" color="accent">
                     Open
                 </Badge>
             );

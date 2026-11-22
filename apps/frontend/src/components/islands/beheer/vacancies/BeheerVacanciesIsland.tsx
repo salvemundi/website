@@ -152,7 +152,6 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                             <Button
                                 component={Link}
                                 href="/beheer"
-                                variant="default"
                                 size="sm"
                                 leftSection={<ChevronLeft size={16} />}
                             >
@@ -165,7 +164,6 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                         <Group gap="xs" wrap="wrap">
                             <Button
                                 type="button"
-                                variant="default"
                                 size="sm"
                                 leftSection={<Link2 size={16} />}
                                 onClick={() => {
@@ -191,7 +189,6 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                 <Tabs
                     value={tab}
                     onChange={(val) => setTab((val as Tab | null) ?? 'vacatures')}
-                    variant="pills"
                 >
                     <Tabs.List mb="lg">
                         <Tabs.Tab value="vacatures">
@@ -216,13 +213,12 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                                                 <Group gap="xs" mb={4}>
                                                     <Badge
                                                         color={vacancy.type === 'internship' ? 'brand' : 'success'}
-                                                        variant="filled"
                                                         size="xs"
                                                     >
                                                         {vacancy.type === 'internship' ? 'Stage' : 'Bijbaan'}
                                                     </Badge>
                                                     {!vacancy.is_visible && (
-                                                        <Badge variant="default" size="xs">
+                                                        <Badge size="xs">
                                                             Verborgen
                                                         </Badge>
                                                     )}
@@ -238,7 +234,6 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                                                 <ActionIcon
                                                     component={Link}
                                                     href={`/beheer/bijbanenbank/${vacancy.id}/bewerken`}
-                                                    variant="default"
                                                     size="lg"
                                                     title="Bewerken"
                                                     aria-label="Bewerken"
@@ -247,7 +242,6 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                                                 </ActionIcon>
                                                 <ActionIcon
                                                     type="button"
-                                                    variant="light"
                                                     color="error"
                                                     size="lg"
                                                     disabled={isPending}
@@ -282,7 +276,6 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                                                         <Group gap="xs" mb={4}>
                                                             <Badge
                                                                 color={submission.type === 'internship' ? 'brand' : 'success'}
-                                                                variant="filled"
                                                                 size="xs"
                                                             >
                                                                 {submission.type === 'internship' ? 'Stage' : 'Bijbaan'}
@@ -398,7 +391,6 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                     <Group justify="flex-end" gap="xs">
                         <Button
                             type="button"
-                            variant="default"
                             onClick={() => setRejectTarget(null)}
                         >
                             Annuleren

@@ -34,7 +34,6 @@ export default async function MyNdasPage() {
                         <Button
                             component={Link}
                             href="/profiel"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -52,7 +51,7 @@ export default async function MyNdasPage() {
                         <Card key={nda.id}>
                             <Group justify="space-between" gap="md" wrap="wrap">
                                 <Group gap="md">
-                                    <ThemeIcon size={40} radius="xl" variant="light" color="brand">
+                                    <ThemeIcon size={40}>
                                         <FileSignature size={20} />
                                     </ThemeIcon>
                                     <Stack gap={2}>

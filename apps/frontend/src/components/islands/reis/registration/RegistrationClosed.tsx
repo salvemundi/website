@@ -12,16 +12,15 @@ export function RegistrationClosed({ registrationStartText }: RegistrationClosed
     return (
         <Paper
             p="xl"
-            radius="lg"
             withBorder
             ta="center"
             style={{
-                backgroundColor: 'color-mix(in srgb, var(--primary) 6%, transparent)',
-                borderColor: 'color-mix(in srgb, var(--primary) 20%, transparent)',
+                backgroundColor: 'var(--surface-subtle)',
+                borderColor: 'var(--surface-subtle-border)',
             }}
         >
             <Stack align="center" gap="sm" py="md">
-                <ThemeIcon size={48} radius="xl" variant="light" color="brand">
+                <ThemeIcon size={48}>
                     {isWaitingForDate ? <Clock size={24} /> : <Lock size={24} />}
                 </ThemeIcon>
                 <Title order={3} size="h4">

@@ -198,7 +198,6 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                         <Button
                             component={Link}
                             href="/beheer/webshop"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -281,7 +280,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                             <Box visibleFrom="sm">{renderSearch(320)}</Box>
                             <Group gap="md">
                                 {(productFilter || variantFilter) && (
-                                    <Button size="xs" variant="subtle" onClick={() => selectProduct(null)}>
+                                    <Button size="xs" onClick={() => selectProduct(null)}>
                                         Filter wissen
                                     </Button>
                                 )}
@@ -319,7 +318,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                     <Title order={2} size="h5">
                                         {group.name}
                                     </Title>
-                                    <Badge variant="light" size="sm">
+                                    <Badge size="sm">
                                         {group.rows.length} {group.rows.length === 1 ? 'bestelling' : 'bestellingen'}
                                     </Badge>
                                 </Group>
@@ -346,7 +345,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                     </Box>
                                                     <Group gap={6} wrap="nowrap">
                                                         {line.variant_label_snapshot && (
-                                                            <Badge variant="light" tt="none">
+                                                            <Badge tt="none">
                                                                 {line.variant_label_snapshot}
                                                             </Badge>
                                                         )}
@@ -370,7 +369,6 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                     size="xs"
                                                     mt="sm"
                                                     fullWidth
-                                                    variant="light"
                                                     color={order.picked_up ? 'success' : 'brand'}
                                                     disabled={isPending && updatingId === order.id}
                                                     onClick={() => handleToggle(order.id, !order.picked_up)}
@@ -419,7 +417,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                             </Table.Td>
                                                             <Table.Td>
                                                                 {line.variant_label_snapshot ? (
-                                                                    <Badge variant="light" tt="none">
+                                                                    <Badge tt="none">
                                                                         {line.variant_label_snapshot}
                                                                     </Badge>
                                                                 ) : (
@@ -450,7 +448,6 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                                     <Button
                                                                         type="button"
                                                                         size="xs"
-                                                                        variant="light"
                                                                         color={order.picked_up ? 'success' : 'brand'}
                                                                         disabled={isPending && updatingId === order.id}
                                                                         onClick={() => handleToggle(order.id, !order.picked_up)}

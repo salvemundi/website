@@ -207,7 +207,7 @@ const NavigationHeader = ({
                                             left={0}
                                             h={2}
                                             w="100%"
-                                            bg="var(--primary)"
+                                            bg="var(--mantine-color-brand-filled)"
                                             style={{
                                                 transformOrigin: 'left',
                                                 borderRadius: '9999px',

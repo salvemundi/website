@@ -174,15 +174,15 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
     return (
         <Stack gap="lg">
             <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
-                <Card padding="lg" radius="lg" withBorder shadow="xs">
+                <Card padding="lg" withBorder shadow="xs">
                     <Text size="sm" fw={700} c="dimmed">Totaal inschrijvingen</Text>
                     <Text size="2rem" fw={900} c="brand">{stats.total}</Text>
                 </Card>
-                <Card padding="lg" radius="lg" withBorder shadow="xs">
+                <Card padding="lg" withBorder shadow="xs">
                     <Text size="sm" fw={700} c="dimmed">Aanwezig</Text>
                     <Text size="2rem" fw={900} c="success">{stats.checkedIn}</Text>
                 </Card>
-                <Card padding="lg" radius="lg" withBorder shadow="xs">
+                <Card padding="lg" withBorder shadow="xs">
                     <Text size="sm" fw={700} c="dimmed">Nog verwacht</Text>
                     <Text size="2rem" fw={900} c="lightPurple">{stats.total - stats.checkedIn}</Text>
                 </Card>
@@ -214,12 +214,11 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 onClose={handleCancelScanner}
                 title="QR-code scannen"
                 centered
-                radius="lg"
                 size="md"
             >
                 <Stack gap="md" align="center">
                     <Box id="reader" w="100%" style={{ overflow: 'hidden', borderRadius: 'var(--mantine-radius-md)' }} />
-                    <Button type="button" variant="default" fullWidth onClick={handleCancelScanner}>
+                    <Button type="button" fullWidth onClick={handleCancelScanner}>
                         Annuleren
                     </Button>
                     <style jsx global>{`
@@ -238,7 +237,6 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
             {scanResult && (
                 <Alert
                     color={scanResult.success ? 'success' : 'error'}
-                    variant="light"
                     icon={scanResult.success ? <UserCheck size={20} /> : <UserX size={20} />}
                     withCloseButton
                     onClose={() => setScanResult(null)}
@@ -247,7 +245,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 </Alert>
             )}
 
-            <Card padding={0} radius="lg" withBorder shadow="lg" style={{ overflow: 'hidden' }}>
+            <Card padding={0} withBorder shadow="lg" style={{ overflow: 'hidden' }}>
                 <ScrollArea>
                     <Table verticalSpacing="md" horizontalSpacing="lg" highlightOnHover>
                         <Table.Thead>
@@ -272,7 +270,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                                     <Table.Td colSpan={4}>
                                         <Center py="xl">
                                             <Stack align="center" gap="xs">
-                                                <Loader size="md" color="brand" />
+                                                <Loader size="md" />
                                                 <Text size="sm" c="dimmed">Laden...</Text>
                                             </Stack>
                                         </Center>
@@ -299,11 +297,11 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                                     </Table.Td>
                                     <Table.Td>
                                         {s.checked_in ? (
-                                            <Badge color="success" variant="light" leftSection={<UserCheck size={12} />}>
+                                            <Badge color="success" leftSection={<UserCheck size={12} />}>
                                                 Aanwezig
                                             </Badge>
                                         ) : (
-                                            <Badge variant="default">
+                                            <Badge>
                                                 Niet ingecheckt
                                             </Badge>
                                         )}
@@ -312,7 +310,6 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                                         <Button
                                             type="button"
                                             size="xs"
-                                            variant="subtle"
                                             color={s.checked_in ? 'error' : 'success'}
                                             onClick={() => void handleToggleCheckIn(s.id, s.checked_in)}
                                         >
@@ -329,8 +326,6 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
             <Center>
                 <Button
                     type="button"
-                    variant="subtle"
-                    color="brand"
                     onClick={() => void fetchData()}
                     loading={loading}
                     leftSection={<RefreshCw size={16} />}

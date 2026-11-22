@@ -62,7 +62,7 @@ const IntroInfoStudent = () => (
             </Stack>
         </Stack>
 
-        <Paper p="lg" radius="lg" bg="var(--mantine-color-body)">
+        <Paper p="lg" bg="var(--mantine-color-body)">
             <Text size="sm" fw={700} fs="italic" c="dimmed">
                 Of je nu een hardcore gamer bent, een toekomstige developer of gewoon houdt van een goed feestje: bij Salve Mundi hoor je erbij.
             </Text>
@@ -111,7 +111,7 @@ const IntroInfoParent = () => (
             </Stack>
         </Stack>
 
-        <Paper p="lg" radius="lg" bg="var(--mantine-color-body)">
+        <Paper p="lg" bg="var(--mantine-color-body)">
             <Text size="sm" fw={700} fs="italic" c="dimmed">
                 Heb je vragen? Neem contact op met de introcommissie.
             </Text>
@@ -139,7 +139,7 @@ export default async function IntroPage() {
                         <Card>
                             <Group justify="space-between" wrap="nowrap" gap="md">
                                 <Group gap="md" wrap="nowrap">
-                                    <ThemeIcon size={48} radius="lg" variant="light" color="brand">
+                                    <ThemeIcon size={48}>
                                         <CalendarClock size={22} />
                                     </ThemeIcon>
                                     <Stack gap={2}>
@@ -151,7 +151,7 @@ export default async function IntroPage() {
                                         </Text>
                                     </Stack>
                                 </Group>
-                                <ThemeIcon size="lg" radius="xl" variant="light" color="brand">
+                                <ThemeIcon size="lg">
                                     <ArrowRight size={18} />
                                 </ThemeIcon>
                             </Group>
@@ -172,7 +172,7 @@ export default async function IntroPage() {
                                     <Card padding="xl" mih={300} style={{ flex: 1 }}>
                                         <Center h="100%">
                                             <Stack align="center" ta="center" gap="md">
-                                                <ThemeIcon size={72} radius="xl" variant="light" color="success">
+                                                <ThemeIcon size={72} color="success">
                                                     <CheckCircle2 size={36} />
                                                 </ThemeIcon>
                                                 <Title order={3}>Aangemeld!</Title>

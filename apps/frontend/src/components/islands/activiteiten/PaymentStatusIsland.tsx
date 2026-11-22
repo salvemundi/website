@@ -76,12 +76,12 @@ export default function PaymentStatusIsland({
     }, [status, checkStatus]);
 
     return (
-        <Card padding="xl" radius="xl" withBorder ta="center">
+        <Card padding="xl" withBorder ta="center">
             <Stack align="center" gap="lg" py="md">
                 {status === 'loading' || status === 'open' ? (
                     <>
-                        <ThemeIcon size={80} radius="xl" variant="light" color="accent">
-                            <Loader size="lg" color="accent" />
+                        <ThemeIcon size={80} color="accent">
+                            <Loader size="lg" />
                         </ThemeIcon>
                         <Title order={2} size="h2">
                             Betaling Verwerken...
@@ -96,7 +96,7 @@ export default function PaymentStatusIsland({
                     </>
                 ) : status === 'paid' ? (
                     <>
-                        <ThemeIcon size={80} radius="xl" variant="light" color="success">
+                        <ThemeIcon size={80} color="success">
                             <CheckCircle2 size={44} />
                         </ThemeIcon>
                         <Title order={2} size="h1">
@@ -117,7 +117,7 @@ export default function PaymentStatusIsland({
                     </>
                 ) : (
                     <>
-                        <ThemeIcon size={80} radius="xl" variant="light" color="error">
+                        <ThemeIcon size={80} color="error">
                             <XCircle size={44} />
                         </ThemeIcon>
                         <Title order={2} size="h2">
@@ -138,8 +138,6 @@ export default function PaymentStatusIsland({
                             </Button>
                             <Button
                                 type="button"
-                                variant="subtle"
-                                color="dimmed"
                                 onClick={() => { window.location.href = returnUrl; }}
                             >
                                 Ik check het later wel

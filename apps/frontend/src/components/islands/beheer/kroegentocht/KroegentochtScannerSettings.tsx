@@ -69,9 +69,7 @@ export default function KroegentochtScannerSettings({ eventId }: { eventId: numb
                     </Anchor>
                     <Button
                         type="button"
-                        variant="subtle"
                         size="xs"
-                        px={0}
                         onClick={() => {
                             void navigator.clipboard
                                 .writeText(`${window.location.origin}${href}`)
@@ -86,7 +84,7 @@ export default function KroegentochtScannerSettings({ eventId }: { eventId: numb
                     </Button>
                 </Group>
                 {error && (
-                    <Alert color="error" variant="light" w="100%">
+                    <Alert color="error" w="100%">
                         {error}
                     </Alert>
                 )}

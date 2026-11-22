@@ -8,7 +8,7 @@ export default function StatusPaidMembership() {
     return (
         <Stack align="center" gap="xl" ta="center">
             <Stack align="center" gap="md">
-                <ThemeIcon size={96} radius="xl" variant="light" color="success">
+                <ThemeIcon size={96} color="success">
                     <UserPlus size={48} />
                 </ThemeIcon>
                 <Title order={1} fz={{ base: '2.25rem', md: '3.75rem' }} lh={1}>
@@ -19,7 +19,7 @@ export default function StatusPaidMembership() {
                 </Text>
             </Stack>
 
-            <Card padding="xl" radius="xl" withBorder shadow="xl" maw={448} w="100%">
+            <Card padding="xl" withBorder shadow="xl" maw={448} w="100%">
                 <Stack gap="lg">
                     <Text fw={500}>
                         Je hebt zojuist een bevestigingsmail ontvangen met alle details.

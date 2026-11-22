@@ -137,7 +137,7 @@ export default function BijbanenbankIsland({ vacancies, isLoggedIn }: Bijbanenba
     return (
         <Stack gap="lg">
             {!isLoggedIn && (
-                <Alert color="brand" variant="light" radius="lg" icon={<Lock size={20} />}>
+                <Alert icon={<Lock size={20} />}>
                     <Group justify="space-between" align="center" wrap="wrap" gap="sm">
                         <Text size="sm" fw={600}>
                             Log in om bedrijfsnaam, omschrijving, locatie en contactgegevens te bekijken, en om te zoeken en filteren.
@@ -183,20 +183,19 @@ export default function BijbanenbankIsland({ vacancies, isLoggedIn }: Bijbanenba
 
                         <Button
                             type="button"
-                            variant="default"
                             size="sm"
                             hiddenFrom="md"
                             onClick={() => setShowFilters((prev) => !prev)}
                             aria-expanded={showFilters}
                             leftSection={<SlidersHorizontal size={16} />}
                             rightSection={filtersActive ? (
-                                <Box w={6} h={6} style={{ borderRadius: '9999px', backgroundColor: 'var(--primary)' }} />
+                                <Box w={6} h={6} style={{ borderRadius: '9999px', backgroundColor: 'var(--mantine-color-brand-filled)' }} />
                             ) : undefined}
                         >
                             Filters
                         </Button>
 
-                        <Paper p={4} radius="md" withBorder>
+                        <Paper p={4} withBorder>
                             <Group gap={4} wrap="nowrap">
                                 <ActionIcon
                                     type="button"
@@ -295,8 +294,6 @@ export default function BijbanenbankIsland({ vacancies, isLoggedIn }: Bijbanenba
                                     <Button
                                         type="button"
                                         size="xs"
-                                        variant="subtle"
-                                        color="dimmed"
                                         onClick={clearFilters}
                                         leftSection={<X size={14} />}
                                     >

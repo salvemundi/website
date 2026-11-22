@@ -139,7 +139,6 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                         <Button
                             component={Link}
                             href="/beheer/bijbanenbank"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -156,7 +155,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                 <Card p="xl" shadow="md">
                     <Stack gap="lg">
                         <Group gap="sm">
-                            <ThemeIcon size="xl" variant="light" color="brand">
+                            <ThemeIcon size="xl">
                                 <Briefcase size={22} />
                             </ThemeIcon>
                             <Title order={2} size="h3">
@@ -309,7 +308,6 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                             )}
                                             <Button
                                                 type="button"
-                                                variant="default"
                                                 flex={1}
                                                 leftSection={<ImageIcon size={16} />}
                                                 onClick={() => imageInputRef.current?.click()}
@@ -326,7 +324,6 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                             {(imagePreview || (initialData?.image && !removeExistingImage)) && (
                                                 <ActionIcon
                                                     type="button"
-                                                    variant="light"
                                                     color="error"
                                                     size="lg"
                                                     onClick={() => {
@@ -345,7 +342,6 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                         <Group gap="xs" mt={4} wrap="nowrap">
                                             <Button
                                                 type="button"
-                                                variant="default"
                                                 flex={1}
                                                 leftSection={<FileText size={16} />}
                                                 onClick={() => documentInputRef.current?.click()}
@@ -365,7 +361,6 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                             {(documentFile || (initialData?.document && !removeExistingDocument)) && (
                                                 <ActionIcon
                                                     type="button"
-                                                    variant="light"
                                                     color="error"
                                                     size="lg"
                                                     onClick={() => {

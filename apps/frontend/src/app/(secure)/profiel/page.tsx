@@ -38,7 +38,7 @@ export default async function ProfielPage() {
                             <Card>
                                 <Group justify="space-between" wrap="nowrap" gap="md">
                                     <Group gap="md" wrap="nowrap">
-                                        <ThemeIcon size={48} radius="lg" variant="light" color="accent">
+                                        <ThemeIcon size={48} color="accent">
                                             <FileSignature size={22} />
                                         </ThemeIcon>
                                         <Stack gap={2}>
@@ -52,7 +52,7 @@ export default async function ProfielPage() {
                                             </Text>
                                         </Stack>
                                     </Group>
-                                    <ThemeIcon size="lg" radius="xl" variant="light" color="accent">
+                                    <ThemeIcon size="lg" color="accent">
                                         <ArrowRight size={18} />
                                     </ThemeIcon>
                                 </Group>
@@ -65,7 +65,7 @@ export default async function ProfielPage() {
                             <Card>
                                 <Group justify="space-between" wrap="nowrap" gap="md">
                                     <Group gap="md" wrap="nowrap">
-                                        <ThemeIcon size={48} radius="lg" variant="light" color="brand">
+                                        <ThemeIcon size={48}>
                                             <ClipboardCheck size={22} />
                                         </ThemeIcon>
                                         <Stack gap={2}>
@@ -75,7 +75,7 @@ export default async function ProfielPage() {
                                             </Text>
                                         </Stack>
                                     </Group>
-                                    <ThemeIcon size="lg" radius="xl" variant="light" color="brand">
+                                    <ThemeIcon size="lg">
                                         <ArrowRight size={18} />
                                     </ThemeIcon>
                                 </Group>

@@ -191,7 +191,6 @@ export default function CoboEventModal({
                     <Group justify="flex-end" gap="sm">
                         <Button
                             type="button"
-                            variant="default"
                             onClick={onClose}
                             disabled={isPending}
                         >

@@ -78,7 +78,7 @@ export function HeroIsland({ banners = [], activiteiten = [], initialSession }: 
                                             <Text size="lg" fw={700} truncate>Sluit je aan bij Salve Mundi</Text>
                                             <Text size="sm" c="dimmed" lineClamp={2}>Ontdek alle voordelen van een lidmaatschap!</Text>
                                         </Stack>
-                                        <ThemeIcon size="lg" radius="xl" variant="light">
+                                        <ThemeIcon size="lg">
                                             <ChevronRight size={20} />
                                         </ThemeIcon>
                                     </Group>
@@ -101,7 +101,7 @@ export function HeroIsland({ banners = [], activiteiten = [], initialSession }: 
                                                 {nextEvent.description ?? 'Kom gezellig langs!'}
                                             </Text>
                                         </Stack>
-                                        <ThemeIcon size="lg" radius="xl" variant="light">
+                                        <ThemeIcon size="lg">
                                             <ChevronRight size={20} />
                                         </ThemeIcon>
                                     </Group>

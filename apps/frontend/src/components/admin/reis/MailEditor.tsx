@@ -42,10 +42,10 @@ export default function MailEditor({
 }: MailEditorProps) {
     return (
         <GridCol span={{ base: 12, lg: 9 }}>
-            <Card withBorder radius="lg" padding="xl">
+            <Card withBorder padding="xl">
                 <Stack gap="lg">
                     <Group gap="md" wrap="nowrap">
-                        <ThemeIcon size={48} radius="md" color="accent" variant="filled">
+                        <ThemeIcon size={48} color="accent">
                             <Mail size={22} />
                         </ThemeIcon>
                         <Title order={2} size="h4">
@@ -74,8 +74,6 @@ export default function MailEditor({
                     ) : (
                         <Alert
                             color="accent"
-                            variant="light"
-                            radius="lg"
                             title="Automatisch Betaalverzoek"
                             icon={<Info size={20} />}
                         >
@@ -117,7 +115,6 @@ export default function MailEditor({
                         </Group>
                         <Button
                             type="button"
-                            color="accent"
                             loading={sending}
                             onClick={onSend}
                             disabled={sending || filteredCount === 0 || (emailType === 'custom' && (!subject.trim() || !message.trim()))}

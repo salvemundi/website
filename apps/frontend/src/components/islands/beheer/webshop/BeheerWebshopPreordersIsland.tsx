@@ -83,7 +83,6 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                         <Button
                             component={Link}
                             href="/beheer/webshop"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -128,9 +127,7 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                                 <Table.Td>
                                                     <Button
                                                         type="button"
-                                                        variant="subtle"
                                                         size="xs"
-                                                        px={0}
                                                         onClick={() =>
                                                             setExpandedId(
                                                                 expandedId === preorder.id ? null : preorder.id
@@ -178,8 +175,6 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                                         {!preorder.deposit_paid && (
                                                             <ActionIcon
                                                                 type="button"
-                                                                variant="subtle"
-                                                                color="brand"
                                                                 onClick={() => handleCopyLink(preorder.id)}
                                                                 title="Kopieer betaallink"
                                                                 aria-label="Kopieer betaallink"
@@ -193,7 +188,7 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                             {expandedId === preorder.id && (
                                                 <Table.Tr>
                                                     <Table.Td colSpan={5}>
-                                                        <Paper withBorder p="md" radius="md">
+                                                        <Paper withBorder p="md">
                                                             <Stack gap="xs">
                                                                 {preorder.lines.map((line) => (
                                                                     <Group

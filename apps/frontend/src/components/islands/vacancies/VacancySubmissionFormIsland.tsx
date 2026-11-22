@@ -44,11 +44,11 @@ const PROCESS_STEPS = [
 
 function ProcessExplanation() {
     return (
-        <Alert color="brand" variant="light" radius="lg" mb="lg" title="Hoe werkt het?" icon={<Info size={18} />}>
+        <Alert mb="lg" title="Hoe werkt het?" icon={<Info size={18} />}>
             <Stack gap="xs" mt="xs">
                 {PROCESS_STEPS.map((step, i) => (
                     <Group key={i} align="flex-start" wrap="nowrap" gap="sm">
-                        <Badge size="sm" circle color="brand" mt={2} style={{ flexShrink: 0 }}>
+                        <Badge size="sm" circle mt={2} style={{ flexShrink: 0 }}>
                             {i + 1}
                         </Badge>
                         <Text size="sm" c="dimmed">
@@ -135,10 +135,10 @@ export default function VacancySubmissionFormIsland() {
 
     if (submitted) {
         return (
-            <Card padding="xl" radius="xl" shadow="xl" withBorder>
+            <Card padding="xl" shadow="xl" withBorder>
                 <Stack gap="md">
                     <Group gap="sm">
-                        <ThemeIcon size="lg" radius="md" variant="light" color="success">
+                        <ThemeIcon size="lg" color="success">
                             <CheckCircle2 size={22} />
                         </ThemeIcon>
                         <Title order={2} size="h2" c="brand">
@@ -159,11 +159,11 @@ export default function VacancySubmissionFormIsland() {
     return (
         <Stack gap="lg">
             <ProcessExplanation />
-            <Card padding="xl" radius="xl" shadow="xl" withBorder>
+            <Card padding="xl" shadow="xl" withBorder>
                 <Stack gap="lg">
                     <Stack gap="xs">
                         <Group gap="sm">
-                            <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                            <ThemeIcon size="lg">
                                 <Briefcase size={20} />
                             </ThemeIcon>
                             <Title order={2} size="h2" c="brand">
@@ -340,7 +340,6 @@ export default function VacancySubmissionFormIsland() {
                                                 <Button
                                                     {...props}
                                                     type="button"
-                                                    variant="default"
                                                     style={{ flex: 1 }}
                                                     leftSection={<ImageIcon size={16} />}
                                                 >
@@ -361,7 +360,6 @@ export default function VacancySubmissionFormIsland() {
                                                 <Button
                                                     {...props}
                                                     type="button"
-                                                    variant="default"
                                                     style={{ flex: 1 }}
                                                     leftSection={<FileText size={16} />}
                                                 >
@@ -372,7 +370,6 @@ export default function VacancySubmissionFormIsland() {
                                         {documentFile && (
                                             <ActionIcon
                                                 type="button"
-                                                variant="default"
                                                 color="error"
                                                 size="lg"
                                                 onClick={() => setDocumentFile(null)}

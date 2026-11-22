@@ -108,7 +108,6 @@ export default function AdminActivitiesIsland({
                         <ActionIcon
                             component={Link}
                             href="/beheer"
-                            variant="default"
                             size="lg"
                             aria-label="Terug"
                         >
@@ -120,7 +119,7 @@ export default function AdminActivitiesIsland({
                     </Group>
 
                     <Group gap="md" wrap="wrap">
-                        <Paper withBorder px="md" py="xs" radius="lg">
+                        <Paper withBorder px="md" py="xs">
                             <Group gap="md" wrap="nowrap">
                                 <Stack gap={2} align="center" px={4}>
                                     <Text size="xs" c="dimmed" fw={600} lh={1}>Aankomend</Text>

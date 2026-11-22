@@ -22,7 +22,7 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
     const description = club.description ? stripHtmlToText(club.description) : null;
 
     return (
-        <Card h="100%" padding="lg" radius="lg" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Card h="100%" padding="lg" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <CardSection
                 pos="relative"
                 h={244}
@@ -86,7 +86,6 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                                     href={club.whatsapp_link}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    variant="light"
                                     fullWidth
                                     leftSection={<MessageCircle size={16} />}
                                 >
@@ -96,7 +95,6 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                                 <Button
                                     component={Link}
                                     href={ROUTES.MEMBERSHIP}
-                                    variant="default"
                                     fullWidth
                                     leftSection={<Lock size={16} />}
                                     title="Alleen zichtbaar voor leden met een actief lidmaatschap"
@@ -112,8 +110,6 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                                 href={club.discord_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                variant="light"
-                                color="brand"
                                 fullWidth
                                 leftSection={<DiscordIcon className="size-4" />}
                             >

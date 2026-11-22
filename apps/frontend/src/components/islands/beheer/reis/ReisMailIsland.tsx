@@ -140,7 +140,6 @@ export default function ReisMailIsland({
                     onChange={(val) =>
                         setEmailType((val as typeof emailType | null) ?? 'custom')
                     }
-                    variant="pills"
                 >
                     <Tabs.List>
                         <Tabs.Tab value="custom">Eigen bericht</Tabs.Tab>

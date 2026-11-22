@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { fetchPubCrawlSignupsDb, fetchPubCrawlSignupByIdDb, updatePubCrawlSignupDb, deletePubCrawlSignupDb } from '@/server/internal/kroegentocht/kroegentocht-signup-db.utils';;
 import { requireKroegAdmin } from './beheer-kroegentocht-event.actions';
 import { safeConsoleError } from '@/server/utils/logger';
+import { BRAND_COLORS } from '@/lib/config/theme';
 import { scheduleKroegSheetSync, syncKroegSheetNow, getKroegSheetUrl, getKroegGroupRowsForCsv } from '@/server/internal/kroegentocht/kroegentocht-google-sheet.utils';
 
 export async function getPubCrawlSignups(eventId: number): Promise<Awaited<ReturnType<typeof fetchPubCrawlSignupsDb>>> {
@@ -407,7 +408,7 @@ export async function resendPubCrawlTicketEmail(signupId: number): Promise<{ suc
                         name: ticket.name,
                         qrDataUrl: await QRCode.toDataURL(ticket.qrToken || '', {
                             errorCorrectionLevel: 'M', width: 300, margin: 2,
-                            color: { dark: '#5e2b52', light: '#ffffff' }
+                            color: { dark: BRAND_COLORS.purple, light: BRAND_COLORS.lightSurface }
                         })
                     })))
                 }

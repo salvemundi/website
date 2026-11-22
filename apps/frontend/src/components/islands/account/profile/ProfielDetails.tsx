@@ -54,7 +54,6 @@ export default function ProfielDetails({
     const logoutButton = (
         <Button
             type="button"
-            variant="light"
             color="error"
             size="xs"
             leftSection={<LogOut size={14} />}
@@ -115,7 +114,6 @@ export default function ProfielDetails({
                         {!isEditingPhoneNumber && (
                             <ActionIcon
                                 type="button"
-                                variant="subtle"
                                 size="sm"
                                 onClick={() => setIsEditingPhoneNumber(true)}
                                 aria-label="Telefoonnummer bewerken"
@@ -143,7 +141,6 @@ export default function ProfielDetails({
                                         </Box>
                                         <ActionIcon
                                             type="submit"
-                                            variant="filled"
                                             size="lg"
                                             loading={isPending}
                                             aria-label="Telefoonnummer opslaan"

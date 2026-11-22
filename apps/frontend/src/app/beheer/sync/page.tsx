@@ -28,7 +28,6 @@ export default async function AzureSyncPage() {
                         <Button
                             component={Link}
                             href="/beheer"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -39,7 +38,7 @@ export default async function AzureSyncPage() {
                         </Title>
                     </Group>
 
-                    <Paper withBorder px="md" py="xs" radius="lg">
+                    <Paper withBorder px="md" py="xs">
                         <Group gap="md" wrap="nowrap">
                             <Stack gap={2} align="center" px={4}>
                                 <Text size="xs" c="dimmed" fw={600} lh={1}>Status</Text>

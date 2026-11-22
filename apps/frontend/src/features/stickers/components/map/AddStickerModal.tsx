@@ -176,7 +176,6 @@ export default function AddStickerModal({
             opened={show}
             onClose={onClose}
             size="lg"
-            radius="lg"
             centered
             title={
                 <Stack gap={2}>

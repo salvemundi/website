@@ -16,7 +16,7 @@ export default function IntroConfidantCard({ confidant }: IntroConfidantCardProp
         : null;
 
     return (
-        <Card h="100%" padding="md" radius="lg" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Card h="100%" padding="md" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <CardSection pos="relative" bg="var(--mantine-color-body)" style={{ aspectRatio: '4 / 3', overflow: 'hidden' }}>
                 {imageUrl ? (
                     <Image src={imageUrl} alt={confidant.name} fill unoptimized className="object-cover object-top" />
@@ -43,7 +43,7 @@ export default function IntroConfidantCard({ confidant }: IntroConfidantCardProp
 
                 <Stack gap="xs" mt="auto">
                     {confidant.email && (
-                        <Paper p="xs" radius="md" bg="var(--mantine-color-body)" style={{ border: '1px solid var(--border)' }}>
+                        <Paper p="xs" bg="var(--mantine-color-body)" style={{ border: '1px solid var(--mantine-color-default-border)' }}>
                             <ObfuscatedEmail
                                 email={confidant.email}
                                 size="xs"
@@ -55,7 +55,6 @@ export default function IntroConfidantCard({ confidant }: IntroConfidantCardProp
                         <Button
                             component="a"
                             href={`tel:${confidant.phone_number.replace(/\s+/g, '')}`}
-                            variant="default"
                             size="xs"
                             fullWidth
                             justify="flex-start"

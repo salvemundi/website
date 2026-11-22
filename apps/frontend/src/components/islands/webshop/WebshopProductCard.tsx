@@ -30,11 +30,11 @@ export default function WebshopProductCard({ product }: WebshopProductCardProps)
             onMouseLeave={() => setIsHovering(false)}
             h="100%"
         >
-            <Card padding={0} radius="xl" withBorder shadow="sm" h="100%" style={{ overflow: 'hidden' }}>
+            <Card padding={0} withBorder shadow="sm" h="100%" style={{ overflow: 'hidden' }}>
                 <Box pos="relative">
                     <AspectRatio
                         ratio={1}
-                        style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)' }}
+                        style={{ backgroundColor: 'var(--surface-subtle)' }}
                     >
                         {showVideo ? (
                             <MediaAsset
@@ -63,7 +63,6 @@ export default function WebshopProductCard({ product }: WebshopProductCardProps)
                         pos="absolute"
                         top={16}
                         right={16}
-                        color="brand"
                         size="sm"
                         style={{ zIndex: 10 }}
                     >

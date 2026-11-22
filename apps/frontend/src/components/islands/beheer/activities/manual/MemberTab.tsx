@@ -22,10 +22,10 @@ export default function MemberTab({
                 Zoek bestaand lid
             </Text>
             {selectedMember ? (
-                <Paper withBorder p="md" radius="lg">
+                <Paper withBorder p="md">
                     <Group justify="space-between" align="center" wrap="nowrap" gap="md">
                         <Group gap="md" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
-                            <Avatar size="lg" radius="md" color="accent">
+                            <Avatar size="lg" color="accent">
                                 {selectedMember.first_name?.[0]}{selectedMember.last_name?.[0]}
                             </Avatar>
                             <Stack gap={2} style={{ minWidth: 0 }}>
@@ -39,7 +39,6 @@ export default function MemberTab({
                         </Group>
                         <ActionIcon
                             type="button"
-                            variant="light"
                             color="error"
                             size="lg"
                             onClick={onClear}

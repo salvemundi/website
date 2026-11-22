@@ -28,7 +28,6 @@ export default function BeheerVisibilityToggle({
     return (
         <Paper
             withBorder
-            radius="md"
             px="sm"
             py={6}
             style={{
@@ -44,8 +43,6 @@ export default function BeheerVisibilityToggle({
                     checked={isVisible}
                     onChange={onToggle}
                     disabled={isPending || disabled}
-                    color="success"
-                    size="md"
                     aria-label={typeof label === 'string' ? label : 'Toggle zichtbaarheid'}
                     thumbIcon={isPending ? <Loader size={10} /> : undefined}
                 />

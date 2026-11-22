@@ -402,7 +402,6 @@ export function HorizontalCheckbox({
 }: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
     return (
         <Switch
-            size="xs"
             label={label}
             name={name}
             defaultChecked={defaultChecked}

@@ -50,7 +50,6 @@ export const LocationPicker = ({
                 </Text>
                 <Button
                     type="button"
-                    variant="default"
                     size="xs"
                     onClick={onReset}
                 >
@@ -60,7 +59,6 @@ export const LocationPicker = ({
 
             <Button
                 type="button"
-                variant="default"
                 fullWidth
                 onClick={onUseCurrentLocation}
                 loading={isLocatingCurrent}
@@ -79,7 +77,6 @@ export const LocationPicker = ({
                     />
                     <Button
                         type="button"
-                        variant="default"
                         size="sm"
                         hiddenFrom="sm"
                         onClick={onAddressSearch}
@@ -92,7 +89,6 @@ export const LocationPicker = ({
                 {searchResults.length > 0 && (
                     <Paper
                         shadow="xl"
-                        radius="md"
                         pos="absolute"
                         left={0}
                         right={0}
@@ -102,7 +98,7 @@ export const LocationPicker = ({
                         style={{
                             zIndex: 20,
                             overflow: 'hidden',
-                            border: '1px solid var(--border)',
+                            border: '1px solid var(--mantine-color-default-border)',
                         }}
                     >
                         <Stack gap={0}>
@@ -110,7 +106,6 @@ export const LocationPicker = ({
                                 <Button
                                     key={`${result.lat}-${result.lng}-${idx}`}
                                     type="button"
-                                    variant="subtle"
                                     size="xs"
                                     fullWidth
                                     justify="flex-start"

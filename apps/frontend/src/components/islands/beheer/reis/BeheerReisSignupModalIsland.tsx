@@ -66,11 +66,11 @@ export default function BeheerReisSignupModalIsland({
             centered
         >
             <Modal.Overlay />
-            <Modal.Content radius="xl">
+            <Modal.Content>
                 <Modal.Header>
                     <Modal.Title>
                         <Group gap="sm">
-                            <ThemeIcon size={36} radius="md" color="brand" variant="filled">
+                            <ThemeIcon size={36}>
                                 {isEditing ? <Pen size={16} /> : <Users size={16} />}
                             </ThemeIcon>
                             <Text fw={700} size="sm">
@@ -81,7 +81,6 @@ export default function BeheerReisSignupModalIsland({
                     <Group gap="xs" ml="auto">
                         <ActionIcon
                             type="button"
-                            variant="subtle"
                             color="error"
                             size="lg"
                             onClick={onDelete}
@@ -95,7 +94,6 @@ export default function BeheerReisSignupModalIsland({
                         <ActionIcon
                             type="button"
                             variant={isEditing ? 'filled' : 'subtle'}
-                            color="brand"
                             size="lg"
                             onClick={onToggleEdit}
                             title={isEditing ? 'Terug naar weergave' : 'Bewerken'}
@@ -179,7 +177,7 @@ export default function BeheerReisSignupModalIsland({
                         <Divider />
 
                         <Group justify="space-between" wrap="wrap" gap="sm">
-                            <Button type="button" variant="default" onClick={onClose}>
+                            <Button type="button" onClick={onClose}>
                                 {isEditing ? 'Annuleren' : 'Sluiten'}
                             </Button>
 

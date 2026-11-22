@@ -40,7 +40,7 @@ export default function SignupActivities({
         <Stack gap="md">
             {!minimal && (
                 <Group gap="md">
-                    <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                    <ThemeIcon size={40}>
                         <Utensils size={20} />
                     </ThemeIcon>
                     <Box>
@@ -56,7 +56,7 @@ export default function SignupActivities({
 
             <Stack gap="xs">
                 {allActivities.length === 0 ? (
-                    <Paper withBorder py="lg" radius="md" style={{ borderStyle: 'dashed' }} ta="center">
+                    <Paper withBorder py="lg" style={{ borderStyle: 'dashed' }} ta="center">
                         <Text size="xs" fw={600} c="dimmed">
                             Geen activiteiten beschikbaar
                         </Text>
@@ -111,8 +111,6 @@ export default function SignupActivities({
             {!hideButton && (
                 <Button
                     type="button"
-                    variant="light"
-                    color="brand"
                     fullWidth
                     size="md"
                     loading={isUpdating}

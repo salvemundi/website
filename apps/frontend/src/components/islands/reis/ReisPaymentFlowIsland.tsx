@@ -239,7 +239,7 @@ export default function ReisPaymentFlowIsland({
                                     </Text>
                                 </Stack>
                                 {step <= 3 && (
-                                    <Badge variant="light" color="brand" size="md">
+                                    <Badge size="md">
                                         Stap {step} van 3
                                     </Badge>
                                 )}
@@ -253,7 +253,7 @@ export default function ReisPaymentFlowIsland({
                             </Box>
                             <Box display={step === 2 ? 'block' : 'none'}>
                                 {paymentType === 'deposit' && (
-                                    <Alert color="accent" variant="light" radius="lg" mb="lg" icon={<AlertCircle size={16} />}>
+                                    <Alert color="accent" mb="lg" icon={<AlertCircle size={16} />}>
                                         Let op: De getoonde prijzen voor de activiteiten zijn op dit moment een schatting en kunnen nog wijzigen.
                                     </Alert>
                                 )}
@@ -278,7 +278,6 @@ export default function ReisPaymentFlowIsland({
                                 <Group justify="space-between" align="flex-end" wrap="wrap" gap="md">
                                     <Button
                                         type="button"
-                                        variant="default"
                                         size="md"
                                         onClick={step === 1 ? () => router.push('/reis') : () => setStep(step - 1)}
                                         leftSection={<ChevronLeft size={16} />}
@@ -289,7 +288,7 @@ export default function ReisPaymentFlowIsland({
 
                                     <Stack gap="sm" align="flex-end" w={{ base: '100%', sm: 'auto' }}>
                                         {error && (
-                                            <Alert color="error" variant="light" icon={<AlertCircle size={16} />} w="100%">
+                                            <Alert color="error" icon={<AlertCircle size={16} />} w="100%">
                                                 {error}
                                             </Alert>
                                         )}

@@ -26,11 +26,10 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
             opened
             onClose={onClose}
             centered
-            radius="xl"
             size="md"
             title={
                 <Group gap="sm">
-                    <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                    <ThemeIcon size={40}>
                         <CalendarIcon size={20} />
                     </ThemeIcon>
                     <Stack gap={0}>
@@ -61,7 +60,7 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
                                     onEventClick(event);
                                 }}
                             >
-                                <Paper p="md" radius="md" withBorder>
+                                <Paper p="md" withBorder>
                                     <Stack gap="xs">
                                         <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
                                             <Text fw={700}>{event.name}</Text>

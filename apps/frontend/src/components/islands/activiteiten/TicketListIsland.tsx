@@ -45,9 +45,9 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                     w={{ base: '100%', md: 384 }}
                 />
 
-                <Paper p="sm" px="lg" radius="lg" withBorder>
+                <Paper p="sm" px="lg" withBorder>
                     <Group gap="sm">
-                        <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                        <ThemeIcon size="md">
                             <Ticket size={16} />
                         </ThemeIcon>
                         <Stack gap={0}>
@@ -63,7 +63,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
             </Group>
 
             {filteredTickets.length === 0 ? (
-                <Paper p="xl" radius="xl" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
+                <Paper p="xl" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
                     <Stack align="center" gap="sm" py="xl">
                         <Text span c="dimmed" opacity={0.3} lh={1}>
                             <Ticket size={64} />
@@ -85,10 +85,10 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                             onClick={() => handleTicketSelect(ticket)}
                             w="100%"
                         >
-                            <Card padding="lg" radius="lg" withBorder shadow="sm" h="100%">
+                            <Card padding="lg" withBorder shadow="sm" h="100%">
                                 <Stack gap="md" justify="space-between" h="100%">
                                     <Group justify="space-between" align="flex-start">
-                                        <ThemeIcon size={48} radius="md" variant="light" color="brand">
+                                        <ThemeIcon size={48}>
                                             <QrCode size={24} />
                                         </ThemeIcon>
                                         <Stack gap={0} ta="right">
@@ -131,7 +131,6 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                 opened={Boolean(selectedTicket)}
                 onClose={handleCloseModal}
                 centered
-                radius="xl"
                 size="md"
                 aria-label="Digitaal ticket"
             >
@@ -146,7 +145,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                             </Title>
                         </Stack>
 
-                        <Box p="lg" bg="#FFFFFF" style={{ borderRadius: 'var(--mantine-radius-lg)', boxShadow: 'var(--mantine-shadow-lg)' }}>
+                        <Box p="lg" bg="var(--mantine-color-white)" style={{ borderRadius: 'var(--mantine-radius-lg)', boxShadow: 'var(--mantine-shadow-lg)' }}>
                             <QRDisplay qrToken={selectedTicket.qr_token} size={240} />
                         </Box>
 

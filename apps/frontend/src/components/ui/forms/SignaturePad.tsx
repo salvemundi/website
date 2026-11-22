@@ -71,10 +71,9 @@ export const SignaturePad = React.forwardRef<SignaturePadHandle, SignaturePadPro
     return (
         <Paper
             bg="white"
-            radius="md"
             pos="relative"
             style={{
-                border: '1px solid var(--border)',
+                border: '1px solid var(--mantine-color-default-border)',
                 overflow: 'hidden',
             }}
         >
@@ -91,7 +90,7 @@ export const SignaturePad = React.forwardRef<SignaturePadHandle, SignaturePadPro
             />
             {isEmpty && (
                 <Center pos="absolute" inset={0} style={{ pointerEvents: 'none' }}>
-                    <Text size="sm" c="#1E1221" opacity={0.45}>
+                    <Text size="sm" c="var(--mantine-color-darkBase-filled)" opacity={0.45}>
                         Teken hier je handtekening
                     </Text>
                 </Center>
@@ -99,8 +98,6 @@ export const SignaturePad = React.forwardRef<SignaturePadHandle, SignaturePadPro
             <Button
                 type="button"
                 size="xs"
-                variant="light"
-                color="brand"
                 pos="absolute"
                 top={8}
                 right={8}

@@ -113,6 +113,10 @@ const eslintConfig = [
                 {
                     "selector": "JSXOpeningElement[name.name=/^(Box|Flex|Group|Stack|Grid|GridCol|SimpleGrid|Container|Center|Card|Paper|Button|ActionIcon|Text|Title|Anchor|Badge|Avatar|ThemeIcon|Alert|Modal|Drawer|Tabs|NavLink|Spoiler|Divider|TextInput|Select|NativeSelect|Textarea|Checkbox|Switch|NumberInput|ColorInput|Typography)$/] > JSXAttribute[name.name='className']",
                     "message": "Passing className to Mantine components is forbidden. Use Mantine style props (p, px, py, gap, fz, fw, c, bg, visibleFrom, hiddenFrom, mod, style) and global theme configuration in theme.ts instead."
+                },
+                {
+                    "selector": "JSXOpeningElement[name.name=/^(Button|ActionIcon|Card|Paper|Alert|Badge|ThemeIcon|Modal|Switch|Checkbox|Progress|TextInput|Select|NativeSelect|Textarea|NumberInput|DateInput|ColorInput|SegmentedControl|Tabs)$/] > JSXAttribute[name.name='radius'][value.type='Literal']",
+                    "message": "Passing a manual string radius prop to Mantine components is forbidden. Radius is managed centrally via the dynamic scale in theme/radius.ts."
                 }
             ],
 

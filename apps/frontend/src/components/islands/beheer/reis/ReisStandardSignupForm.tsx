@@ -50,7 +50,7 @@ export default function StandardSignupForm({
                 section === 'personal_extended') && (
                 <Box p={minimal ? 0 : 'xl'}>
                     <Group gap="md" mb={compact ? 'md' : 'xl'}>
-                        <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                        <ThemeIcon size={40}>
                             <FileText size={20} />
                         </ThemeIcon>
                         <Box>
@@ -206,7 +206,7 @@ export default function StandardSignupForm({
                                         }
                                     />
                                 ) : (
-                                    <Paper withBorder px="sm" py="xs" radius="md">
+                                    <Paper withBorder px="sm" py="xs">
                                         <Group gap="xs">
                                             <Text span c="brand" lh={1}>
                                                 <Bus size={16} />
@@ -229,7 +229,7 @@ export default function StandardSignupForm({
                 <Box p={minimal ? 0 : 'xl'}>
                     {minimal && section === 'all' && <Divider mb={compact ? 'md' : 'lg'} />}
                     <Group gap="md" mb={compact ? 'md' : 'xl'}>
-                        <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                        <ThemeIcon size={40}>
                             <CreditCard size={20} />
                         </ThemeIcon>
                         <Box>
@@ -265,7 +265,7 @@ export default function StandardSignupForm({
                         </Stack>
 
                         <Stack gap={compact ? 'md' : 'lg'}>
-                            <Paper withBorder p={compact ? 'md' : 'lg'} radius="md">
+                            <Paper withBorder p={compact ? 'md' : 'lg'}>
                                 <Stack gap="md">
                                     <Group justify="space-between" gap="md">
                                         <Checkbox

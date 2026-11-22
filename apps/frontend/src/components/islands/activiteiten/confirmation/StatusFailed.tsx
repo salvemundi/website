@@ -24,7 +24,7 @@ export default function StatusFailed({ signupData, isMembership, isTrip }: Statu
 
     return (
         <Stack align="center" gap="xl" py="xl" ta="center">
-            <ThemeIcon size={96} radius="xl" variant="light" color="error">
+            <ThemeIcon size={96} color="error">
                 <XCircle size={48} />
             </ThemeIcon>
 
@@ -53,7 +53,6 @@ export default function StatusFailed({ signupData, isMembership, isTrip }: Statu
                 <Button
                     component={Link}
                     href="/"
-                    variant="default"
                     size="lg"
                     leftSection={<Home size={18} />}
                 >

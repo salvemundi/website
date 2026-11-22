@@ -129,7 +129,7 @@ export default function CoboBoardPreferencesManager({
         return (
             <Card withBorder padding="xl" ta="center">
                 <Stack align="center" gap="xs">
-                    <ThemeIcon size="xl" variant="light" color="brand">
+                    <ThemeIcon size="xl">
                         <Shield size={24} />
                     </ThemeIcon>
                     <Title order={3} size="h4">Geen bestuursleden gevonden</Title>
@@ -165,7 +165,6 @@ export default function CoboBoardPreferencesManager({
                                     <Group gap="md" wrap="nowrap">
                                         <Paper
                                             withBorder
-                                            radius="md"
                                             style={{
                                                 width: 56,
                                                 height: 56,
@@ -194,7 +193,7 @@ export default function CoboBoardPreferencesManager({
                                                 {memberName}
                                             </Title>
                                             <Group>
-                                                <Badge color="brand" variant="light" size="sm">
+                                                <Badge size="sm">
                                                     {pref.user?.functie || 'Bestuurslid'}
                                                 </Badge>
                                             </Group>
@@ -203,7 +202,7 @@ export default function CoboBoardPreferencesManager({
 
                                     <Divider />
 
-                                    <Paper withBorder p="sm" radius="md">
+                                    <Paper withBorder p="sm">
                                         <Group justify="space-between">
                                             <Group gap="xs">
                                                 <Text span c={pref.drinks_alcohol ? 'success' : 'error'} lh={1}>
@@ -214,7 +213,6 @@ export default function CoboBoardPreferencesManager({
                                             <Switch
                                                 checked={Boolean(pref.drinks_alcohol)}
                                                 onChange={() => handleToggleAlcohol(pref)}
-                                                color="success"
                                                 aria-label="Toggle alcoholconsumptie"
                                             />
                                         </Group>

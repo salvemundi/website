@@ -179,7 +179,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                 <input type="hidden" {...register('lines.0.product_id', { valueAsNumber: true })} />
                 <input {...register('website')} type="text" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" suppressHydrationWarning />
 
-                <Paper p="md" radius="lg" withBorder>
+                <Paper p="md" withBorder>
                     <Group gap="md" wrap="nowrap">
                         <Box
                             pos="relative"
@@ -189,7 +189,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                 flexShrink: 0,
                                 borderRadius: 'var(--mantine-radius-md)',
                                 overflow: 'hidden',
-                                backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
+                                backgroundColor: 'var(--surface-subtle)',
                             }}
                         >
                             {cover ? (
@@ -223,7 +223,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                 {step === 3 && 'Samenvatting'}
                             </Title>
                         </Group>
-                        <Badge variant="light" color="brand" size="md">
+                        <Badge size="md">
                             Stap {step} van 3
                         </Badge>
                     </Group>
@@ -324,8 +324,6 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                             <Group gap="sm" mt="xs">
                                 <ActionIcon
                                     type="button"
-                                    variant="light"
-                                    color="brand"
                                     size="lg"
                                     onClick={() => setValue('lines.0.quantity', Math.max(1, quantity - 1), { shouldValidate: true })}
                                     disabled={quantity <= 1}
@@ -338,8 +336,6 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                 </Text>
                                 <ActionIcon
                                     type="button"
-                                    variant="light"
-                                    color="brand"
                                     size="lg"
                                     onClick={() => setValue('lines.0.quantity', Math.min(maxQuantity, quantity + 1), { shouldValidate: true })}
                                     disabled={quantity >= maxQuantity}
@@ -442,7 +438,6 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                 <Group justify="space-between" align="flex-end" wrap="wrap" gap="md">
                     <Button
                         type="button"
-                        variant="default"
                         onClick={() => setStep(Math.max(1, step - 1))}
                         leftSection={<ChevronLeft size={16} />}
                         w={{ base: '100%', sm: 'auto' }}
@@ -452,7 +447,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
 
                     <Stack gap="xs" align="flex-end" w={{ base: '100%', sm: 'auto' }}>
                         {error && (
-                            <Alert color="error" variant="light" icon={<AlertCircle size={16} />} w="100%">
+                            <Alert color="error" icon={<AlertCircle size={16} />} w="100%">
                                 {error}
                             </Alert>
                         )}

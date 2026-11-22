@@ -42,7 +42,7 @@ export default function ActivitySignupTable({
     isDeletingId
 }: ActivitySignupTableProps) {
     return (
-        <Paper withBorder radius="lg" style={{ overflow: 'hidden' }}>
+        <Paper withBorder style={{ overflow: 'hidden' }}>
             <Table.ScrollContainer minWidth={800}>
                 <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
                     <Table.Thead>
@@ -130,7 +130,6 @@ export default function ActivitySignupTable({
                                         {canAccessEdit && (
                                             <ActionIcon
                                                 type="button"
-                                                variant="subtle"
                                                 color="error"
                                                 size="lg"
                                                 onClick={() => onDelete(signup.id, email)}

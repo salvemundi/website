@@ -34,7 +34,7 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
         <Stack gap="lg">
             <Stack gap="xs">
                 <Box>
-                    <Badge variant="light" color="brand" size="sm">
+                    <Badge size="sm">
                         {product.type === 'clothing' ? 'Kleding' : 'Item'}
                     </Badge>
                 </Box>
@@ -49,14 +49,14 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
                 </Text>
             )}
 
-            <Paper p="md" radius="lg" withBorder>
+            <Paper p="md" withBorder>
                 <Group justify="space-between" align="center">
                     <Text size="sm" c="dimmed">Prijs</Text>
                     <Text size="xl" fw={700} c="brand">€{price}</Text>
                 </Group>
             </Paper>
 
-            <Paper p="md" radius="lg" withBorder>
+            <Paper p="md" withBorder>
                 <Stack gap={4}>
                     <Text size="sm" fw={700} c="brand">
                         {hasDrop ? 'Dit is een preorder drop' : 'Volledige betaling'}
@@ -93,7 +93,7 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
                     Log in om te bestellen
                 </Button>
             ) : !isMember ? (
-                <Alert color="accent" variant="light" radius="xl" icon={<ShieldAlert size={16} />}>
+                <Alert color="accent" icon={<ShieldAlert size={16} />}>
                     Bestellen is alleen voor leden van Salve Mundi.
                 </Alert>
             ) : (

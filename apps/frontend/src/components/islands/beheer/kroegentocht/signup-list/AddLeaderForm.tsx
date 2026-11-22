@@ -49,7 +49,7 @@ export default function AddLeaderForm({
     ];
 
     return (
-        <Paper withBorder p="sm" radius="md">
+        <Paper withBorder p="sm">
             <Stack gap="xs">
                 <Select
                     label="Kies leider type"
@@ -88,7 +88,7 @@ export default function AddLeaderForm({
                 )}
 
                 <Group justify="flex-end" gap="xs" pt={4}>
-                    <Button type="button" variant="default" size="xs" onClick={onCancel}>
+                    <Button type="button" size="xs" onClick={onCancel}>
                         Annuleren
                     </Button>
                     <Button

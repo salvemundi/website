@@ -1,157 +1,10 @@
-import {
-    colorsTuple,
-    createTheme,
-    virtualColor,
-    type CSSVariablesResolver,
-} from '@mantine/core';
-
-export const BRAND_COLORS = {
-    purple: '#5A3761',
-    lightPurple: '#936695',
-    lightBase: '#F0F1F9',
-    darkBase: '#1E1221',
-    darkSurface: '#36213A',
-    lightSurface: '#FFFFFF',
-    accent: '#F0A202',
-    success: '#3E6137',
-    error: '#B5474B',
-} as const;
-
-export const salveMundiTheme = createTheme({
-    colors: {
-        purple: colorsTuple(BRAND_COLORS.purple),
-        lightPurple: colorsTuple(BRAND_COLORS.lightPurple),
-        accent: colorsTuple(BRAND_COLORS.accent),
-        success: colorsTuple(BRAND_COLORS.success),
-        error: colorsTuple(BRAND_COLORS.error),
-        darkSurface: colorsTuple(BRAND_COLORS.darkSurface),
-        darkBase: colorsTuple(BRAND_COLORS.darkBase),
-        lightBase: colorsTuple(BRAND_COLORS.lightBase),
-        brand: virtualColor({
-            name: 'brand',
-            dark: 'lightPurple',
-            light: 'purple',
-        }),
-        dark: [
-            BRAND_COLORS.lightBase,
-            BRAND_COLORS.lightBase,
-            BRAND_COLORS.lightPurple,
-            BRAND_COLORS.lightPurple,
-            BRAND_COLORS.purple,
-            BRAND_COLORS.purple,
-            BRAND_COLORS.darkSurface,
-            BRAND_COLORS.darkBase,
-            BRAND_COLORS.darkBase,
-            BRAND_COLORS.darkBase,
-        ],
-        gray: [
-            BRAND_COLORS.lightBase,
-            BRAND_COLORS.lightBase,
-            BRAND_COLORS.lightBase,
-            BRAND_COLORS.lightPurple,
-            BRAND_COLORS.lightPurple,
-            BRAND_COLORS.purple,
-            BRAND_COLORS.purple,
-            BRAND_COLORS.darkSurface,
-            BRAND_COLORS.darkBase,
-            BRAND_COLORS.darkBase,
-        ],
-    },
-    primaryColor: 'brand',
-    fontFamily: 'var(--font-poppins), Poppins, Arial, sans-serif',
-    headings: {
-        fontFamily: 'var(--font-poppins), Poppins, Arial, sans-serif',
-        fontWeight: '900',
-    },
-    defaultRadius: 'lg',
-    radius: {
-        md: '0.75rem',
-    },
-    components: {
-        Container: {
-            defaultProps: {
-                size: 'xl',
-                py: 'xl',
-                w: '100%',
-            },
-        },
-        Group: {
-            defaultProps: {
-                preventGrowOverflow: false,
-            },
-        },
-        Card: {
-            defaultProps: {
-                radius: 'lg',
-                padding: 'lg',
-                shadow: 'md',
-                withBorder: false,
-                bg: 'var(--mantine-color-default)',
-            },
-        },
-        Paper: {
-            defaultProps: {
-                radius: 'md',
-            },
-        },
-        Button: {
-            defaultProps: {
-                radius: 'md',
-                fw: 700,
-            },
-            styles: {
-                inner: {
-                    gap: 'var(--mantine-spacing-xs)',
-                },
-                section: {
-                    marginInline: 0,
-                },
-            },
-        },
-        ActionIcon: {
-            defaultProps: {
-                radius: 'md',
-            },
-        },
-        TextInput: {
-            defaultProps: {
-                radius: 'md',
-            },
-        },
-        Select: {
-            defaultProps: {
-                radius: 'md',
-            },
-        },
-        NativeSelect: {
-            defaultProps: {
-                radius: 'md',
-            },
-        },
-        ColorInput: {
-            defaultProps: {
-                radius: 'md',
-            },
-        },
-        ScrollArea: {
-            defaultProps: {
-                scrollbarSize: 6,
-                type: 'auto',
-            },
-            styles: {
-                scrollbar: {
-                    backgroundColor: 'transparent',
-                },
-                thumb: {
-                    backgroundColor: 'color-mix(in srgb, var(--primary) 55%, transparent)',
-                },
-            },
-        },
-    },
-});
+import type { CSSVariablesResolver } from '@mantine/core';
+import { BRAND_COLORS } from './brand';
+import { RADIUS_BASE } from './radius';
 
 export const salveMundiCssResolver: CSSVariablesResolver = () => ({
     variables: {
+        '--radius-base': RADIUS_BASE,
         '--interactive-transition': 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease',
         '--button-hover-transform': 'translateY(-2px)',
         '--button-active-transform': 'translateY(0) scale(0.98)',
@@ -177,34 +30,46 @@ export const salveMundiCssResolver: CSSVariablesResolver = () => ({
         '--mantine-color-disabled-color': `color-mix(in srgb, ${BRAND_COLORS.lightBase} 45%, transparent)`,
         '--mantine-color-disabled-border': `color-mix(in srgb, ${BRAND_COLORS.purple} 50%, transparent)`,
         '--mantine-primary-color-filled-hover': BRAND_COLORS.purple,
+        '--mantine-color-brand-text': BRAND_COLORS.lightPurple,
+        '--mantine-color-brand-outline': BRAND_COLORS.lightPurple,
         '--mantine-color-brand-light': `color-mix(in srgb, ${BRAND_COLORS.lightPurple} 18%, transparent)`,
         '--mantine-color-brand-light-hover': `color-mix(in srgb, ${BRAND_COLORS.lightPurple} 28%, transparent)`,
         '--mantine-color-brand-light-color': BRAND_COLORS.lightBase,
         '--mantine-color-brand-filled-hover': BRAND_COLORS.purple,
         '--mantine-color-brand-outline-hover': `color-mix(in srgb, ${BRAND_COLORS.lightPurple} 15%, transparent)`,
+        '--mantine-color-lightPurple-text': BRAND_COLORS.lightPurple,
+        '--mantine-color-lightPurple-outline': BRAND_COLORS.lightPurple,
         '--mantine-color-lightPurple-light': `color-mix(in srgb, ${BRAND_COLORS.lightPurple} 18%, transparent)`,
         '--mantine-color-lightPurple-light-hover': `color-mix(in srgb, ${BRAND_COLORS.lightPurple} 28%, transparent)`,
         '--mantine-color-lightPurple-light-color': BRAND_COLORS.lightBase,
         '--mantine-color-lightPurple-filled-hover': BRAND_COLORS.purple,
         '--mantine-color-lightPurple-outline-hover': `color-mix(in srgb, ${BRAND_COLORS.lightPurple} 15%, transparent)`,
+        '--mantine-color-purple-text': BRAND_COLORS.lightPurple,
+        '--mantine-color-purple-outline': BRAND_COLORS.purple,
         '--mantine-color-purple-light': `color-mix(in srgb, ${BRAND_COLORS.purple} 25%, transparent)`,
         '--mantine-color-purple-light-hover': `color-mix(in srgb, ${BRAND_COLORS.purple} 35%, transparent)`,
         '--mantine-color-purple-light-color': BRAND_COLORS.lightBase,
         '--mantine-color-purple-filled-hover': BRAND_COLORS.lightPurple,
         '--mantine-color-purple-outline-hover': `color-mix(in srgb, ${BRAND_COLORS.purple} 20%, transparent)`,
+        '--mantine-color-accent-text': BRAND_COLORS.accent,
+        '--mantine-color-accent-outline': BRAND_COLORS.accent,
         '--mantine-color-accent-light': `color-mix(in srgb, ${BRAND_COLORS.accent} 18%, transparent)`,
         '--mantine-color-accent-light-hover': `color-mix(in srgb, ${BRAND_COLORS.accent} 28%, transparent)`,
         '--mantine-color-accent-light-color': BRAND_COLORS.accent,
         '--mantine-color-accent-filled-hover': `color-mix(in srgb, ${BRAND_COLORS.accent} 85%, ${BRAND_COLORS.lightSurface})`,
         '--mantine-color-accent-outline-hover': `color-mix(in srgb, ${BRAND_COLORS.accent} 15%, transparent)`,
+        '--mantine-color-success-text': BRAND_COLORS.lightBase,
+        '--mantine-color-success-outline': BRAND_COLORS.success,
         '--mantine-color-success-light': `color-mix(in srgb, ${BRAND_COLORS.success} 22%, transparent)`,
         '--mantine-color-success-light-hover': `color-mix(in srgb, ${BRAND_COLORS.success} 32%, transparent)`,
-        '--mantine-color-success-light-color': `color-mix(in srgb, ${BRAND_COLORS.success} 55%, ${BRAND_COLORS.lightBase})`,
+        '--mantine-color-success-light-color': BRAND_COLORS.lightBase,
         '--mantine-color-success-filled-hover': `color-mix(in srgb, ${BRAND_COLORS.success} 82%, ${BRAND_COLORS.lightSurface})`,
         '--mantine-color-success-outline-hover': `color-mix(in srgb, ${BRAND_COLORS.success} 15%, transparent)`,
+        '--mantine-color-error-text': BRAND_COLORS.error,
+        '--mantine-color-error-outline': BRAND_COLORS.error,
         '--mantine-color-error-light': `color-mix(in srgb, ${BRAND_COLORS.error} 22%, transparent)`,
         '--mantine-color-error-light-hover': `color-mix(in srgb, ${BRAND_COLORS.error} 32%, transparent)`,
-        '--mantine-color-error-light-color': `color-mix(in srgb, ${BRAND_COLORS.error} 65%, ${BRAND_COLORS.lightBase})`,
+        '--mantine-color-error-light-color': BRAND_COLORS.lightBase,
         '--mantine-color-error-filled-hover': `color-mix(in srgb, ${BRAND_COLORS.error} 82%, ${BRAND_COLORS.lightSurface})`,
         '--mantine-color-error-outline-hover': `color-mix(in srgb, ${BRAND_COLORS.error} 15%, transparent)`,
     },
@@ -227,31 +92,43 @@ export const salveMundiCssResolver: CSSVariablesResolver = () => ({
         '--mantine-color-disabled-color': `color-mix(in srgb, ${BRAND_COLORS.darkBase} 45%, transparent)`,
         '--mantine-color-disabled-border': `color-mix(in srgb, ${BRAND_COLORS.lightPurple} 50%, transparent)`,
         '--mantine-primary-color-filled-hover': BRAND_COLORS.lightPurple,
+        '--mantine-color-brand-text': BRAND_COLORS.purple,
+        '--mantine-color-brand-outline': BRAND_COLORS.purple,
         '--mantine-color-brand-light': `color-mix(in srgb, ${BRAND_COLORS.purple} 12%, transparent)`,
         '--mantine-color-brand-light-hover': `color-mix(in srgb, ${BRAND_COLORS.purple} 22%, transparent)`,
         '--mantine-color-brand-light-color': BRAND_COLORS.purple,
         '--mantine-color-brand-filled-hover': BRAND_COLORS.lightPurple,
         '--mantine-color-brand-outline-hover': `color-mix(in srgb, ${BRAND_COLORS.purple} 10%, transparent)`,
+        '--mantine-color-purple-text': BRAND_COLORS.purple,
+        '--mantine-color-purple-outline': BRAND_COLORS.purple,
         '--mantine-color-purple-light': `color-mix(in srgb, ${BRAND_COLORS.purple} 12%, transparent)`,
         '--mantine-color-purple-light-hover': `color-mix(in srgb, ${BRAND_COLORS.purple} 22%, transparent)`,
         '--mantine-color-purple-light-color': BRAND_COLORS.purple,
         '--mantine-color-purple-filled-hover': BRAND_COLORS.lightPurple,
         '--mantine-color-purple-outline-hover': `color-mix(in srgb, ${BRAND_COLORS.purple} 10%, transparent)`,
+        '--mantine-color-lightPurple-text': BRAND_COLORS.purple,
+        '--mantine-color-lightPurple-outline': BRAND_COLORS.lightPurple,
         '--mantine-color-lightPurple-light': `color-mix(in srgb, ${BRAND_COLORS.lightPurple} 15%, transparent)`,
         '--mantine-color-lightPurple-light-hover': `color-mix(in srgb, ${BRAND_COLORS.lightPurple} 25%, transparent)`,
         '--mantine-color-lightPurple-light-color': BRAND_COLORS.purple,
         '--mantine-color-lightPurple-filled-hover': BRAND_COLORS.purple,
         '--mantine-color-lightPurple-outline-hover': `color-mix(in srgb, ${BRAND_COLORS.lightPurple} 12%, transparent)`,
+        '--mantine-color-accent-text': BRAND_COLORS.accent,
+        '--mantine-color-accent-outline': BRAND_COLORS.accent,
         '--mantine-color-accent-light': `color-mix(in srgb, ${BRAND_COLORS.accent} 18%, transparent)`,
         '--mantine-color-accent-light-hover': `color-mix(in srgb, ${BRAND_COLORS.accent} 28%, transparent)`,
-        '--mantine-color-accent-light-color': `color-mix(in srgb, ${BRAND_COLORS.accent} 45%, ${BRAND_COLORS.darkBase})`,
+        '--mantine-color-accent-light-color': BRAND_COLORS.darkBase,
         '--mantine-color-accent-filled-hover': `color-mix(in srgb, ${BRAND_COLORS.accent} 88%, ${BRAND_COLORS.darkBase})`,
         '--mantine-color-accent-outline-hover': `color-mix(in srgb, ${BRAND_COLORS.accent} 12%, transparent)`,
+        '--mantine-color-success-text': BRAND_COLORS.success,
+        '--mantine-color-success-outline': BRAND_COLORS.success,
         '--mantine-color-success-light': `color-mix(in srgb, ${BRAND_COLORS.success} 14%, transparent)`,
         '--mantine-color-success-light-hover': `color-mix(in srgb, ${BRAND_COLORS.success} 24%, transparent)`,
         '--mantine-color-success-light-color': BRAND_COLORS.success,
         '--mantine-color-success-filled-hover': `color-mix(in srgb, ${BRAND_COLORS.success} 82%, ${BRAND_COLORS.lightSurface})`,
         '--mantine-color-success-outline-hover': `color-mix(in srgb, ${BRAND_COLORS.success} 10%, transparent)`,
+        '--mantine-color-error-text': BRAND_COLORS.error,
+        '--mantine-color-error-outline': BRAND_COLORS.error,
         '--mantine-color-error-light': `color-mix(in srgb, ${BRAND_COLORS.error} 14%, transparent)`,
         '--mantine-color-error-light-hover': `color-mix(in srgb, ${BRAND_COLORS.error} 24%, transparent)`,
         '--mantine-color-error-light-color': BRAND_COLORS.error,

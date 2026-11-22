@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 import { Check } from 'lucide-react';
-import { Alert, Badge, Button, Card, Group, Paper, Stack, Text, ThemeIcon } from '@mantine/core';
+import { Alert, Badge, Button, Card, Group, Paper, Stack, Text } from '@mantine/core';
 import DeletionTimer from '@/components/ui/account/DeletionTimer';
 import { initiateMembershipPaymentAction } from '@/server/actions/profile/membership.actions';
 import type { SignupFormData } from '@salvemundi/validations/schema/membership.zod';
@@ -51,15 +51,14 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
     const discountNotice = baseAmount === 10 && (
         <Paper
             p="sm"
-            radius="md"
             withBorder
             style={{
-                backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
-                borderColor: 'color-mix(in srgb, var(--primary) 25%, transparent)',
+                backgroundColor: 'var(--surface-subtle)',
+                borderColor: 'var(--surface-subtle-border)',
             }}
         >
             <Group justify="center" gap="sm" wrap="wrap">
-                <Badge color="brand" size="sm">Actief Lid</Badge>
+                <Badge size="sm">Actief Lid</Badge>
                 <Text size="xs" fw={700} c="brand">
                     Commissie-korting toegepast: Jouw verlenging kost slechts €10,00.
                 </Text>
@@ -71,14 +70,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
         return (
             <Stack gap="lg">
                 <Alert
-                    color="success"
-                    variant="light"
-                    radius="lg"
-                    icon={
-                        <ThemeIcon color="success" radius="xl" size="sm">
-                            <Check size={14} strokeWidth={3} />
-                        </ThemeIcon>
-                    }
+                    icon={<Check size={18} strokeWidth={3} />}
                     title="Actief Lid"
                 >
                     Je bent een lid van Salve Mundi.
@@ -94,11 +86,10 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
 
                 <Card
                     padding="lg"
-                    radius="lg"
                     withBorder
                     style={{
-                        backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
-                        borderColor: 'color-mix(in srgb, var(--primary) 20%, transparent)',
+                        backgroundColor: 'var(--surface-subtle)',
+                        borderColor: 'var(--surface-subtle-border)',
                     }}
                 >
                     <Stack gap="sm">
@@ -121,7 +112,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                             <Group
                                 gap="xs"
                                 pt="sm"
-                                style={{ borderTop: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)' }}
+                                style={{ borderTop: '1px solid var(--surface-subtle-border)' }}
                             >
                                 <Text size="sm" c="dimmed">
                                     Geldig tot:{' '}
@@ -135,7 +126,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                 </Card>
 
                 {canRenew && (
-                    <Card padding="lg" radius="lg" ta="center">
+                    <Card padding="lg" ta="center">
                         <Stack gap="md" align="center">
                             <Text size="sm" fw={700} tt="uppercase" c="brand">
                                 Lidmaatschap Verlengen
@@ -173,7 +164,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                 {discountNotice}
             </Stack>
 
-            <Card padding="xl" radius="lg" ta="center">
+            <Card padding="xl" ta="center">
                 <Stack gap="md" align="center">
                     <Text size="sm" fw={700} tt="uppercase" c="brand">
                         Contributie Verlengen

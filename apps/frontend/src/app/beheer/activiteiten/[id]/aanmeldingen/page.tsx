@@ -72,7 +72,6 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
                         <Button
                             component={Link}
                             href="/beheer/activiteiten"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -97,7 +96,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
                         >
                             Scanner
                         </Button>
-                        <Paper withBorder px="md" py="xs" radius="lg" visibleFrom="md">
+                        <Paper withBorder px="md" py="xs" visibleFrom="md">
                             <Group gap="md" wrap="nowrap">
                                 <Stack gap={2} align="center" px={4}>
                                     <Text size="xs" c="dimmed" fw={600} lh={1}>Totaal</Text>

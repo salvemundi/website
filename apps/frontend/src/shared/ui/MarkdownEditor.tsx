@@ -63,10 +63,9 @@ export function MarkdownEditor({ id, value, onChange, placeholder, rows = 10 }: 
 
     return (
         <Paper
-            radius="md"
             style={{
                 overflow: 'hidden',
-                border: '1px solid var(--border)',
+                border: '1px solid var(--mantine-color-default-border)',
                 backgroundColor: 'var(--mantine-color-body)',
             }}
         >
@@ -76,15 +75,13 @@ export function MarkdownEditor({ id, value, onChange, placeholder, rows = 10 }: 
                 px="xs"
                 py={6}
                 bg="var(--mantine-color-default)"
-                style={{ borderBottom: '1px solid var(--border)' }}
+                style={{ borderBottom: '1px solid var(--mantine-color-default-border)' }}
             >
                 <Group gap={4}>
                     {TOOLBAR_ACTIONS.map((action) => (
                         <ActionIcon
                             key={action.label}
                             type="button"
-                            variant="subtle"
-                            color="brand"
                             size="sm"
                             onClick={() => applyAction(action)}
                             disabled={mode === 'preview'}
@@ -98,7 +95,6 @@ export function MarkdownEditor({ id, value, onChange, placeholder, rows = 10 }: 
 
                 <SegmentedControl
                     size="xs"
-                    color="brand"
                     value={mode}
                     onChange={(val) => setMode(val as 'edit' | 'preview')}
                     data={[

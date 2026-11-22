@@ -125,7 +125,6 @@ export default function ActiviteitNieuwIsland({
             </Button>
             <Button
                 type="button"
-                variant="default"
                 size="md"
                 fullWidth
                 onClick={() => router.back()}
@@ -143,7 +142,6 @@ export default function ActiviteitNieuwIsland({
                     <ActionIcon
                         component={Link}
                         href="/beheer/activiteiten"
-                        variant="default"
                         size="lg"
                         aria-label="Terug"
                     >

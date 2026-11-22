@@ -202,7 +202,7 @@ export default function BeheerWebshopProductForm({
         <form onSubmit={handleSubmit}>
             <Stack gap="lg">
                 {error && (
-                    <Alert color="error" variant="light" icon={<AlertCircle size={16} />}>
+                    <Alert color="error" icon={<AlertCircle size={16} />}>
                         {error}
                     </Alert>
                 )}
@@ -339,7 +339,6 @@ export default function BeheerWebshopProductForm({
                             <Paper
                                 key={`${item.asset}-${index}`}
                                 withBorder
-                                radius="md"
                                 pos="relative"
                                 w={96}
                                 h={96}
@@ -355,8 +354,6 @@ export default function BeheerWebshopProductForm({
                                 {index === 0 && (
                                     <Badge
                                         size="xs"
-                                        color="brand"
-                                        variant="filled"
                                         pos="absolute"
                                         top={4}
                                         left={4}
@@ -375,8 +372,6 @@ export default function BeheerWebshopProductForm({
                                     <ActionIcon
                                         type="button"
                                         size="xs"
-                                        variant="filled"
-                                        color="darkSurface"
                                         onClick={() => moveMedia(index, index - 1)}
                                         disabled={index === 0}
                                         aria-label="Verplaats naar links"
@@ -386,7 +381,6 @@ export default function BeheerWebshopProductForm({
                                     <ActionIcon
                                         type="button"
                                         size="xs"
-                                        variant="filled"
                                         color="error"
                                         onClick={() =>
                                             setMedia((prev) => prev.filter((_, i) => i !== index))
@@ -398,8 +392,6 @@ export default function BeheerWebshopProductForm({
                                     <ActionIcon
                                         type="button"
                                         size="xs"
-                                        variant="filled"
-                                        color="darkSurface"
                                         onClick={() => moveMedia(index, index + 1)}
                                         disabled={index === media.length - 1}
                                         aria-label="Verplaats naar rechts"
@@ -420,7 +412,6 @@ export default function BeheerWebshopProductForm({
                                 <Button
                                     {...props}
                                     type="button"
-                                    variant="default"
                                     w={96}
                                     h={96}
                                     p={0}
@@ -433,7 +424,7 @@ export default function BeheerWebshopProductForm({
                         </FileButton>
                     </Group>
                     {uploadError && (
-                        <Alert color="error" variant="light">
+                        <Alert color="error">
                             {uploadError}
                         </Alert>
                     )}
@@ -453,7 +444,6 @@ export default function BeheerWebshopProductForm({
                         </Box>
                         <Button
                             type="button"
-                            variant="default"
                             size="xs"
                             onClick={() =>
                                 setCustomFields((prev) => [...prev, { label: '', max_length: 50 }])
@@ -491,7 +481,6 @@ export default function BeheerWebshopProductForm({
                             />
                             <ActionIcon
                                 type="button"
-                                variant="light"
                                 color="error"
                                 size="lg"
                                 mb={2}
@@ -585,7 +574,7 @@ export default function BeheerWebshopProductForm({
                 <Divider />
 
                 <Group justify="flex-end" gap="sm">
-                    <Button type="button" variant="default" onClick={onCancel}>
+                    <Button type="button" onClick={onCancel}>
                         Annuleren
                     </Button>
                     <Button
