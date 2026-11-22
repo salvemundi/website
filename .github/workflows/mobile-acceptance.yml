@@ -22,13 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v4
         with:
           node-version: 26
-      - run: npm install -g pnpm@11.8.0
+          cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter=@salvemundi/db build
-      - run: pnpm --filter=@salvemundi/validations build
+      - run: pnpm build:packages
       - name: Authentication and acceptance boundary tests
         run: node --experimental-strip-types --test apps/mobile/tests/mobile-security.test.mjs
       - name: Mobile auth, activity administration, widget and preference tests
@@ -38,5 +38,4 @@ jobs:
       - name: Acceptance setup safety tests
         run: python3 -m unittest discover -s apps/mobile/deployment -p 'test_*.py'
       - name: Worker syntax checks
-        working-directory: apps/services/mobile-notification-service
-        run: npm run build
+        run: pnpm --filter=@salvemundi/mobile-notification-service build

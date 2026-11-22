@@ -5,6 +5,7 @@ import withBundleAnalyzer from '@next/bundle-analyzer';
 process.env.SERWIST_SUPPRESS_TURBOPACK_WARNING = '1';
 
 const nextConfig: NextConfig = {
+    transpilePackages: ['@salvemundi/db', '@salvemundi/validations'],
     serverExternalPackages: ['sharp'],
     experimental: {
         serverSourceMaps: true,

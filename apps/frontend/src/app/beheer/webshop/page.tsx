@@ -32,15 +32,23 @@ async function loadWebshopAdminData() {
     for (const row of salesRows) {
         if (row.product_id === null) continue;
         const sales = salesByProduct.get(row.product_id) ?? { paid: 0, pending: 0, byVariant: [] };
-        const key = row.status === 'completed' ? 'paid' : 'pending';
-        sales[key] += row.quantity;
+        const isCompleted = row.status === 'completed';
+        if (isCompleted) {
+            sales.paid += row.quantity;
+        } else {
+            sales.pending += row.quantity;
+        }
         if (row.variant_label) {
             let variant = sales.byVariant.find(v => v.label === row.variant_label);
             if (!variant) {
                 variant = { label: row.variant_label, paid: 0, pending: 0 };
                 sales.byVariant.push(variant);
             }
-            variant[key] += row.quantity;
+            if (isCompleted) {
+                variant.paid += row.quantity;
+            } else {
+                variant.pending += row.quantity;
+            }
         }
         salesByProduct.set(row.product_id, sales);
     }

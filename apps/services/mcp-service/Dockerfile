@@ -1,27 +1,28 @@
 FROM node:26-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm@11.8.0
+RUN npm install -g pnpm@12.21.0
 WORKDIR /app
 
 FROM base AS builder
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
-COPY patches ./patches
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/frontend/package.json ./apps/frontend/
 COPY apps/services/finance-service/package.json ./apps/services/finance-service/
 COPY apps/services/azure-sync-service/package.json ./apps/services/azure-sync-service/
 COPY apps/services/mail-service/package.json ./apps/services/mail-service/
 COPY apps/services/azure-management-service/package.json ./apps/services/azure-management-service/
 COPY apps/services/mcp-service/package.json ./apps/services/mcp-service/
+COPY apps/services/mobile-notification-service/package.json ./apps/services/mobile-notification-service/
+COPY apps/services/monitoring-service/package.json ./apps/services/monitoring-service/
 COPY packages/validations/package.json ./packages/validations/
 COPY packages/db/package.json ./packages/db/
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --filter=@salvemundi/mcp-service...
 
 COPY apps/services/mcp-service ./apps/services/mcp-service
 RUN pnpm --filter=@salvemundi/mcp-service build
 
-RUN pnpm deploy --filter=@salvemundi/mcp-service --prod --legacy /app/pruned
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=@salvemundi/mcp-service --prod --legacy /app/pruned
 
 FROM node:26-alpine AS runner
 WORKDIR /app

@@ -5,42 +5,46 @@
     "type": "module",
     "main": "./dist/index.js",
     "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "types": "./src/index.ts",
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
+            "types": "./src/index.ts",
+            "development": "./src/index.ts",
             "import": "./dist/index.js",
             "default": "./dist/index.js"
         },
         "./schema/*": {
-            "types": "./dist/schema/*.d.ts",
+            "types": "./src/schema/*.ts",
+            "development": "./src/schema/*.ts",
             "import": "./dist/schema/*.js",
             "default": "./dist/schema/*.js"
         },
         "./security": {
-            "types": "./dist/security.d.ts",
+            "types": "./src/security.ts",
+            "development": "./src/security.ts",
             "import": "./dist/security.js",
             "default": "./dist/security.js"
         }
     },
     "scripts": {
-        "build": "tsc",
-        "type-check": "tsc --noEmit",
-        "lint": "eslint .",
+        "build": "node build.mjs",
+        "type-check": "node ../../node_modules/typescript-native/bin/tsc --noEmit",
+        "lint": "eslint src",
         "generate:zod": "node scripts/generate-zod.mjs"
     },
     "dependencies": {
         "@salvemundi/db": "workspace:*",
         "drizzle-zod": "^0.8.3",
-        "zod": "^4.6.6"
+        "zod": "catalog:"
     },
     "peerDependencies": {
         "drizzle-orm": "0.45.2"
     },
     "devDependencies": {
-        "@types/node": "^26.0.0",
-        "drizzle-orm": "0.45.2",
-        "eslint": "^9.39.4",
-        "typescript": "6.0.3"
+        "@types/node": "catalog:",
+        "drizzle-orm": "catalog:",
+        "esbuild": "catalog:",
+        "eslint": "catalog:",
+        "typescript": "catalog:"
     }
 }

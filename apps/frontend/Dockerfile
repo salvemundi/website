@@ -1,22 +1,27 @@
 FROM node:26-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm@11.8.0
+RUN npm install -g pnpm@12.21.0
 WORKDIR /app
 
-FROM base AS builder
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
-COPY patches ./patches
+FROM base AS manifests
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/frontend/package.json ./apps/frontend/
 COPY apps/services/finance-service/package.json ./apps/services/finance-service/
 COPY apps/services/azure-sync-service/package.json ./apps/services/azure-sync-service/
 COPY apps/services/mail-service/package.json ./apps/services/mail-service/
 COPY apps/services/azure-management-service/package.json ./apps/services/azure-management-service/
 COPY apps/services/mcp-service/package.json ./apps/services/mcp-service/
+COPY apps/services/mobile-notification-service/package.json ./apps/services/mobile-notification-service/
+COPY apps/services/monitoring-service/package.json ./apps/services/monitoring-service/
 COPY packages/validations/package.json ./packages/validations/
 COPY packages/db/package.json ./packages/db/
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
+FROM manifests AS prod-deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile --filter=@salvemundi/frontend...
+
+FROM manifests AS builder
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --filter=@salvemundi/frontend...
 
 COPY packages/db ./packages/db
 RUN pnpm --filter=@salvemundi/db build
@@ -52,8 +57,8 @@ RUN mkdir -p apps/frontend/public && chown -R node:node apps/frontend/public
 COPY --from=builder --chown=node:node /app/apps/frontend/public ./apps/frontend/public
 COPY --from=builder --chown=node:node /app/apps/frontend/.next/standalone ./
 COPY --from=builder --chown=node:node /app/apps/frontend/.next/static ./apps/frontend/.next/static
-# Copy global node_modules so native sharp bindings are guaranteed to exist at runtime
-COPY --from=builder --chown=node:node /app/node_modules ./node_modules
+# Copy production node_modules (without devDependencies) so native sharp bindings exist at runtime
+COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
 
 RUN mkdir -p apps/frontend/.next/cache && chown -R node:node apps/frontend/.next/cache
 

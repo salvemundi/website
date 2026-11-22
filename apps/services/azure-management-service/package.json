@@ -5,23 +5,25 @@
   "type": "module",
   "description": "Administrative gateway for Azure AD writes (Provisioning)",
   "scripts": {
+    "dev": "tsx --conditions=development watch src/server.ts",
     "build": "tsc",
-    "type-check": "tsc --noEmit",
+    "type-check": "node ../../../node_modules/typescript-native/bin/tsc --noEmit",
     "lint": "eslint src"
   },
   "dependencies": {
-    "@azure/identity": "^4.13.1",
+    "@azure/identity": "catalog:",
     "@fastify/multipart": "^10.0.0",
-    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "@microsoft/microsoft-graph-client": "catalog:",
     "@salvemundi/validations": "workspace:*",
-    "drizzle-orm": "0.45.2",
-    "fastify": "5.12.6",
-    "fastify-plugin": "^6.0.0",
-    "ioredis": "^5.11.1",
-    "zod": "^4.6.6"
+    "drizzle-orm": "catalog:",
+    "fastify": "catalog:",
+    "fastify-plugin": "catalog:",
+    "ioredis": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^26.0.0",
-    "typescript": "6.0.3"
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
   }
 }

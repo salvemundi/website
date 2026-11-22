@@ -5,16 +5,16 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "type-check": "tsc --noEmit",
+    "type-check": "node ../../../node_modules/typescript-native/bin/tsc --noEmit",
     "lint": "eslint src",
     "provision": "node dist/index.js"
   },
   "dependencies": {
     "socket.io-client": "^4.8.1",
-    "zod": "^4.6.6"
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^26.0.0",
-    "typescript": "6.0.3"
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   }
 }
