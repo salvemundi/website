@@ -1,6 +1,9 @@
-FROM oven/bun:1.4.5-alpine AS deps
+FROM node:26-alpine AS base
 ENV BUN_INSTALL_CACHE_DIR="/bun-cache"
+RUN npm install -g bun@1.4.5
 WORKDIR /app
+
+FROM base AS builder
 COPY bun.lock bunfig.toml package.json ./
 COPY apps/frontend/package.json ./apps/frontend/
 COPY apps/services/finance-service/package.json ./apps/services/finance-service/
@@ -13,21 +16,23 @@ COPY apps/services/monitoring-service/package.json ./apps/services/monitoring-se
 COPY packages/validations/package.json ./packages/validations/
 COPY packages/db/package.json ./packages/db/
 
-RUN --mount=type=cache,id=bun,target=/bun-cache bun install --production --frozen-lockfile --filter=@salvemundi/mcp-service...
+RUN --mount=type=cache,id=bun,target=/bun-cache bun install --frozen-lockfile --filter=@salvemundi/mcp-service...
 
-FROM oven/bun:1.4.5-alpine AS runner
+COPY apps/services/mcp-service ./apps/services/mcp-service
+RUN bun run --filter=@salvemundi/mcp-service build
+
+# Reinstall with production dependencies only (bun has no `pnpm deploy`)
+RUN --mount=type=cache,id=bun,target=/bun-cache find . -name node_modules -prune -exec rm -rf {} + && bun install --production --frozen-lockfile --filter=@salvemundi/mcp-service...
+
+FROM node:26-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=deps --chown=bun:bun /app/package.json ./package.json
-COPY --from=deps --chown=bun:bun /app/node_modules ./node_modules
-COPY --from=deps --chown=bun:bun /app/apps/services/mcp-service/package.json ./apps/services/mcp-service/package.json
-COPY --from=deps --chown=bun:bun /app/apps/services/mcp-service/node_modules ./apps/services/mcp-service/node_modules
-COPY --chown=bun:bun apps/services/mcp-service/src ./apps/services/mcp-service/src
-
+COPY --from=builder --chown=node:node /app ./
 WORKDIR /app/apps/services/mcp-service
-USER bun
+
+USER node
 
 EXPOSE 3005
-CMD ["bun", "src/server.ts"]
+CMD ["node", "dist/server.js"]

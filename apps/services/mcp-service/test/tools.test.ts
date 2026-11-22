@@ -1,5 +1,5 @@
 import { request } from 'node:http';
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { callTool, makeApp, page, rpc, sourceOf } from './helpers.js';
 
 type R = { pagina_id: string; titel: string; bron_url: string; gewijzigd: string; inhoud: string; sectie: { nummer: number } };

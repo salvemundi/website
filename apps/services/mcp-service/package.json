@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun --watch src/server.ts",
+    "dev": "tsx --conditions=development watch src/server.ts",
     "build": "tsc",
     "type-check": "bun check",
     "lint": "eslint src",
-    "test": "bun test"
+    "test": "vitest run"
   },
   "dependencies": {
     "@azure/identity": "catalog:",
@@ -22,8 +22,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/bun": "1.4.5",
     "@types/node": "catalog:",
-    "typescript": "catalog:"
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "5.1.1"
   }
 }

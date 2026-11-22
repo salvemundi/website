@@ -93,8 +93,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
-      - run: bun run --filter=@salvemundi/db build
-      - run: bun run --filter=@salvemundi/validations build
+      - run: bun run build:packages
       - name: Verify mobile activity administration and widget permissions
         run: node --experimental-vm-modules --test apps/mobile/tests/mobile-admin*.test.mjs apps/mobile/tests/mobile-notification-preferences.test.mjs
       - run: bun run type-check

@@ -161,4 +161,5 @@ jobs:
             sleep 2
           done
 
+          bun run --filter=@salvemundi/monitoring-service build
           bun run --filter=@salvemundi/monitoring-service provision

@@ -7,7 +7,7 @@
     "build": "tsc",
     "type-check": "bun check",
     "lint": "eslint src",
-    "provision": "bun src/index.ts"
+    "provision": "node dist/index.js"
   },
   "dependencies": {
     "socket.io-client": "^4.8.1",

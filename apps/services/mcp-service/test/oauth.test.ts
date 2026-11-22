@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { afterEach, describe, expect, it, setSystemTime, vi } from 'bun:test';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CLIENT_ID, HOST, TENANT, baseEnv, makeApp, page, sourceOf } from './helpers.js';
 
 const CLAUDE_CB = 'https://claude.ai/api/mcp/auth_callback';
@@ -38,7 +38,7 @@ const token = (payload: Record<string, string>, h: Record<string, string> = head
 
 afterEach(() => {
     entraFetch.mockReset();
-    setSystemTime();
+    vi.useRealTimers();
 });
 
 describe('OAuth-voorportaal', () => {
@@ -143,15 +143,16 @@ describe('OAuth-voorportaal', () => {
     });
 
     it('verloopt: een state/code ouder dan de TTL wordt geweigerd', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] });
         const client_id = (await register()).json<{ client_id: string }>().client_id;
         const st = loc(await authorize(client_id)).searchParams.get('state')!;
-        setSystemTime(new Date(Date.now() + 11 * 60 * 1000));
+        vi.setSystemTime(Date.now() + 11 * 60 * 1000);
         expect((await app.inject({ method: 'GET', url: '/oauth/callback' + query({ code: 'c', state: st }), headers })).statusCode).toBe(400);
 
-        setSystemTime();
+        vi.setSystemTime(Date.now());
         const fresh = loc(await authorize(client_id)).searchParams.get('state')!;
         const code = loc(await app.inject({ method: 'GET', url: '/oauth/callback' + query({ code: 'c', state: fresh }), headers })).searchParams.get('code')!;
-        setSystemTime(new Date(Date.now() + 3 * 60 * 1000));
+        vi.setSystemTime(Date.now() + 3 * 60 * 1000);
         expect((await token({ grant_type: 'authorization_code', code, redirect_uri: CLAUDE_CB, client_id, code_verifier: verifier })).statusCode).toBe(400);
         expect(entraFetch).not.toHaveBeenCalled();
     });

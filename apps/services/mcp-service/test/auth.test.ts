@@ -1,5 +1,5 @@
 import { generateKeyPair } from 'jose';
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { HOST, TENANT, makeApp, page, rpc, sourceOf, token } from './helpers.js';
 
 const app = await makeApp(sourceOf([page()]));

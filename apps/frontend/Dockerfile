@@ -1,10 +1,6 @@
-FROM oven/bun:1.4.5-alpine AS bun-bin
-
 FROM node:26-alpine AS base
-RUN apk add --no-cache libstdc++ libgcc
-COPY --from=bun-bin /usr/local/bin/bun /usr/local/bin/bun
-COPY --from=bun-bin /usr/local/bin/bunx /usr/local/bin/bunx
 ENV BUN_INSTALL_CACHE_DIR="/bun-cache"
+RUN npm install -g bun@1.4.5
 WORKDIR /app
 
 FROM base AS manifests
