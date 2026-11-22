@@ -4,8 +4,8 @@ import {
     insertWebshopProductsSchema,
     insertWebshopProductMediaSchema,
     insertWebshopProductVariantsSchema,
-} from './db.zod.ts';
-import { webshopCustomFieldsSchema } from './webshop.zod.ts';
+} from './db.zod.js';
+import { webshopCustomFieldsSchema } from './webshop.zod.js';
 
 export const webshopDropWindowBeheerSchema = insertWebshopDropWindowsSchema.extend({
     id: z.coerce.number().int().optional(),

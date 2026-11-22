@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectHeroBannersSchema, selectSponsorsSchema } from './db.zod.ts';
+import { selectHeroBannersSchema, selectSponsorsSchema } from './db.zod.js';
 
 export const heroBannerSchema = selectHeroBannersSchema.omit({
     date_created: true,

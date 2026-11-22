@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectBoardSchema, selectBoardMembersSchema, selectDirectusUsersSchema } from './db.zod.ts';
+import { selectBoardSchema, selectBoardMembersSchema, selectDirectusUsersSchema } from './db.zod.js';
 
 export const boardMemberSchema = selectBoardMembersSchema.omit({
     date_created: true,

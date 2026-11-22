@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectStickersSchema, selectDirectusUsersSchema } from './db.zod.ts';
+import { selectStickersSchema, selectDirectusUsersSchema } from './db.zod.js';
 
 export const stickerUserSchema = selectDirectusUsersSchema.pick({
     id: true,

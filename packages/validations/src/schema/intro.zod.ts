@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.ts';
-import { selectIntroSignupsSchema, selectIntroParentSignupsSchema, selectIntroBlogsSchema, selectIntroPlanningSchema, selectIntroConfidantsSchema, selectIntroGroupsSchema, selectIntroGroupLeadersSchema, selectIntroGroupMembersSchema, selectIntroGroupAttendanceSchema, selectIntroGroupMemberNotesSchema, selectIntroGroupAttendanceLogSchema } from './db.zod.ts';
+import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.js';
+import { selectIntroSignupsSchema, selectIntroParentSignupsSchema, selectIntroBlogsSchema, selectIntroPlanningSchema, selectIntroConfidantsSchema, selectIntroGroupsSchema, selectIntroGroupLeadersSchema, selectIntroGroupMembersSchema, selectIntroGroupAttendanceSchema, selectIntroGroupMemberNotesSchema, selectIntroGroupAttendanceLogSchema } from './db.zod.js';
 
 export const introSignupFormSchema = z.object({
     voornaam: z.string().min(1, 'Voornaam is verplicht'),

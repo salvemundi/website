@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectTripsSchema, selectTripActivitiesSchema } from './db.zod.ts';
+import { selectTripsSchema, selectTripActivitiesSchema } from './db.zod.js';
 
 export const tripSchema = selectTripsSchema.extend({
     id: z.coerce.number().int(),

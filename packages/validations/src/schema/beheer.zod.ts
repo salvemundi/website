@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertEventsSchema, selectDirectusUsersSchema, selectCommitteeMembersSchema, selectEventSignupsSchema } from './db.zod.ts';
+import { insertEventsSchema, selectDirectusUsersSchema, selectCommitteeMembersSchema, selectEventSignupsSchema } from './db.zod.js';
 
 export const BeheerActivitySchema = insertEventsSchema.extend({
     id: z.coerce.number(),

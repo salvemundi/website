@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectSafeHavensSchema } from './db.zod.ts';
+import { selectSafeHavensSchema } from './db.zod.js';
 
 export const safeHavenSchema = selectSafeHavensSchema.omit({
     created_at: true,

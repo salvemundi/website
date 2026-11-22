@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectNdaTemplatesSchema, selectNdaSignaturesSchema, selectNdaSettingsSchema } from './db.zod.ts';
+import { selectNdaTemplatesSchema, selectNdaSignaturesSchema, selectNdaSettingsSchema } from './db.zod.js';
 
 export const ndaTemplateStatusEnum = z.enum(['draft', 'signed', 'archived']);
 export type NdaTemplateStatus = z.infer<typeof ndaTemplateStatusEnum>;

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectDocumentsSchema, selectFeatureFlagsSchema } from './db.zod.ts';
+import { selectDocumentsSchema, selectFeatureFlagsSchema } from './db.zod.js';
 
 export const documentSchema = selectDocumentsSchema.extend({
     id: z.union([z.string(), z.number()]),

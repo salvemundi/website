@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectCommitteesSchema, selectCommitteeMembersSchema, selectDirectusUsersSchema } from './db.zod.ts';
+import { selectCommitteesSchema, selectCommitteeMembersSchema, selectDirectusUsersSchema } from './db.zod.js';
 
 export const committeeMemberUserSchema = selectDirectusUsersSchema.pick({
     id: true,

@@ -27,7 +27,10 @@ FROM manifests AS builder
 RUN --mount=type=cache,id=bun,target=/bun-cache bun install --frozen-lockfile --filter=@salvemundi/frontend...
 
 COPY packages/db ./packages/db
+RUN bun run --filter=@salvemundi/db build
+
 COPY packages/validations ./packages/validations
+RUN bun run --filter=@salvemundi/validations build
 
 COPY apps/frontend ./apps/frontend
 RUN BETTER_AUTH_SECRET=dummy_secret_at_least_32_characters_long_v7_salve_mundi \
