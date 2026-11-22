@@ -5,8 +5,9 @@
   "type": "module",
   "description": "Administrative gateway for Azure AD writes (Provisioning)",
   "scripts": {
+    "dev": "bun --watch src/server.ts",
     "build": "tsc",
-    "type-check": "tsc --noEmit",
+    "type-check": "bun check",
     "lint": "eslint src"
   },
   "dependencies": {

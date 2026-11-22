@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "type-check": "tsc --noEmit",
+    "type-check": "bun check",
     "lint": "eslint src",
-    "provision": "node dist/index.js"
+    "provision": "bun src/index.ts"
   },
   "dependencies": {
     "socket.io-client": "^4.8.1",

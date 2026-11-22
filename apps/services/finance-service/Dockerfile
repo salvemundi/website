@@ -1,45 +1,42 @@
-FROM node:26-alpine AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm@11.8.0
+FROM oven/bun:1.4.5-alpine AS deps
+ENV BUN_INSTALL_CACHE_DIR="/bun-cache"
 WORKDIR /app
-
-FROM base AS builder
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
-COPY patches ./patches
+COPY bun.lock bunfig.toml package.json ./
 COPY apps/frontend/package.json ./apps/frontend/
 COPY apps/services/finance-service/package.json ./apps/services/finance-service/
 COPY apps/services/azure-sync-service/package.json ./apps/services/azure-sync-service/
 COPY apps/services/mail-service/package.json ./apps/services/mail-service/
 COPY apps/services/azure-management-service/package.json ./apps/services/azure-management-service/
 COPY apps/services/mcp-service/package.json ./apps/services/mcp-service/
+COPY apps/services/mobile-notification-service/package.json ./apps/services/mobile-notification-service/
+COPY apps/services/monitoring-service/package.json ./apps/services/monitoring-service/
 COPY packages/validations/package.json ./packages/validations/
 COPY packages/db/package.json ./packages/db/
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
+RUN --mount=type=cache,id=bun,target=/bun-cache bun install --production --frozen-lockfile --filter=@salvemundi/finance-service...
 
-COPY packages/db ./packages/db
-RUN pnpm --filter=@salvemundi/db build
-
-COPY packages/validations ./packages/validations
-RUN pnpm --filter=@salvemundi/validations build
-
-COPY apps/services/finance-service ./apps/services/finance-service
-RUN pnpm --filter=@salvemundi/finance-service build
-
-RUN pnpm deploy --filter=@salvemundi/finance-service --prod --legacy /app/pruned
-
-FROM node:26-alpine AS runner
+FROM oven/bun:1.4.5-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 RUN apk add --no-cache tzdata
 ENV TZ=Europe/Amsterdam
 
-COPY --from=builder --chown=node:node /app/pruned ./
-COPY --from=builder --chown=node:node /app/apps/services/finance-service/dist ./dist
+COPY --from=deps --chown=bun:bun /app/package.json ./package.json
+COPY --from=deps --chown=bun:bun /app/node_modules ./node_modules
+COPY --from=deps --chown=bun:bun /app/packages/db/package.json ./packages/db/package.json
+COPY --from=deps --chown=bun:bun /app/packages/db/node_modules ./packages/db/node_modules
+COPY --chown=bun:bun packages/db/src ./packages/db/src
+COPY --chown=bun:bun packages/db/drizzle ./packages/db/drizzle
+COPY --from=deps --chown=bun:bun /app/packages/validations/package.json ./packages/validations/package.json
+COPY --from=deps --chown=bun:bun /app/packages/validations/node_modules ./packages/validations/node_modules
+COPY --chown=bun:bun packages/validations/src ./packages/validations/src
+COPY --from=deps --chown=bun:bun /app/apps/services/finance-service/package.json ./apps/services/finance-service/package.json
+COPY --from=deps --chown=bun:bun /app/apps/services/finance-service/node_modules ./apps/services/finance-service/node_modules
+COPY --chown=bun:bun apps/services/finance-service/src ./apps/services/finance-service/src
 
-USER node
+WORKDIR /app/apps/services/finance-service
+USER bun
 
 EXPOSE 3001
-CMD ["node", "dist/server.js"]
+CMD ["bun", "src/server.ts"]

@@ -5,27 +5,33 @@
     "type": "module",
     "main": "./dist/index.js",
     "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "types": "./src/index.ts",
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
+            "bun": "./src/index.ts",
+            "development": "./src/index.ts",
+            "types": "./src/index.ts",
             "import": "./dist/index.js",
             "default": "./dist/index.js"
         },
         "./schema/*": {
-            "types": "./dist/schema/*.d.ts",
+            "bun": "./src/schema/*.ts",
+            "development": "./src/schema/*.ts",
+            "types": "./src/schema/*.ts",
             "import": "./dist/schema/*.js",
             "default": "./dist/schema/*.js"
         },
         "./security": {
-            "types": "./dist/security.d.ts",
+            "bun": "./src/security.ts",
+            "development": "./src/security.ts",
+            "types": "./src/security.ts",
             "import": "./dist/security.js",
             "default": "./dist/security.js"
         }
     },
     "scripts": {
-        "build": "tsc",
-        "type-check": "tsc --noEmit",
+        "build": "bun build src/index.ts src/security.ts src/schema/*.ts --outdir dist --root src --target node --format esm --packages external",
+        "type-check": "bun check",
         "lint": "eslint .",
         "generate:zod": "node scripts/generate-zod.mjs"
     },

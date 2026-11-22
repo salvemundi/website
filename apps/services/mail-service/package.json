@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "bun --watch src/server.ts",
     "build": "tsc && node -e \"const fs=require('fs'); fs.cpSync('src/templates', 'dist/templates', {recursive: true}); fs.cpSync('src/assets', 'dist/assets', {recursive: true})\"",
-    "type-check": "tsc --noEmit",
+    "type-check": "bun check",
     "lint": "eslint src"
   },
   "dependencies": {
@@ -18,13 +19,11 @@
     "fastify-plugin": "^6.0.0",
     "handlebars": "4.7.10",
     "ioredis": "^5.11.1",
-    "pg": "^8.22.0",
     "qrcode": "^1.5.4",
     "zod": "^4.6.6"
   },
   "devDependencies": {
     "@types/node": "^26.0.0",
-    "@types/pg": "^8.20.0",
     "@types/qrcode": "^1.5.6",
     "typescript": "6.0.3"
   }

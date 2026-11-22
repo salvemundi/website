@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "fastify start -a 0.0.0.0 -l info dist/server.js",
+    "dev": "bun --watch src/server.ts",
     "build": "tsc",
-    "type-check": "tsc --noEmit",
+    "type-check": "bun check",
     "lint": "eslint src"
   },
   "dependencies": {
@@ -18,13 +18,10 @@
     "fastify": "5.12.6",
     "fastify-plugin": "^6.0.0",
     "ioredis": "^5.11.1",
-    "pg": "^8.22.0",
     "zod": "^4.6.6"
   },
   "devDependencies": {
     "@types/node": "^26.0.0",
-    "@types/pg": "^8.20.0",
-    "fastify-cli": "^8.0.0",
     "typescript": "6.0.3"
   }
 }

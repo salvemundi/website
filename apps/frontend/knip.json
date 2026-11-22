@@ -12,7 +12,6 @@
     "src/**/*.{ts,tsx}"
   ],
   "ignoreDependencies": [
-    "@tailwindcss/typography",
     "@serwist/sw",
     "@serwist/webpack-plugin"
   ],
