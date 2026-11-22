@@ -15,7 +15,7 @@ De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`
 
 ## Technologie Stack
 
-- **Runtime & Build**: Node.js 24+, TypeScript 6.0, pnpm 11.
+- **Runtime & Build**: Node.js 26, TypeScript 6.0 / 7.0 (`typescript-native`), pnpm 12.
 - **Frontend**: Next.js 16.4 (Turbopack), React 19, Mantine UI v9 (`@mantine/core`, `@mantine/dates`, `@mantine/notifications`), Tailwind CSS 4, MapLibre GL JS v6, Better Auth.
 - **Design System**: Centrale Salve Mundi Brandguide-configuratie in `apps/frontend/src/lib/config/theme.ts` (`BRAND_COLORS`, `salveMundiTheme`, `salveMundiCssResolver`) en `apps/frontend/src/app/globals.css`.
 - **Backend/CMS**: Directus 11, Fastify 5.
@@ -24,20 +24,21 @@ De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`
 - **Monitoring**: Uptime Kuma (geautomatiseerde socket provisioning & Discord webhooks).
 - **Infrastructuur & CI/CD**: Docker, Nginx Proxy Manager, GitHub Actions.
 
-## Package Management & Security (pnpm v11)
+## Package Management & Security (pnpm v12)
 
-Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibiliteit en veiligheid te garanderen:
+Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` en `package.json` om compatibiliteit, snelheid en veiligheid te garanderen:
 
+- **`devEngines.runtime`**: Beheert en downloadt automatisch Node.js 26 voor dit project bij `pnpm`-commando's, zodat iedereen met exact dezelfde Node-versie werkt.
+- **`catalog:`**: Centraliseert gedeelde versies (`drizzle-orm`, `zod`, `fastify`, `ioredis`, `eslint`, `typescript`, enz.) over alle workspaces heen.
+- **`minimumReleaseAge` & `trustLockfile`**: Nieuwe of bijgewerkte packages worden pas na 24 uur (`1440` min) geaccepteerd ter bescherming tegen supply-chain aanvallen, zonder vertraging op `--frozen-lockfile`.
 - **`overrides`**: Dwingt specifieke, veilige versies af van transitieve dependencies over de gehele monorepo.
 - **`allowBuilds`**: Uit veiligheidsoverwegingen zijn post-install scripts geblokkeerd (`false`) voor vrijwel alle packages.
-- **`patchedDependencies`**: Bevat gerichte patches (in `/patches`) voor third-party packages.
 
 ## Lokale Ontwikkeling
 
 ### Vereisten
 
-- Node.js ≥ 22.13 (de `mobile-notification-service` vraagt ≥ 24)
-- pnpm 11 (`corepack enable` pakt automatisch de versie uit `package.json`)
+- pnpm 12 (installeert via `devEngines.runtime` automatisch Node.js 26 als dat lokaal ontbreekt; of installeer handmatig Node.js ≥ 26)
 - Docker met Docker Compose
 
 ### Eerste keer opzetten
@@ -89,12 +90,13 @@ Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibilite
     ```
 
 7.  **Start de development server**.
-    Bouw eerst `@salvemundi/db` en `@salvemundi/validations`, anders kan Next.js deze packages niet resolven (zie #374).
-    Daarna draait Next.js op http://localhost:3000:
+    Dankzij directe `.ts`-exports op `@salvemundi/db` en `@salvemundi/validations` hoef je packages niet eerst apart te builden om Next.js of de services te starten (zie #374).
+    Draai Next.js op http://localhost:3000 (en optioneel alle TypeScript-microservices via `pnpm dev:services`):
 
     ```bash
-    pnpm build:packages
     pnpm dev
+    # optioneel in een tweede terminal voor de microservices:
+    pnpm dev:services
     ```
 
     _(Het `predev`/`prebuild` script `sync:maplibre-worker` kopieert automatisch de MapLibre v6 worker-bestanden naar `apps/frontend/public/map/worker/`.)_
