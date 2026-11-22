@@ -2,12 +2,13 @@
   "name": "salve-mundi-v7",
   "version": "4.0.4",
   "private": true,
-  "packageManager": "pnpm@11.24.0",
+  "packageManager": "pnpm@12.21.0",
   "engines": {
     "node": ">=22.13.1"
   },
   "scripts": {
     "dev": "pnpm --filter @salvemundi/frontend dev",
+    "dev:services": "pnpm -r --parallel --if-present --filter './apps/services/*' dev",
     "build:packages": "pnpm --filter @salvemundi/db --filter @salvemundi/validations build",
     "dev:infra": "docker compose -f infrastructure/dev/docker-compose.yml up -d --wait",
     "dev:infra:down": "docker compose -f infrastructure/dev/docker-compose.yml down",
@@ -16,17 +17,19 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r --parallel --if-present lint",
     "knip": "knip",
-    "type-check": "pnpm -r --if-present run type-check",
+    "type-check": "pnpm -r --parallel --if-present run type-check",
     "validate": "pnpm type-check && pnpm lint && pnpm knip && pnpm build",
     "setup": "pnpm install && pnpm validate",
     "db:sync": "pnpm --filter @salvemundi/db pull && node packages/db/scripts/normalize-schema.mjs && pnpm --filter @salvemundi/db build && pnpm --filter @salvemundi/validations generate:zod && pnpm --filter @salvemundi/validations build"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "eslint": "^9.39.5",
+    "eslint": "catalog:",
     "eslint-plugin-security": "^4.2.1",
     "eslint-plugin-unused-imports": "^4.4.1",
-    "knip": "^6.45.1",
-    "typescript-eslint": "^8.73.0"
+    "knip": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.73.0",
+    "typescript-native": "npm:typescript@7.0.2"
   }
 }

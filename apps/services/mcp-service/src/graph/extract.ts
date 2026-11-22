@@ -66,7 +66,7 @@ async function extractSlides(data: Buffer): Promise<string> {
         const out: string[] = [];
         for (const { n, nr } of slides) {
             const xml = (await zip.file(n)?.async('string')) ?? '';
-            const paragraphs = xml.split('</a:p>').map((p) => [...p.matchAll(/<a:t(?: [^>]*)?>([^<]*)<\/a:t>/g)].map((m) => decodeXml(m[1])).join('')).filter((t) => t.trim());
+            const paragraphs = xml.split('</a:p>').map((p) => [...p.matchAll(/<a:t(?=[ >])[^>]*>([^<]*)<\/a:t>/g)].map((m) => decodeXml(m[1])).join('')).filter((t) => t.trim());
             if (paragraphs.length) out.push(`[Dia ${nr}]\n${paragraphs.join('\n')}`);
         }
         return tidy(out.join('\n\n'));

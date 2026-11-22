@@ -1,12 +1,11 @@
 FROM node:26-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm@11.24.0
+RUN npm install -g pnpm@12.21.0
 WORKDIR /app
 
 FROM base AS manifests
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY patches ./patches
 COPY apps/frontend/package.json ./apps/frontend/
 COPY apps/services/finance-service/package.json ./apps/services/finance-service/
 COPY apps/services/azure-sync-service/package.json ./apps/services/azure-sync-service/

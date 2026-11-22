@@ -3,6 +3,27 @@ packages:
   - "apps/services/*"
   - "packages/*"
 
+minimumReleaseAge: 1440
+trustLockfile: true
+
+catalog:
+  "@azure/identity": "^4.13.1"
+  "@directus/sdk": "^22.0.0"
+  "@microsoft/microsoft-graph-client": "^3.0.7"
+  "@types/node": "^26.0.0"
+  "@types/qrcode": "^1.5.6"
+  "drizzle-orm": "0.45.2"
+  "esbuild": "^0.28.1"
+  "eslint": "^9.39.5"
+  "fastify": "5.12.6"
+  "fastify-plugin": "^6.0.0"
+  "ioredis": "^5.11.1"
+  "knip": "^6.45.1"
+  "qrcode": "^1.5.4"
+  "tsx": "^4.23.15"
+  "typescript": "6.0.3"
+  "zod": "^4.6.6"
+
 allowBuilds:
   "@parcel/watcher": false
   core-js-pure: false
@@ -34,9 +55,6 @@ overrides:
   lodash: "4.18.1"
   flatted: "3.4.2"
   picomatch: "4.0.4"
-  brace-expansion: "5.0.6"
-  vite: "7.3.2"
-  jsdom: "25.0.1"
   kysely: "0.28.17"
   postcss: "8.5.23"
   protocol-buffers-schema: "3.6.1"
@@ -54,13 +72,3 @@ peerDependencyRules:
   allowedVersions:
     react: "^19.0.0"
     react-dom: "^19.0.0"
-
-minimumReleaseAgeExclude:
-  - brace-expansion@5.0.6
-  - uuid@11.1.1
-  - '@next/bundle-analyzer@16.4.1'
-  - '@next/eslint-plugin-next@16.4.1'
-  - eslint-config-next@16.4.1
-
-patchedDependencies:
-  brace-expansion@5.0.6: patches/brace-expansion@5.0.6.patch

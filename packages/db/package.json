@@ -2,21 +2,31 @@
   "name": "@salvemundi/db",
   "version": "1.0.0",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./schema": {
-      "types": "./dist/schema.d.ts",
+      "types": "./src/schema.ts",
+      "development": "./src/schema.ts",
+      "import": "./dist/schema.js",
       "default": "./dist/schema.js"
+    },
+    "./relations": {
+      "types": "./src/relations.ts",
+      "development": "./src/relations.ts",
+      "import": "./dist/relations.js",
+      "default": "./dist/relations.js"
     }
   },
   "scripts": {
-    "build": "tsup",
-    "type-check": "tsc --noEmit",
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && esbuild src/index.ts src/schema.ts src/relations.ts --bundle --format=esm --platform=node --target=node22 --outdir=dist --sourcemap --packages=external",
+    "type-check": "node ../../node_modules/typescript-native/bin/tsc --noEmit",
     "generate": "drizzle-kit generate",
     "pull": "drizzle-kit pull",
     "dev:init": "node dev/init-local-db.mjs",
@@ -29,10 +39,10 @@
     "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {
-    "@types/node": "^26.0.0",
+    "@types/node": "catalog:",
     "drizzle-kit": "^0.31.10",
-    "drizzle-orm": "^0.45.2",
-    "tsup": "^8.5.1",
-    "typescript": "^5.4.5"
+    "drizzle-orm": "catalog:",
+    "esbuild": "catalog:",
+    "typescript": "catalog:"
   }
 }

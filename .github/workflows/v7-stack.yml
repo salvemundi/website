@@ -33,7 +33,6 @@ on:
       - "apps/services/mcp-service/**"
       - "apps/wieisdemol/**"
       - "packages/**"
-      - "patches/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -52,7 +51,6 @@ on:
       - "apps/services/mcp-service/**"
       - "apps/wieisdemol/**"
       - "packages/**"
-      - "patches/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -90,8 +88,7 @@ jobs:
           node-version: 26
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter=@salvemundi/db build
-      - run: pnpm --filter=@salvemundi/validations build
+      - run: pnpm build:packages
       - name: Verify mobile activity administration and widget permissions
         run: node --experimental-vm-modules --test apps/mobile/tests/mobile-admin*.test.mjs apps/mobile/tests/mobile-notification-preferences.test.mjs
       - run: pnpm type-check
