@@ -1,6 +1,6 @@
 import 'server-only';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import QRCode from 'qrcode';
+import { renderTicketQrPng } from '@/server/internal/qr/qr-server';
 import { type SignupTicketInfo } from './kroegentocht-ticket-access.utils';
 
 const PURPLE = rgb(0.48, 0.17, 0.75);
@@ -42,7 +42,7 @@ export async function buildTicketsPdf(info: SignupTicketInfo): Promise<Uint8Arra
             page.drawText(d, { x: center(d, 14, regular), y: height - 228, size: 14, font: regular, color: MUTED });
         }
 
-        const qrPng = await QRCode.toBuffer(ticket.qrToken, { type: 'png', width: 800, margin: 1, errorCorrectionLevel: 'M' });
+        const qrPng = await renderTicketQrPng(ticket.qrToken, 800);
         const qr = await pdf.embedPng(qrPng);
         const qrSize = 360;
         page.drawImage(qr, { x: (width - qrSize) / 2, y: height - 270 - qrSize, width: qrSize, height: qrSize });

@@ -25,9 +25,9 @@
     <p
         style="font-weight: 800; color: #a4539b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px; font-size: 11px;">
         Je Ticket QR-Code</p>
-    {{#if qrToken}}
-    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{qrToken}}" alt="Ticket QR Code"
-        width="200" height="200" style="display: block; margin: 0 auto; border: 0;">
+    {{#if qrCid}}
+    <img src="cid:{{qrCid}}" alt="Ticket QR Code"
+        width="220" height="220" style="display: block; margin: 0 auto; border: 0;">
     {{else}}
     <p style="font-style: italic; color: #8a7a8c;">Je QR-code is online beschikbaar.</p>
     {{/if}}

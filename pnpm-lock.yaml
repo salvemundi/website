@@ -373,9 +373,6 @@ importers:
       qrcode:
         specifier: 'catalog:'
         version: 1.5.4
-      qrcode.react:
-        specifier: ^4.2.0
-        version: 4.2.0(react@19.2.8)
       react:
         specifier: ^19.2.7
         version: 19.2.8
@@ -650,9 +647,6 @@ importers:
       ioredis:
         specifier: 'catalog:'
         version: 5.11.1(supports-color@7.2.0)
-      qrcode:
-        specifier: 'catalog:'
-        version: 1.5.4
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -660,9 +654,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.1
-      '@types/qrcode':
-        specifier: 'catalog:'
-        version: 1.5.6
       tsx:
         specifier: 'catalog:'
         version: 4.23.15
@@ -5125,11 +5116,6 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
-
-  qrcode.react@4.2.0:
-    resolution: {integrity: sha512-QpgqWi8rD9DsS9EP3z7BT+5lY5SFhsqGjpgW5DY/i3mK4M9DTBNz3ErMi8BWYEfI3L0d8GIbGmcdFAS1uIRGjA==}
-    peerDependencies:
-      react: ^19.2.7
 
   qrcode@1.5.4:
     resolution: {integrity: sha512-1ca71Zgiu6ORjHqFBDpnSMTR2ReToX4l1Au1VFLyVeBTFavzQnv5JxMFr3ukHVKpSrSA2MCk0lNJSykjUfz7Zg==}
@@ -10245,10 +10231,6 @@ snapshots:
       ipaddr.js: 1.9.1
 
   punycode@2.3.1: {}
-
-  qrcode.react@4.2.0(react@19.2.8):
-    dependencies:
-      react: 19.2.8
 
   qrcode@1.5.4:
     dependencies:

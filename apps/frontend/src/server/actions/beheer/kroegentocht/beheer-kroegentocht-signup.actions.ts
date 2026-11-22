@@ -7,12 +7,10 @@ import {
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { db, schema } from '@salvemundi/db';
 import { asc, eq } from 'drizzle-orm';
-import QRCode from 'qrcode';
 import { z } from 'zod';
 import { fetchPubCrawlSignupsDb, fetchPubCrawlSignupByIdDb, updatePubCrawlSignupDb, deletePubCrawlSignupDb } from '@/server/internal/kroegentocht/kroegentocht-signup-db.utils';;
 import { requireKroegAdmin } from './beheer-kroegentocht-event.actions';
 import { safeConsoleError } from '@/server/utils/logger';
-import { BRAND_COLORS } from '@/lib/config/theme';
 import { scheduleKroegSheetSync, syncKroegSheetNow, getKroegSheetUrl, getKroegGroupRowsForCsv } from '@/server/internal/kroegentocht/kroegentocht-google-sheet.utils';
 
 export async function getPubCrawlSignups(eventId: number): Promise<Awaited<ReturnType<typeof fetchPubCrawlSignupsDb>>> {
@@ -404,13 +402,10 @@ export async function resendPubCrawlTicketEmail(signupId: number): Promise<{ suc
                     eventName: signup.eventName || 'Kroegentocht',
                     whatsappCommunityUrl: signup.whatsappCommunityUrl,
                     totalTickets: tickets.length,
-                    tickets: await Promise.all(tickets.map(async ticket => ({
+                    tickets: tickets.map(ticket => ({
                         name: ticket.name,
-                        qrDataUrl: await QRCode.toDataURL(ticket.qrToken || '', {
-                            errorCorrectionLevel: 'M', width: 300, margin: 2,
-                            color: { dark: BRAND_COLORS.purple, light: BRAND_COLORS.lightSurface }
-                        })
-                    })))
+                        qrToken: ticket.qrToken
+                    }))
                 }
             })
         });

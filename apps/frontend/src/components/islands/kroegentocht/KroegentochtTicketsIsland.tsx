@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 import QRDisplay from '@/shared/ui/QRDisplay';
-import { generateQRCode } from '@/lib/utils/qr-service';
+import { generateTicketQrSvgDataUri } from '@/lib/qr/qr-client';
 import { Download, CheckCircle2 } from 'lucide-react';
 import { Badge, Box, Button, Card, Divider, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
@@ -51,7 +51,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
             ctx.lineTo(500, 280);
             ctx.stroke();
 
-            const qrDataUrl = await generateQRCode(ticket.qr_token);
+            const qrDataUrl = await generateTicketQrSvgDataUri(ticket.qr_token, 400);
             const qrImg = new Image();
             qrImg.crossOrigin = 'anonymous';
 

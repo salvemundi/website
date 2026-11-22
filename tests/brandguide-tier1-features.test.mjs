@@ -560,7 +560,7 @@ describe('Brandguide Tier 1: Feature Coverage (F1-F11, 55 tests)', () => {
             }
         });
 
-        it('T1-F9-02: zero className props on lucide-react icons, social SVG components, and QRCodeSVG', () => {
+        it('T1-F9-02: zero className props on lucide-react icons and social SVG components', () => {
             const violations = [];
             for (const file of snapshot.uiTsxFiles) {
                 for (const el of file.jsxElements) {

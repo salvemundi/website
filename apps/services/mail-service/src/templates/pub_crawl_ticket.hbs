@@ -16,7 +16,12 @@
   </h2>
   <p style="text-align: center; font-size: 13px; color: #8a7a8c; margin: 4px 0 20px;">{{../eventName}}</p>
 
-  {{#if this.qrDataUrl}}
+  {{#if this.qrCid}}
+  <div style="text-align: center; margin: 20px 0;">
+    <img src="cid:{{this.qrCid}}" alt="QR Code voor {{this.name}}" width="220" height="220"
+      style="display: block; margin: 0 auto; border: 0;" />
+  </div>
+  {{else if this.qrDataUrl}}
   <div style="text-align: center; margin: 20px 0;">
     <img src="{{this.qrDataUrl}}" alt="QR Code voor {{this.name}}" width="180" height="180"
       style="display: block; margin: 0 auto; border: 0;" />

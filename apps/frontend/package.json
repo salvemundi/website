@@ -40,7 +40,6 @@
     "pdfjs-dist": "^6.2.108",
     "pg": "^8.22.0",
     "qrcode": "catalog:",
-    "qrcode.react": "^4.2.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hook-form": "^7.82.0",

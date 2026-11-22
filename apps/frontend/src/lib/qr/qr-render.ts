@@ -1,11 +1,13 @@
 import QRCode from 'qrcode';
+import { BRAND_COLORS } from '@/lib/config/theme';
+
+export type QrLogoStyle = 'kleur' | 'eenkleurig';
+export type QrDetailLevel = 'laag' | 'midden' | 'hoog';
 
 export interface QrMatrix {
     size: number;
     version: number;
-    /** Huidige waarde per module (rij * size + kolom), 1 = donker. */
     data: Uint8Array;
-    /** 1 = functiemodule (zoekpatronen, timing, formaatinfo), die mag niet veranderen. */
     reserved: Uint8Array;
     dark: (row: number, col: number) => boolean;
 }
@@ -16,21 +18,91 @@ export interface QrSvgOptions {
     size: number;
     fg: string;
     bg: string;
-    /** Kleur per module (rij * size + kolom) vanuit het logo, of null/undefined voor de voorgrondkleur. */
     colors?: (string | null)[] | null;
 }
+
+export interface LogoRgba {
+    width: number;
+    height: number;
+    data: Uint8Array | Uint8ClampedArray;
+}
+
+export interface SalveMundiQrOptions {
+    fg?: string;
+    bg?: string;
+    size?: number;
+    margin?: number;
+    detail?: QrDetailLevel;
+    showLogo?: boolean;
+    logoPercent?: number;
+    logoRecolor?: string | null;
+}
+
+export interface SalveMundiQrResult {
+    svg: string;
+    effectivePercent: number | null;
+}
+
+export const OWL_CROP_RATIO = 0.74;
+export const QR_MARGIN_MODULES = 4;
+export const QR_MIN_LOGO_PERCENT = 15;
+export const QR_DEFAULT_LOGO_PERCENT = 70;
+
+export const QR_DETAIL_VERSIONS: Record<QrDetailLevel, number | null> = {
+    laag: null,
+    midden: 10,
+    hoog: 14,
+};
+
+export const QR_TICKET_DEFAULTS: Required<SalveMundiQrOptions> = {
+    fg: BRAND_COLORS.darkBase,
+    bg: BRAND_COLORS.lightSurface,
+    size: 400,
+    margin: QR_MARGIN_MODULES,
+    detail: 'midden',
+    showLogo: true,
+    logoPercent: QR_DEFAULT_LOGO_PERCENT,
+    logoRecolor: null,
+};
 
 const FINDER = 7;
 const DOT_RADIUS = 0.38;
 const LOGO_DOT_RADIUS = 0.5;
 const PLAIN_DOT_RADIUS = 0.42;
+const BLOCKS_H = [1, 1, 2, 4, 4, 4, 5, 6, 8, 8, 11, 11, 16, 16, 18, 16, 19, 21, 25, 25, 25, 34, 30, 32, 35, 37, 40, 42, 45, 48, 51, 54, 57, 60, 63, 66, 70, 74, 77, 81];
+const EC_TOTAL_H = [17, 28, 44, 64, 88, 112, 130, 156, 192, 224, 264, 308, 352, 384, 432, 480, 532, 588, 650, 700, 750, 816, 900, 960, 1050, 1110, 1200, 1260, 1350, 1440, 1530, 1620, 1710, 1800, 1890, 1980, 2100, 2220, 2310, 2430];
+const SAFE_CAPACITY = 0.7;
 
-/** Foutcorrectie is altijd niveau H (30%). `minVersion` maakt het raster fijner zodat het logo meer detail krijgt. */
+export function findOpaqueBounds(
+    data: Uint8Array | Uint8ClampedArray,
+    width: number,
+    height: number,
+): { x: number; y: number; width: number; height: number } | null {
+    let minX = width;
+    let minY = height;
+    let maxX = -1;
+    let maxY = -1;
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            if ((data.at((y * width + x) * 4 + 3) ?? 0) > 16) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+    if (maxX < 0) return null;
+    return { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 };
+}
+
 export function buildMatrix(value: string, minVersion: number | null): QrMatrix {
     const text = value || ' ';
     let qr: ReturnType<typeof QRCode.create>;
     try {
-        qr = minVersion ? QRCode.create(text, { errorCorrectionLevel: 'H', version: minVersion }) : QRCode.create(text, { errorCorrectionLevel: 'H' });
+        qr = minVersion
+            ? QRCode.create(text, { errorCorrectionLevel: 'H', version: minVersion })
+            : QRCode.create(text, { errorCorrectionLevel: 'H' });
     } catch {
         qr = QRCode.create(text, { errorCorrectionLevel: 'H' });
     }
@@ -42,24 +114,7 @@ function makeMatrix(size: number, version: number, data: Uint8Array, reserved: U
     return { size, version, data, reserved, dark: (row, col) => data.at(row * size + col) === 1 };
 }
 
-// Foutcorrectie-structuur voor niveau H: aantal blokken en totaal aantal EC-codewoorden per versie (1 t/m 40).
-const BLOCKS_H = [1, 1, 2, 4, 4, 4, 5, 6, 8, 8, 11, 11, 16, 16, 18, 16, 19, 21, 25, 25, 25, 34, 30, 32, 35, 37, 40, 42, 45, 48, 51, 54, 57, 60, 63, 66, 70, 74, 77, 81];
-const EC_TOTAL_H = [17, 28, 44, 64, 88, 112, 130, 156, 192, 224, 264, 308, 352, 384, 432, 480, 532, 588, 650, 700, 750, 816, 900, 960, 1050, 1110, 1200, 1260, 1350, 1440, 1530, 1620, 1710, 1800, 1890, 1980, 2100, 2220, 2310, 2430];
-// Aandeel van de correctiecapaciteit dat we maximaal gebruiken, de rest is veiligheidsmarge voor slechte scans.
-const SAFE_CAPACITY = 0.7;
-
-interface Layout {
-    /** Codewoord-index per module, of -1 voor functiemodules en restbits. */
-    codewordOf: Int32Array;
-    /** Blok waar elk codewoord bij hoort (na interleaving). */
-    blockOf: number[];
-    blocks: number;
-    /** Aantal codewoordfouten dat per blok gecorrigeerd kan worden. */
-    correctable: number;
-}
-
-/** Zet elke datamodule om naar het codewoord waar hij in zit (zigzagvolgorde uit de QR-specificatie). */
-function buildLayout(matrix: QrMatrix): Layout | null {
+function buildLayout(matrix: QrMatrix) {
     const { size, reserved, version } = matrix;
     const codewordOf = new Int32Array(size * size).fill(-1);
     const order: number[] = [];
@@ -104,13 +159,9 @@ function buildLayout(matrix: QrMatrix): Layout | null {
     order.forEach((idx, n) => {
         if (n < total * 8) codewordOf.set([Math.floor(n / 8)], idx);
     });
-    return { codewordOf, blockOf, blocks, correctable: Math.floor(ecPerBlock / 2) };
+    return { codewordOf, blockOf, correctable: Math.floor(ecPerBlock / 2) };
 }
 
-/**
- * Maakt alle gewenste modules donker, zolang de foutcorrectie dat aankan. Geeft de aangepaste matrix terug,
- * of null als het logo daarvoor te groot is. Het aangepaste gebied telt als "beschadigde" codewoorden, die de foutcorrectie herstelt.
- */
 export function forceModules(matrix: QrMatrix, wanted: (string | null)[]): QrMatrix | null {
     const layout = buildLayout(matrix);
     if (!layout) return null;
@@ -175,51 +226,88 @@ export function buildSvg({ matrix, margin, size, fg, bg, colors }: QrSvgOptions)
         + `<g transform="translate(${margin} ${margin})">${dots}${finders}</g></svg>`;
 }
 
-/**
- * Bepaalt per module welke logokleur erin zit. Modules die voor minstens de helft onder het logo vallen krijgen de kleur van het logo.
- * De data zelf wordt niet aangepast, dus de code blijft geldig.
- */
-export function sampleLogoColors(logo: CanvasImageSource, ratio: number, modules: number, percent: number, recolor: string | null): (string | null)[] {
-    const sample = 4;
-    const side = modules * sample;
-    const canvas = document.createElement('canvas');
-    canvas.width = side;
-    canvas.height = side;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return new Array<string | null>(modules * modules).fill(null);
+export function svgToDataUri(svg: string): string {
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
 
+export function sampleLogoFromRgba(
+    logo: LogoRgba,
+    modules: number,
+    percent: number,
+    recolor: string | null = null,
+): (string | null)[] {
+    const ratio = logo.height / logo.width;
     const lw = (percent / 100) * modules;
     const lh = lw * ratio;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(logo, ((modules - lw) / 2) * sample, ((modules - lh) / 2) * sample, lw * sample, lh * sample);
-    const { data } = ctx.getImageData(0, 0, side, side);
+    const x0 = (modules - lw) / 2;
+    const y0 = (modules - lh) / 2;
+    const sample = 4;
 
-    const result: (string | null)[] = new Array<string | null>(modules * modules).fill(null);
+    const result: (string | null)[] = [];
     for (let row = 0; row < modules; row++) {
         for (let col = 0; col < modules; col++) {
+            if (isFinderZone(modules, row, col)) {
+                result.push(null);
+                continue;
+            }
             let alpha = 0;
             let r = 0;
             let g = 0;
             let b = 0;
             for (let dy = 0; dy < sample; dy++) {
+                const uy = Math.floor(((row + (dy + 0.5) / sample - y0) / lh) * logo.height);
+                if (uy < 0 || uy >= logo.height) continue;
                 for (let dx = 0; dx < sample; dx++) {
-                    const i = ((row * sample + dy) * side + col * sample + dx) * 4;
-                    const a = (data.at(i + 3) ?? 0) / 255;
+                    const ux = Math.floor(((col + (dx + 0.5) / sample - x0) / lw) * logo.width);
+                    if (ux < 0 || ux >= logo.width) continue;
+                    const offset = (uy * logo.width + ux) * 4;
+                    const a = (logo.data.at(offset + 3) ?? 0) / 255;
                     alpha += a;
-                    r += (data.at(i) ?? 0) * a;
-                    g += (data.at(i + 1) ?? 0) * a;
-                    b += (data.at(i + 2) ?? 0) * a;
+                    r += (logo.data.at(offset) ?? 0) * a;
+                    g += (logo.data.at(offset + 1) ?? 0) * a;
+                    b += (logo.data.at(offset + 2) ?? 0) * a;
                 }
             }
-            const coverage = alpha / (sample * sample);
-            if (coverage < 0.5 || isFinderZone(modules, row, col)) continue;
-            if (recolor) {
-                result[row * modules + col] = recolor;
+            if (alpha / (sample * sample) < 0.5) {
+                result.push(null);
+            } else if (recolor) {
+                result.push(recolor);
             } else {
                 const toHex = (v: number) => Math.round(v / alpha).toString(16).padStart(2, '0');
-                result[row * modules + col] = `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+                result.push(`#${toHex(r)}${toHex(g)}${toHex(b)}`);
             }
         }
     }
     return result;
+}
+
+export function buildSalveMundiQr(
+    value: string,
+    logo: LogoRgba | null,
+    options: SalveMundiQrOptions = {},
+): SalveMundiQrResult {
+    const fg = options.fg ?? QR_TICKET_DEFAULTS.fg;
+    const bg = options.bg ?? QR_TICKET_DEFAULTS.bg;
+    const size = options.size ?? QR_TICKET_DEFAULTS.size;
+    const margin = options.margin ?? QR_TICKET_DEFAULTS.margin;
+    const detail = options.detail ?? QR_TICKET_DEFAULTS.detail;
+    const showLogo = options.showLogo ?? QR_TICKET_DEFAULTS.showLogo;
+    const logoPercent = options.logoPercent ?? QR_TICKET_DEFAULTS.logoPercent;
+    const logoRecolor = options.logoRecolor ?? QR_TICKET_DEFAULTS.logoRecolor;
+
+    const minVersion = detail === 'laag' ? QR_DETAIL_VERSIONS.laag : detail === 'hoog' ? QR_DETAIL_VERSIONS.hoog : QR_DETAIL_VERSIONS.midden;
+    const matrix = buildMatrix(value, minVersion);
+    const base = { margin, size, fg, bg };
+
+    if (showLogo && logo) {
+        for (let pct = logoPercent; pct >= QR_MIN_LOGO_PERCENT; pct--) {
+            const colors = sampleLogoFromRgba(logo, matrix.size, pct, logoRecolor);
+            const forced = forceModules(matrix, colors);
+            if (forced) {
+                return { svg: buildSvg({ ...base, matrix: forced, colors }), effectivePercent: pct };
+            }
+        }
+    }
+
+    return { svg: buildSvg({ ...base, matrix, colors: null }), effectivePercent: showLogo ? null : logoPercent };
 }
