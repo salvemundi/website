@@ -6,7 +6,7 @@ import {
     insertCoboBoardPreferencesSchema,
     selectCoboGuestBoardsSchema,
     insertCoboGuestBoardsSchema
-} from './db.zod.js';
+} from './db.zod.ts';
 
 export const coboEventSchema = selectCoboSchema;
 export type CoboEvent = z.infer<typeof coboEventSchema>;

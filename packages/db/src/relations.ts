@@ -1,1 +1,1 @@
-export * from '../drizzle/relations.js';
+export * from '../drizzle/relations.ts';

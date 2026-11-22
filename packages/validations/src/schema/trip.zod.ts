@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.js';
-import { selectTripSignupsSchema, selectTripSignupActivitiesSchema } from './db.zod.js';
+import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.ts';
+import { selectTripSignupsSchema, selectTripSignupActivitiesSchema } from './db.zod.ts';
 
 export const reisSiteSettingsSchema = z.object({
     id: z.string().optional(),
