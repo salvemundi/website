@@ -312,7 +312,6 @@ export const SOCIAL_ICON_TAGS = new Set([
     'SiFacebook',
     'SiTiktok',
     'FaLinkedin',
-    'QRCodeSVG',
 ]);
 
 export const RAW_SVG_TAGS = new Set(['svg', 'path', 'polyline', 'circle', 'rect', 'line', 'polygon']);
@@ -458,9 +457,6 @@ function scanHexAndFuncColors(text, line, relPath, hexLiterals, funcColorLiteral
         // Still check if it's a CSS string containing multiple parts, unless it's strictly a URL
         if (/^(?:https?:\/\/|mailto:|tel:)/i.test(text.trim())) return;
     }
-    // Skip qr-render.ts SVG markup builder
-    if (relPath === 'components/islands/qr-generator/qr-render.ts') return;
-
     const hexStandalone = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
     const trimmed = text.trim();
     if (hexStandalone.test(trimmed)) {

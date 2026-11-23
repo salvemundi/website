@@ -22,25 +22,23 @@ import {
     TextInput,
 } from '@mantine/core';
 import { safeConsoleError } from '@/server/utils/logger';
-import { buildMatrix, buildSvg, forceModules, sampleLogoColors } from './qr-render';
+import {
+    QR_MARGIN_MODULES,
+    buildSalveMundiQr,
+    svgToDataUri,
+    type LogoRgba,
+    type QrDetailLevel,
+    type QrLogoStyle,
+} from '@/lib/qr/qr-render';
+import {
+    QR_LOGO_SOURCES,
+    getCachedLogo,
+    loadImage,
+    loadPreparedLogo,
+} from '@/lib/qr/qr-client';
 
-const OWL_CROP_RATIO = 0.74;
 const MIN_LOGO_PERCENT = 30;
-const FLOOR_LOGO_PERCENT = 15;
 const MAX_LOGO_PERCENT = 85;
-const MARGIN_MODULES = 4;
-
-type LogoStyle = 'kleur' | 'eenkleurig';
-
-interface PreparedLogo {
-    canvas: HTMLCanvasElement;
-    ratio: number;
-}
-
-const LOGO_SOURCES = {
-    kleur: '/img/qr/logo-kleur.png',
-    paars: '/img/qr/logo-paars.png',
-} as const;
 
 const BRAND = {
     donkerPaars: BRAND_COLORS.purple,
@@ -55,17 +53,17 @@ const COLOR_PRESETS: { label: string; fg: string; bg: string }[] = [
     { label: 'Donker paars', fg: BRAND.donkerPaars, bg: BRAND.witPaars },
 ];
 
-const DETAIL_OPTIONS: { value: string; label: string; version: number | null }[] = [
-    { value: 'laag', label: 'Laag (snel te scannen)', version: null },
-    { value: 'midden', label: 'Gemiddeld', version: 10 },
-    { value: 'hoog', label: 'Hoog (meeste detail)', version: 14 },
+const DETAIL_OPTIONS: { value: QrDetailLevel; label: string }[] = [
+    { value: 'laag', label: 'Laag (snel te scannen)' },
+    { value: 'midden', label: 'Gemiddeld' },
+    { value: 'hoog', label: 'Hoog (meeste detail)' },
 ];
 
 const DEFAULT_FG: string = BRAND.donker;
 const DEFAULT_BG: string = BRAND.witPaars;
 const DEFAULT_SIZE = 600;
 const DEFAULT_LOGO_PERCENT = 70;
-const DEFAULT_DETAIL = 'midden';
+const DEFAULT_DETAIL: QrDetailLevel = 'midden';
 const DEFAULT_TEXT = 'https://salvemundi.nl';
 
 function luminance(hex: string): number {
@@ -82,53 +80,6 @@ function contrastRatio(a: string, b: string): number {
     return (hi + 0.05) / (lo + 0.05);
 }
 
-function loadImage(src: string): Promise<HTMLImageElement> {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error('Afbeelding laden mislukt'));
-        img.src = src;
-    });
-}
-
-async function prepareLogo(src: string): Promise<PreparedLogo> {
-    const img = await loadImage(src);
-    const srcH = Math.round(img.naturalHeight * OWL_CROP_RATIO);
-    const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth;
-    canvas.height = srcH;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) throw new Error('Canvas niet beschikbaar');
-    ctx.drawImage(img, 0, 0, img.naturalWidth, srcH, 0, 0, canvas.width, canvas.height);
-
-    const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let minX = width;
-    let minY = height;
-    let maxX = -1;
-    let maxY = -1;
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            if (data[(y * width + x) * 4 + 3] > 16) {
-                if (x < minX) minX = x;
-                if (x > maxX) maxX = x;
-                if (y < minY) minY = y;
-                if (y > maxY) maxY = y;
-            }
-        }
-    }
-    if (maxX < 0) throw new Error('Logo is leeg');
-
-    const cw = maxX - minX + 1;
-    const ch = maxY - minY + 1;
-    const out = document.createElement('canvas');
-    out.width = cw;
-    out.height = ch;
-    const octx = out.getContext('2d');
-    if (!octx) throw new Error('Canvas niet beschikbaar');
-    octx.drawImage(canvas, minX, minY, cw, ch, 0, 0, cw, ch);
-    return { canvas: out, ratio: ch / cw };
-}
-
 function saveBlob(blob: Blob, filename: string) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -138,8 +89,6 @@ function saveBlob(blob: Blob, filename: string) {
     URL.revokeObjectURL(url);
 }
 
-const svgToDataUri = (svg: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-
 export default function QrGeneratorIsland() {
     const [text, setText] = useState(DEFAULT_TEXT);
     const [fgColor, setFgColor] = useState(DEFAULT_FG);
@@ -148,40 +97,49 @@ export default function QrGeneratorIsland() {
     const [margin, setMargin] = useState(true);
     const [showLogo, setShowLogo] = useState(true);
     const [logoPercent, setLogoPercent] = useState(DEFAULT_LOGO_PERCENT);
-    const [logoStyle, setLogoStyle] = useState<LogoStyle>('kleur');
-    const [detail, setDetail] = useState(DEFAULT_DETAIL);
-    const [preparedLogo, setPreparedLogo] = useState<PreparedLogo | null>(null);
+    const [logoStyle, setLogoStyle] = useState<QrLogoStyle>('kleur');
+    const [detail, setDetail] = useState<QrDetailLevel>(DEFAULT_DETAIL);
     const [copied, setCopied] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const value = text.trim();
     const darkBackground = luminance(bgColor) < 0.4;
-
-    const logoSource = logoStyle === 'kleur' && !darkBackground ? LOGO_SOURCES.kleur : LOGO_SOURCES.paars;
+    const logoSource = logoStyle === 'kleur' && !darkBackground ? QR_LOGO_SOURCES.kleur : QR_LOGO_SOURCES.paars;
     const logoRecolor = darkBackground ? BRAND.lichtPaars : null;
 
+    const [preparedLogo, setPreparedLogo] = useState<LogoRgba | null>(() => getCachedLogo(logoSource));
+
     useEffect(() => {
+        const cached = getCachedLogo(logoSource);
+        if (cached) {
+            setPreparedLogo(cached);
+            return;
+        }
         let cancelled = false;
-        prepareLogo(logoSource)
-            .then((result) => { if (!cancelled) setPreparedLogo(result); })
+        loadPreparedLogo(logoSource)
+            .then((result) => {
+                if (!cancelled) setPreparedLogo(result);
+            })
             .catch((err: unknown) => safeConsoleError('[QrGeneratorIsland.tsx][prepareLogo] ', err));
-        return () => { cancelled = true; };
+        return () => {
+            cancelled = true;
+        };
     }, [logoSource]);
 
-    const minVersion = DETAIL_OPTIONS.find((o) => o.value === detail)?.version ?? null;
-    const matrix = useMemo(() => buildMatrix(value, minVersion), [value, minVersion]);
-
-    const { svg, effectivePercent } = useMemo(() => {
-        const base = { margin: margin ? MARGIN_MODULES : 0, size, fg: fgColor, bg: bgColor };
-        if (showLogo && preparedLogo) {
-            for (let pct = logoPercent; pct >= FLOOR_LOGO_PERCENT; pct--) {
-                const colors = sampleLogoColors(preparedLogo.canvas, preparedLogo.ratio, matrix.size, pct, logoRecolor);
-                const forced = forceModules(matrix, colors);
-                if (forced) return { svg: buildSvg({ ...base, matrix: forced, colors }), effectivePercent: pct };
-            }
-        }
-        return { svg: buildSvg({ ...base, matrix, colors: null }), effectivePercent: showLogo ? null : logoPercent };
-    }, [matrix, margin, size, fgColor, bgColor, showLogo, preparedLogo, logoPercent, logoRecolor]);
+    const { svg, effectivePercent } = useMemo(
+        () =>
+            buildSalveMundiQr(value, preparedLogo, {
+                margin: margin ? QR_MARGIN_MODULES : 0,
+                size,
+                fg: fgColor,
+                bg: bgColor,
+                detail,
+                showLogo,
+                logoPercent,
+                logoRecolor,
+            }),
+        [value, preparedLogo, margin, size, fgColor, bgColor, detail, showLogo, logoPercent, logoRecolor],
+    );
 
     const svgUri = useMemo(() => svgToDataUri(svg), [svg]);
 
@@ -319,7 +277,7 @@ export default function QrGeneratorIsland() {
                             label="Detail van het logo"
                             description="Meer detail maakt de uil scherper, maar de blokjes worden kleiner. Scan de code altijd even na."
                             value={detail}
-                            onChange={(e) => setDetail(e.target.value)}
+                            onChange={(e) => setDetail(e.target.value as QrDetailLevel)}
                             data={DETAIL_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
                         />
 
@@ -339,7 +297,7 @@ export default function QrGeneratorIsland() {
                                     label="Kleur van de uil"
                                     description={darkBackground ? 'Op een donkere achtergrond gebruikt de uil automatisch licht paars.' : undefined}
                                     value={logoStyle}
-                                    onChange={(e) => setLogoStyle(e.target.value as LogoStyle)}
+                                    onChange={(e) => setLogoStyle(e.target.value as QrLogoStyle)}
                                     disabled={darkBackground}
                                     data={[
                                         { value: 'kleur', label: 'Kleur (twee tinten paars)' },

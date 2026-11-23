@@ -635,12 +635,12 @@ describe('Brandguide Tier 2: Boundary & Corner Cases (F1-F11, 55 tests)', () => 
             assert.equal(social.hexLiterals.length, 0);
         });
 
-        it('T2-F9-04: QRDisplay.tsx avoids className on QRCodeSVG and inline borderRadius override', () => {
+        it('T2-F9-04: QRDisplay.tsx avoids className on NextImage and inline borderRadius override', () => {
             const qr = snapshot.filesByRel.get('shared/ui/QRDisplay.tsx');
             assert.ok(qr, 'Missing shared/ui/QRDisplay.tsx');
-            const svgEl = qr.jsxElements.find((el) => el.tagName === 'QRCodeSVG');
-            assert.ok(svgEl, 'Missing QRCodeSVG in QRDisplay.tsx');
-            assert.equal(svgEl.props.className, undefined, 'QRCodeSVG must not pass className');
+            const imgEl = qr.jsxElements.find((el) => el.tagName === 'NextImage');
+            assert.ok(imgEl, 'Missing NextImage in QRDisplay.tsx');
+            assert.equal(imgEl.props.className, undefined, 'NextImage must not pass className');
             const brOverride = qr.styleVisualOverrides.filter((o) => o.prop === 'borderRadius');
             assert.equal(brOverride.length, 0, 'QRDisplay.tsx must not use inline style borderRadius override');
         });

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import Handlebars from 'handlebars';
 import { type Redis } from 'ioredis';
 import { TokenService } from './token.service.js';
+import { prepareEmailQrAssets } from './qr-attachments.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -114,7 +115,8 @@ export class MailerService {
         safeConsoleLog(`[mailer.ts][send] Preparing ${templateId} for ${to}...`);
 
         try {
-            const htmlContent = this.renderTemplate(templateId, data);
+            const { renderData, attachments: qrAttachments } = await prepareEmailQrAssets(templateId, data);
+            const htmlContent = this.renderTemplate(templateId, renderData);
             safeConsoleLog(`[mailer.ts][send] renderTemplate: ${ms(totalStart)} (html size: ${htmlContent.length} chars)`);
 
             const t2 = performance.now();
@@ -124,6 +126,8 @@ export class MailerService {
             const t3 = performance.now();
             const logoAttachment = this.getLogoAttachment();
             safeConsoleLog(`[mailer.ts][send] getLogoAttachment: ${ms(t3)} (cached: ${this.logoInitialized})`);
+
+            const attachments = [...(logoAttachment ? [logoAttachment] : []), ...qrAttachments];
 
             const senderEmail = process.env.AZURE_MAIL_SENDER || 'info@salvemundi.nl';
             const customSubject = data['subject'] as string | undefined;
@@ -150,7 +154,7 @@ export class MailerService {
                                 }
                             }
                         ],
-                        attachments: logoAttachment ? [logoAttachment] : []
+                        attachments
                     }
                 })
             });

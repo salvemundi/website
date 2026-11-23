@@ -11,8 +11,8 @@
 
     <div style="text-align: center; margin: 25px 0; padding: 25px; background: #ffffff; border: 1px solid #eee; border-radius: 12px; border: 2px dashed #a4539b;">
         <p style="color: #a4539b; font-weight: 800; text-transform: uppercase; font-size: 10px; letter-spacing: 1.5px; margin-bottom: 15px;">Scannen bij Entree</p>
-        {{#if qrToken}}
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{qrToken}}" alt="Ticket QR Code" width="180" height="180" style="display: block; margin: 0 auto; border: 0;">
+        {{#if qrCid}}
+            <img src="cid:{{qrCid}}" alt="Ticket QR Code" width="220" height="220" style="display: block; margin: 0 auto; border: 0;">
         {{else}}
             <p style="font-style: italic; color: #8a7a8c;">Je QR-code is online beschikbaar.</p>
         {{/if}}

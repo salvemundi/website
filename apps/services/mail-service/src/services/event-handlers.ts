@@ -2,7 +2,6 @@ import { safeConsoleError } from '../utils/logger.js';
 import { type Redis } from 'ioredis';
 import { MailWorkerService } from './mail-worker.js';
 import { PaymentSuccessEventSchema, ActivitySignupEventSchema } from '@salvemundi/validations';
-import QRCode from 'qrcode';
 import { db, schema, eq } from './db.js';
 import { z } from 'zod';
 
@@ -183,10 +182,10 @@ export class EventHandlers {
                 signupId: data.registrationId,
                 eventName: signup?.event_name || 'Kroegentocht',
                 whatsappCommunityUrl,
-                tickets: await Promise.all(tickets.map(async (t) => ({
+                tickets: tickets.map((t) => ({
                     ...t,
-                    qrDataUrl: t.qr_token ? await this.generateQrDataUrl(String(t.qr_token)) : ''
-                }))),
+                    qrToken: t.qr_token ? String(t.qr_token) : ''
+                })),
                 totalTickets: tickets.length,
                 hasAccount: await this.checkUserHasAccount(url, token, data.email)
             };
@@ -254,17 +253,5 @@ export class EventHandlers {
             await new Promise(r => setTimeout(r, 1000));
         }
         return [];
-    }
-
-    private static async generateQrDataUrl(token: string): Promise<string> {
-        try {
-            return await QRCode.toDataURL(token, {
-                errorCorrectionLevel: 'M', width: 300, margin: 2,
-                color: { dark: '#5e2b52', light: '#ffffff' }
-            });
-        } catch (error) {
-            safeConsoleError('[event-handlers.ts][generateQrDataUrl] ', error);
-            return '';
-        }
     }
 }

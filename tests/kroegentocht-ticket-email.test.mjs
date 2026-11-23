@@ -9,7 +9,7 @@ const ts = require('typescript');
 const { z } = require('zod');
 
 async function harness(options = {}) {
-    const state = { requests: [], qrTokens: [], reads: 0, authorized: false };
+    const state = { requests: [], reads: 0, authorized: false };
     const signup = { name: 'Test Buyer', email: 'buyer@example.com', paymentStatus: 'paid', amountTickets: 2, eventName: 'Kroegentocht', whatsappCommunityUrl: null, ...options.signup };
     const tickets = options.tickets ?? [{ name: 'First', qrToken: 'existing-qr-1' }, { name: 'Second', qrToken: 'existing-qr-2' }];
     const db = { select() {
@@ -31,10 +31,10 @@ async function harness(options = {}) {
         'server-only': {},
         'next/cache': { revalidateTag() {}, unstable_noStore() {} },
         '@salvemundi/db': { db, schema },
-        'drizzle-orm': { eq() {} },
-        'qrcode': { default: { async toDataURL(token) { state.qrTokens.push(token); return `data:image/png;base64,${token}`; } } },
+        'drizzle-orm': { asc() {}, eq() {} },
         'zod': { z },
         '@/server/internal/kroegentocht/kroegentocht-signup-db.utils': { fetchPubCrawlSignupsDb() {}, fetchPubCrawlSignupByIdDb() {}, updatePubCrawlSignupDb() {}, deletePubCrawlSignupDb() {} },
+        '@/server/internal/kroegentocht/kroegentocht-google-sheet.utils': { scheduleKroegSheetSync() {}, syncKroegSheetNow() {}, getKroegSheetUrl() {}, getKroegGroupRowsForCsv() {} },
         './beheer-kroegentocht-event.actions': { async requireKroegAdmin() { if (options.denied) throw new Error('Forbidden'); state.authorized = true; } },
         '@/server/utils/logger': { safeConsoleError() {} }
     };
@@ -52,7 +52,6 @@ async function harness(options = {}) {
 test('queues all existing ticket QR codes to the saved recipient without a payment request', async () => {
     const { state, send } = await harness();
     assert.equal((await send(42)).success, true);
-    assert.deepEqual(state.qrTokens, ['existing-qr-1', 'existing-qr-2']);
     assert.equal(state.requests.length, 1);
     const { url, init, body } = state.requests[0];
     assert.equal(url, 'https://mail.invalid/api/mail/send');
@@ -61,7 +60,10 @@ test('queues all existing ticket QR codes to the saved recipient without a payme
     assert.equal(body.templateId, 'pub_crawl_ticket');
     assert.equal(body.data.signupId, 42);
     assert.equal(body.data.totalTickets, 2);
-    assert.equal(body.data.tickets.length, 2);
+    assert.deepEqual(body.data.tickets, [
+        { name: 'First', qrToken: 'existing-qr-1' },
+        { name: 'Second', qrToken: 'existing-qr-2' }
+    ]);
 });
 
 test('rejects unauthorized access before reading signup data', async () => {
