@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Search, Check, User, X } from 'lucide-react';
 import {
     ActionIcon,
-    Avatar,
     Box,
     Center,
     Group,
@@ -90,7 +89,6 @@ export default function BeheerLedenSearch({
                 width="target"
                 position="bottom-start"
                 shadow="lg"
-                radius="lg"
                 closeOnClickOutside
             >
                 <Popover.Target>
@@ -111,7 +109,6 @@ export default function BeheerLedenSearch({
                             ) : query ? (
                                 <ActionIcon
                                     type="button"
-                                    variant="subtle"
                                     size="sm"
                                     onClick={handleClear}
                                     aria-label="Zoekopdracht wissen"
@@ -140,20 +137,15 @@ export default function BeheerLedenSearch({
                                         style={{ borderRadius: 'var(--mantine-radius-md)' }}
                                     >
                                         <Group justify="space-between" wrap="nowrap" gap="sm">
-                                            <Group gap="sm" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
-                                                <Avatar radius="md" color="brand" variant="light">
-                                                    {user.first_name?.[0]}{user.last_name?.[0]}
-                                                </Avatar>
-                                                <Stack gap={0} style={{ minWidth: 0, flex: 1 }}>
-                                                    <Text size="sm" fw={600} truncate="end">
-                                                        {user.first_name} {user.last_name}
-                                                    </Text>
-                                                    <Text size="xs" c="dimmed" truncate="end">
-                                                        {user.email}
-                                                    </Text>
-                                                </Stack>
-                                            </Group>
-                                            <ThemeIcon size="sm" radius="xl" variant="light" color="brand">
+                                            <Stack gap={0} style={{ minWidth: 0, flex: 1 }}>
+                                                <Text size="sm" fw={600} truncate="end">
+                                                    {user.first_name} {user.last_name}
+                                                </Text>
+                                                <Text size="xs" c="dimmed" truncate="end">
+                                                    {user.email}
+                                                </Text>
+                                            </Stack>
+                                            <ThemeIcon size="sm">
                                                 <Check size={14} />
                                             </ThemeIcon>
                                         </Group>
@@ -165,7 +157,7 @@ export default function BeheerLedenSearch({
                         !isLoading && (
                             <Center py="xl">
                                 <Stack align="center" gap="xs">
-                                    <ThemeIcon size="lg" radius="md" variant="default">
+                                    <ThemeIcon size="lg">
                                         <User size={18} />
                                     </ThemeIcon>
                                     <Text size="xs" fw={600} c="dimmed" fs="italic">

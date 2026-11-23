@@ -1,11 +1,12 @@
 import { z } from 'zod';
-import {
-    insertWebshopDropWindowsSchema,
-    insertWebshopProductsSchema,
-    insertWebshopProductMediaSchema,
-    insertWebshopProductVariantsSchema,
-} from './db.zod.ts';
-import { webshopCustomFieldsSchema } from './webshop.zod.ts';
+import { createInsertSchema } from 'drizzle-zod';
+import { webshop_drop_windows as webshop_drop_windowsTable, webshop_products as webshop_productsTable, webshop_product_media as webshop_product_mediaTable, webshop_product_variants as webshop_product_variantsTable } from '@salvemundi/db/schema';
+import { webshopCustomFieldsSchema } from './webshop.zod';
+
+const insertWebshopDropWindowsSchema = createInsertSchema(webshop_drop_windowsTable);
+const insertWebshopProductsSchema = createInsertSchema(webshop_productsTable);
+const insertWebshopProductMediaSchema = createInsertSchema(webshop_product_mediaTable);
+const insertWebshopProductVariantsSchema = createInsertSchema(webshop_product_variantsTable);
 
 export const webshopDropWindowBeheerSchema = insertWebshopDropWindowsSchema.extend({
     id: z.coerce.number().int().optional(),

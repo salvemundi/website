@@ -62,7 +62,6 @@ export default function ActivityCard({
         <Card
             withBorder
             padding={0}
-            radius="lg"
             style={{
                 overflow: 'hidden',
                 opacity: isPast ? 0.65 : 1,
@@ -94,9 +93,9 @@ export default function ActivityCard({
                     <Group gap="sm" wrap="wrap">
                         <Title order={3} size="h3">{event.name}</Title>
                         <Group gap="xs">
-                            {isDraft && <Badge variant="default" size="xs">Draft</Badge>}
-                            {isScheduled && <Badge color="brand" variant="light" size="xs">Ingepland</Badge>}
-                            {isPast && <Badge variant="default" size="xs">Verleden</Badge>}
+                            {isDraft && <Badge size="xs">Draft</Badge>}
+                            {isScheduled && <Badge size="xs">Ingepland</Badge>}
+                            {isPast && <Badge size="xs">Verleden</Badge>}
                         </Group>
                     </Group>
 
@@ -120,9 +119,9 @@ export default function ActivityCard({
                     )}
 
                     <Group gap="md" wrap="wrap" pt={4}>
-                        <Paper withBorder px="md" py="xs" radius="md">
+                        <Paper withBorder px="md" py="xs">
                             <Group gap="sm" wrap="nowrap">
-                                <ThemeIcon variant="light" color="accent" radius="xl" size="md">
+                                <ThemeIcon color="accent" size="md">
                                     <Users size={16} />
                                 </ThemeIcon>
                                 <Group gap={4} align="baseline">
@@ -136,9 +135,9 @@ export default function ActivityCard({
                         </Paper>
 
                         {(event.price_members !== undefined || event.price_non_members !== undefined) && (
-                            <Paper withBorder px="md" py="xs" radius="md">
+                            <Paper withBorder px="md" py="xs">
                                 <Group gap="sm" wrap="nowrap">
-                                    <ThemeIcon variant="light" color="success" radius="xl" size="md">
+                                    <ThemeIcon color="success" size="md">
                                         <Euro size={16} />
                                     </ThemeIcon>
                                     <Group gap="xs" wrap="nowrap">
@@ -164,8 +163,6 @@ export default function ActivityCard({
                 <Stack justify="center" gap="xs" p="lg" w={{ base: '100%', md: 240 }} style={{ flexShrink: 0 }}>
                     <Button
                         type="button"
-                        variant="light"
-                        color="accent"
                         onClick={() => onViewSignups(event.id)}
                         leftSection={<Eye size={16} />}
                     >
@@ -174,7 +171,6 @@ export default function ActivityCard({
 
                     <Button
                         type="button"
-                        variant="light"
                         color="success"
                         onClick={() => onViewAttendance(event.id)}
                         leftSection={<Users size={16} />}
@@ -185,7 +181,6 @@ export default function ActivityCard({
                     {canEdit && (
                         <Button
                             type="button"
-                            variant="default"
                             onClick={() => onEdit(event.id)}
                             leftSection={<Edit size={16} />}
                         >

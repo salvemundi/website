@@ -51,7 +51,6 @@ export default function ActiviteitListCard({
         <Card
             onClick={onShowDetails}
             padding={0}
-            radius="xl"
             withBorder
             shadow="sm"
             style={{
@@ -88,11 +87,11 @@ export default function ActiviteitListCard({
                     <Flex direction={{ base: 'column', lg: 'row' }} align={{ lg: 'center' }} gap={{ base: 'md', lg: 'xl' }}>
                         <Stack gap="xs" style={{ flex: 1, minWidth: 0 }}>
                             <Group gap="xs" wrap="wrap">
-                                <Badge color="brand" size="sm" radius="sm">
+                                <Badge size="sm">
                                     {committeeLabel}
                                 </Badge>
                                 {onlyMembers && (
-                                    <Badge color="accent" size="sm" radius="sm">
+                                    <Badge color="accent" size="sm">
                                         Leden
                                     </Badge>
                                 )}
@@ -102,7 +101,7 @@ export default function ActiviteitListCard({
                             </Title>
                             {short_description ? (
                                 <Box visibleFrom="md">
-                                    <Text size="sm" c="dimmed" lineClamp={6} component="div">
+                                    <Text size="sm" c="dimmed" lineClamp={6}>
                                         <SafeMarkdown content={short_description} />
                                     </Text>
                                 </Box>
@@ -133,7 +132,7 @@ export default function ActiviteitListCard({
                                 </Text>
                             </Stack>
 
-                            <Paper p="sm" px="md" radius="md" withBorder ta="center" miw={84}>
+                            <Paper p="sm" px="md" withBorder ta="center" miw={84}>
                                 <Text size="xs" fw={900} tt="uppercase" c="dimmed">
                                     Prijs
                                 </Text>
@@ -149,7 +148,6 @@ export default function ActiviteitListCard({
                     <Group justify="flex-end" gap="xs" wrap="wrap">
                         <Button
                             type="button"
-                            variant="default"
                             size="sm"
                             onClick={(e) => {
                                 e.stopPropagation();

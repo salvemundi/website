@@ -9,19 +9,19 @@ export default function CoboActivityBadge({ type = 'shotjes', custom }: Props) {
     switch (type) {
         case 'shotjes':
             return (
-                <Badge color="accent" variant="light" radius="md">
+                <Badge color="accent">
                     Shotjes
                 </Badge>
             );
         case 'watervallen':
             return (
-                <Badge color="brand" variant="light" radius="md">
+                <Badge>
                     Watervallen
                 </Badge>
             );
         default:
             return (
-                <Badge color="brand" variant="outline" radius="md" title={custom || undefined}>
+                <Badge title={custom || undefined}>
                     {custom || 'Anders'}
                 </Badge>
             );

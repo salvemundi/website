@@ -16,7 +16,7 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
         : null;
 
     return (
-        <Card h="100%" padding="lg" radius="lg" style={{ display: 'flex', flexDirection: 'column' }}>
+        <Card h="100%" padding="lg" style={{ display: 'flex', flexDirection: 'column' }}>
             <Group gap="md" wrap="nowrap">
                 <Box
                     pos="relative"
@@ -59,7 +59,7 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
             <Stack gap="xs" mt="lg">
                 {safeHaven?.email || safeHaven?.phone_number ? (
                     <>
-                        <Paper p="sm" radius="md" bg="var(--mantine-color-body)" style={{ border: '1px solid var(--border)' }}>
+                        <Paper p="sm" bg="var(--mantine-color-body)" style={{ border: '1px solid var(--mantine-color-default-border)' }}>
                             <ObfuscatedEmail
                                 email={safeHaven.email || ''}
                                 size="sm"
@@ -67,7 +67,7 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                             />
                         </Paper>
                         {safeHaven.phone_number && (
-                            <Paper p="sm" radius="md" bg="var(--mantine-color-body)" style={{ border: '1px solid var(--border)' }}>
+                            <Paper p="sm" bg="var(--mantine-color-body)" style={{ border: '1px solid var(--mantine-color-default-border)' }}>
                                 <Group gap="sm">
                                     <Text span c="brand" lh={1}>
                                         <Phone size={16} />
@@ -80,7 +80,7 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                         )}
                     </>
                 ) : (
-                    <Alert color="accent" variant="light" radius="md" py="xs">
+                    <Alert color="accent" py="xs">
                         <Text size="xs" fw={600} ta="center">
                             Log in om contactgegevens te zien
                         </Text>

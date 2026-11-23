@@ -254,7 +254,6 @@ export default function LedenDetailIsland({
             <Group gap="xl" align="center" wrap="wrap">
                 {localMember.avatar ? (
                     <Paper
-                        radius="xl"
                         w={112}
                         h={112}
                         shadow="md"
@@ -269,7 +268,7 @@ export default function LedenDetailIsland({
                         />
                     </Paper>
                 ) : (
-                    <Avatar size={112} radius="xl" color="brand" variant="light">
+                    <Avatar size={112} color="brand" variant="light">
                         {localMember.first_name?.[0]}
                         {localMember.last_name?.[0]}
                     </Avatar>
@@ -291,7 +290,6 @@ export default function LedenDetailIsland({
                         <Badge
                             suppressHydrationWarning
                             size="sm"
-                            variant="light"
                             color={isMembershipActive ? 'success' : 'error'}
                         >
                             {isMembershipActive ? 'Actief Lidmaatschap' : 'Lidmaatschap Verlopen'}

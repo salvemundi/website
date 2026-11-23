@@ -35,7 +35,6 @@ export default async function IntroAttendancePage({ searchParams }: Props) {
                         <Button
                             component={Link}
                             href="/profiel"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

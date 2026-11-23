@@ -16,11 +16,10 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
             opened={isOpen}
             onClose={onCancel}
             centered
-            radius="xl"
             size="md"
             title={
                 <Group gap="xs">
-                    <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                    <ThemeIcon size="md">
                         <AlertCircle size={18} />
                     </ThemeIcon>
                     <Text size="xs" fw={700} tt="uppercase">
@@ -36,11 +35,10 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
 
                 <Paper
                     p="lg"
-                    radius="lg"
                     withBorder
                     style={{
-                        backgroundColor: 'color-mix(in srgb, var(--primary) 6%, transparent)',
-                        borderColor: 'color-mix(in srgb, var(--primary) 20%, transparent)',
+                        backgroundColor: 'var(--surface-subtle)',
+                        borderColor: 'var(--surface-subtle-border)',
                     }}
                 >
                     <Text size="sm" fw={500} c="dimmed" mb={4}>
@@ -51,13 +49,14 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                     </Text>
                 </Paper>
 
-                <Text size="md" c="dimmed">
-                    Komt dit <Text span fw={700} fs="italic" c="var(--mantine-color-text)">exact</Text> overeen met de naam op je paspoort of ID-kaart?
-                    <br />
-                    <Text span size="xs" mt="xs" display="inline-block">
+                <Stack gap={4}>
+                    <Text size="md" c="dimmed">
+                        Komt dit <Text span fw={700} fs="italic" c="var(--mantine-color-text)">exact</Text> overeen met de naam op je paspoort of ID-kaart?
+                    </Text>
+                    <Text size="xs" c="dimmed">
                         Een typefout kan leiden tot problemen bij de gate!
                     </Text>
-                </Text>
+                </Stack>
 
                 <Stack gap="xs">
                     <Button
@@ -73,7 +72,6 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                         type="button"
                         fullWidth
                         size="md"
-                        variant="default"
                         onClick={onCancel}
                     >
                         Nee, aanpassen

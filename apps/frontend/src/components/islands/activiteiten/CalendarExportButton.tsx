@@ -138,7 +138,6 @@ export default function CalendarExportButton({
         <>
             <Button
                 type="button"
-                variant="default"
                 size="sm"
                 onClick={() => setIsOpen(true)}
                 leftSection={<Calendar size={16} />}
@@ -152,11 +151,10 @@ export default function CalendarExportButton({
                 opened={isOpen}
                 onClose={() => setIsOpen(false)}
                 centered
-                radius="xl"
                 size="lg"
                 title={
                     <Group gap="xs">
-                        <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                        <ThemeIcon size="md">
                             <CalendarPlus size={16} />
                         </ThemeIcon>
                         <Title order={3} size="h4" c="brand">
@@ -174,9 +172,6 @@ export default function CalendarExportButton({
 
                     {showGoogleInstructions && (
                         <Alert
-                            color="brand"
-                            variant="light"
-                            radius="lg"
                             withCloseButton
                             onClose={() => setShowGoogleInstructions(false)}
                             icon={<Sparkles size={16} />}
@@ -187,7 +182,7 @@ export default function CalendarExportButton({
                                     {isMobile ? (
                                         <>
                                             De Google Agenda mobiele app ondersteunt internetagenda&apos;s (URL) helaas niet rechtstreeks.
-                                            Plak de link eenmalig op je computer in Google Agenda bij <strong>&quot;Andere agenda&apos;s &gt; Via URL&quot;</strong>.
+                                            Plak de link eenmalig op je computer in Google Agenda bij <Text span fw={700}>&quot;Andere agenda&apos;s &gt; Via URL&quot;</Text>.
                                             De agenda synchroniseert daarna vanzelf naar je telefoon!
                                         </>
                                     ) : (
@@ -241,10 +236,10 @@ export default function CalendarExportButton({
                         </Text>
 
                         <UnstyledButton type="button" onClick={() => { void handleGoogleCalendar(); }} w="100%">
-                            <Paper p="sm" radius="lg" withBorder>
+                            <Paper p="sm" withBorder>
                                 <Group justify="space-between" wrap="nowrap" gap="md">
                                     <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
-                                        <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                        <ThemeIcon size="lg">
                                             <CalendarPlus size={20} />
                                         </ThemeIcon>
                                         <Stack gap={0} style={{ minWidth: 0 }}>
@@ -260,10 +255,10 @@ export default function CalendarExportButton({
                         </UnstyledButton>
 
                         <UnstyledButton type="button" onClick={() => { void handleAppleCalendar(); }} w="100%">
-                            <Paper p="sm" radius="lg" withBorder>
+                            <Paper p="sm" withBorder>
                                 <Group justify="space-between" wrap="nowrap" gap="md">
                                     <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
-                                        <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                        <ThemeIcon size="lg">
                                             <Calendar size={20} />
                                         </ThemeIcon>
                                         <Stack gap={0} style={{ minWidth: 0 }}>
@@ -279,10 +274,10 @@ export default function CalendarExportButton({
                         </UnstyledButton>
 
                         <UnstyledButton type="button" onClick={handleOutlookCalendar} w="100%">
-                            <Paper p="sm" radius="lg" withBorder>
+                            <Paper p="sm" withBorder>
                                 <Group justify="space-between" wrap="nowrap" gap="md">
                                     <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
-                                        <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                        <ThemeIcon size="lg">
                                             <Calendar size={20} />
                                         </ThemeIcon>
                                         <Stack gap={0} style={{ minWidth: 0 }}>
@@ -306,7 +301,6 @@ export default function CalendarExportButton({
                             href={getDownloadUrl()}
                             download={`${resolvedCalendarName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.ics`}
                             onClick={() => setIsOpen(false)}
-                            variant="default"
                             leftSection={<Download size={16} />}
                         >
                             Download .ics
@@ -314,7 +308,6 @@ export default function CalendarExportButton({
 
                         <Button
                             type="button"
-                            variant="default"
                             onClick={() => { void handleCopyGeneralFeed(); }}
                             leftSection={copied ? <Check size={16} /> : <Copy size={16} />}
                         >

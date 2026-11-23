@@ -22,7 +22,7 @@ export default function CoboArchivedList({
 
     if (boards.length === 0) {
         return (
-            <Paper withBorder p="xl" ta="center" radius="lg" style={{ borderStyle: 'dashed' }}>
+            <Paper withBorder p="xl" ta="center" style={{ borderStyle: 'dashed' }}>
                 <Stack align="center" gap="xs" py="md">
                     {isCompleted ? (
                         <CheckCircle2 size={36} opacity={0.35} />
@@ -46,7 +46,6 @@ export default function CoboArchivedList({
                     key={board.id}
                     withBorder
                     padding="md"
-                    radius="md"
                     style={
                         isCompleted
                             ? { opacity: 0.85 }
@@ -75,8 +74,6 @@ export default function CoboArchivedList({
                         <Group gap="xs" wrap="nowrap">
                             <Button
                                 type="button"
-                                variant="light"
-                                color="brand"
                                 size="xs"
                                 onClick={() => onRestore(board.id, board.board_name || 'Bestuur')}
                                 leftSection={<RotateCcw size={14} />}
@@ -87,7 +84,6 @@ export default function CoboArchivedList({
                             {!isCompleted && onDelete && (
                                 <ActionIcon
                                     type="button"
-                                    variant="subtle"
                                     color="error"
                                     onClick={() => onDelete(board.id, board.board_name || 'Bestuur')}
                                     title="Verwijderen"

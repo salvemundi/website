@@ -1,6 +1,19 @@
 import { z } from 'zod';
-import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.ts';
-import { selectIntroSignupsSchema, selectIntroParentSignupsSchema, selectIntroBlogsSchema, selectIntroPlanningSchema, selectIntroConfidantsSchema, selectIntroGroupsSchema, selectIntroGroupLeadersSchema, selectIntroGroupMembersSchema, selectIntroGroupAttendanceSchema, selectIntroGroupMemberNotesSchema, selectIntroGroupAttendanceLogSchema } from './db.zod.ts';
+import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod';
+import { createSelectSchema } from 'drizzle-zod';
+import { intro_signups as intro_signupsTable, intro_parent_signups as intro_parent_signupsTable, intro_blogs as intro_blogsTable, intro_planning as intro_planningTable, intro_confidants as intro_confidantsTable, intro_groups as intro_groupsTable, intro_group_leaders as intro_group_leadersTable, intro_group_members as intro_group_membersTable, intro_group_attendance as intro_group_attendanceTable, intro_group_member_notes as intro_group_member_notesTable, intro_group_attendance_log as intro_group_attendance_logTable } from '@salvemundi/db/schema';
+
+const selectIntroSignupsSchema = createSelectSchema(intro_signupsTable);
+const selectIntroParentSignupsSchema = createSelectSchema(intro_parent_signupsTable);
+const selectIntroBlogsSchema = createSelectSchema(intro_blogsTable);
+const selectIntroPlanningSchema = createSelectSchema(intro_planningTable);
+const selectIntroConfidantsSchema = createSelectSchema(intro_confidantsTable);
+const selectIntroGroupsSchema = createSelectSchema(intro_groupsTable);
+const selectIntroGroupLeadersSchema = createSelectSchema(intro_group_leadersTable);
+const selectIntroGroupMembersSchema = createSelectSchema(intro_group_membersTable);
+const selectIntroGroupAttendanceSchema = createSelectSchema(intro_group_attendanceTable);
+const selectIntroGroupMemberNotesSchema = createSelectSchema(intro_group_member_notesTable);
+const selectIntroGroupAttendanceLogSchema = createSelectSchema(intro_group_attendance_logTable);
 
 export const introSignupFormSchema = z.object({
     voornaam: z.string().min(1, 'Voornaam is verplicht'),

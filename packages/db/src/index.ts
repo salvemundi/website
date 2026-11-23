@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from './schema.ts';
-import * as relations from './relations.ts';
+import * as schema from './schema';
+import * as relations from './relations';
 
 const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
@@ -29,7 +29,7 @@ export const fullSchema = { ...schema, ...relations };
 export const db = drizzle(client, { schema: fullSchema });
 
 export { client };
-export * from './schema.ts';
-export * from './relations.ts';
+export * from './schema';
+export * from './relations';
 export { fullSchema as schema };
 export * from 'drizzle-orm';

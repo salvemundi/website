@@ -20,9 +20,6 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
         <Container size="lg" p={0}>
             <Stack gap="lg">
                 <Alert
-                    color="brand"
-                    variant="light"
-                    radius="lg"
                     title="Over WhatsApp Groepen"
                     icon={<Info size={20} />}
                 >
@@ -31,9 +28,9 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                 </Alert>
 
                 {groups.length === 0 ? (
-                    <Card padding="xl" radius="xl" ta="center">
+                    <Card padding="xl" ta="center">
                         <Stack align="center" gap="sm" py="lg">
-                            <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                            <ThemeIcon size="xl">
                                 <MessageCircle size={32} />
                             </ThemeIcon>
                             <Text fw={600}>
@@ -47,10 +44,10 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                 ) : (
                     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
                         {groups.map((group) => (
-                            <Card key={group.id} padding="lg" radius="xl" shadow="md">
+                            <Card key={group.id} padding="lg" shadow="md">
                                 <Stack justify="space-between" h="100%" gap="md">
                                     <Group align="flex-start" wrap="nowrap" gap="md">
-                                        <ThemeIcon size={56} radius="xl" variant="light" color="brand">
+                                        <ThemeIcon size="xl">
                                             <MessageCircle size={28} />
                                         </ThemeIcon>
                                         <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
@@ -69,8 +66,6 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
 
                                     <Group justify="space-between" align="center">
                                         <Badge
-                                            variant="light"
-                                            color="brand"
                                             size="md"
                                             leftSection={<ShieldAlert size={12} />}
                                         >
@@ -90,7 +85,7 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                     </SimpleGrid>
                 )}
 
-                <Card padding="lg" radius="xl" shadow="md">
+                <Card padding="lg" shadow="md">
                     <Stack gap="sm">
                         <Title order={3} size="h5">
                             Groepsregels

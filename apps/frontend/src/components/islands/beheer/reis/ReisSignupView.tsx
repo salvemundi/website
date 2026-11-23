@@ -77,7 +77,7 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                             Reiziger
                         </Title>
                     </Group>
-                    <Paper withBorder p="md" radius="md">
+                    <Paper withBorder p="md">
                         <Stack gap={0}>
                             <ViewField
                                 label="Naam"
@@ -115,7 +115,7 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                             {isBusTrip ? 'Vervoer' : 'Documenten'}
                         </Title>
                     </Group>
-                    <Paper withBorder p="md" radius="md">
+                    <Paper withBorder p="md">
                         {isBusTrip ? (
                             <Group justify="space-between">
                                 <Group gap="xs">
@@ -126,7 +126,6 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                                 </Group>
                                 <Badge
                                     size="sm"
-                                    variant="light"
                                     color={signup.willing_to_drive ? 'success' : 'error'}
                                 >
                                     {signup.willing_to_drive ? 'Beschikbaar' : 'Nee'}
@@ -183,7 +182,7 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                             Status
                         </Title>
                     </Group>
-                    <Paper withBorder p="md" radius="md">
+                    <Paper withBorder p="md">
                         <Stack gap="sm">
                             <Group justify="space-between">
                                 <Text size="xs" fw={600} c="dimmed">
@@ -191,7 +190,6 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                                 </Text>
                                 <Badge
                                     size="sm"
-                                    variant="light"
                                     color={statusInfo.color}
                                     leftSection={<statusInfo.icon size={12} />}
                                 >
@@ -231,10 +229,10 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                         </Title>
                     </Group>
                     <Stack gap="xs">
-                        <Alert color="error" variant="light" title="Allergieën">
+                        <Alert color="error" title="Allergieën">
                             <Text size="xs">{signup.allergies || 'Geen'}</Text>
                         </Alert>
-                        <Alert color="brand" variant="light" title="Bijzonderheden">
+                        <Alert title="Bijzonderheden">
                             <Text size="xs">{signup.special_notes || 'Geen'}</Text>
                         </Alert>
                     </Stack>
@@ -287,7 +285,7 @@ function PaymentStatus({
                     h={6}
                     style={{
                         borderRadius: '50%',
-                        backgroundColor: isPaid ? 'var(--success)' : 'var(--destructive)',
+                        backgroundColor: isPaid ? 'var(--mantine-color-success-filled)' : 'var(--mantine-color-error-filled)',
                     }}
                 />
                 <Text size="xs" fw={600} c="dimmed">
@@ -295,7 +293,7 @@ function PaymentStatus({
                 </Text>
             </Group>
             <Stack gap={2} align="flex-end">
-                <Badge size="xs" variant="light" color={isPaid ? 'success' : 'error'}>
+                <Badge size="xs" color={isPaid ? 'success' : 'error'}>
                     {isPaid ? 'Betaald' : 'Niet betaald'}
                 </Badge>
                 {isPaid && date && (

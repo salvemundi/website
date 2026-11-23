@@ -14,8 +14,6 @@ export default function DocumentAsset({ id, label = 'Download document' }: Docum
             target="_blank"
             rel="noopener noreferrer"
             download
-            variant="light"
-            color="brand"
             size="sm"
             leftSection={<FileText size={16} />}
             rightSection={<Download size={14} />}

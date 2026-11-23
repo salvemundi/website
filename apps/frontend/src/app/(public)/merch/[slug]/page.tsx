@@ -52,7 +52,6 @@ export default async function WebshopProductPage({ params }: PageProps) {
                             component={Link}
                             href="/merch"
                             title="Terug naar merch"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

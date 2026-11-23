@@ -192,13 +192,12 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
 
     return (
         <>
-            <Paper radius={0} shadow="xs" py="md">
+            <Paper shadow="xs" py="md">
                 <Container size="xl" py={0}>
                     <Group gap="md">
                         <Button
                             component={Link}
                             href="/beheer/webshop"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -260,8 +259,8 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                     <Button
                                                         key={v.label}
                                                         size="compact-xs"
-                                                        variant={isVariantActive ? 'filled' : 'light'}
-                                                        color={isVariantActive ? 'brand' : done ? 'success' : 'gray'}
+                                                        variant={isVariantActive ? 'filled' : done ? 'light' : 'default'}
+                                                        color={isVariantActive ? 'brand' : done ? 'success' : undefined}
                                                         onClick={() => selectVariant(group.key, v.label)}
                                                         title={`${v.pickedUp} van ${v.total} opgehaald`}
                                                     >
@@ -281,7 +280,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                             <Box visibleFrom="sm">{renderSearch(320)}</Box>
                             <Group gap="md">
                                 {(productFilter || variantFilter) && (
-                                    <Button size="xs" variant="subtle" onClick={() => selectProduct(null)}>
+                                    <Button size="xs" onClick={() => selectProduct(null)}>
                                         Filter wissen
                                     </Button>
                                 )}
@@ -319,7 +318,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                     <Title order={2} size="h5">
                                         {group.name}
                                     </Title>
-                                    <Badge variant="light" size="sm">
+                                    <Badge size="sm">
                                         {group.rows.length} {group.rows.length === 1 ? 'bestelling' : 'bestellingen'}
                                     </Badge>
                                 </Group>
@@ -346,7 +345,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                     </Box>
                                                     <Group gap={6} wrap="nowrap">
                                                         {line.variant_label_snapshot && (
-                                                            <Badge variant="light" tt="none">
+                                                            <Badge>
                                                                 {line.variant_label_snapshot}
                                                             </Badge>
                                                         )}
@@ -370,7 +369,6 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                     size="xs"
                                                     mt="sm"
                                                     fullWidth
-                                                    variant="light"
                                                     color={order.picked_up ? 'success' : 'brand'}
                                                     disabled={isPending && updatingId === order.id}
                                                     onClick={() => handleToggle(order.id, !order.picked_up)}
@@ -419,7 +417,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                             </Table.Td>
                                                             <Table.Td>
                                                                 {line.variant_label_snapshot ? (
-                                                                    <Badge variant="light" tt="none">
+                                                                    <Badge>
                                                                         {line.variant_label_snapshot}
                                                                     </Badge>
                                                                 ) : (
@@ -450,7 +448,6 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                                     <Button
                                                                         type="button"
                                                                         size="xs"
-                                                                        variant="light"
                                                                         color={order.picked_up ? 'success' : 'brand'}
                                                                         disabled={isPending && updatingId === order.id}
                                                                         onClick={() => handleToggle(order.id, !order.picked_up)}
@@ -478,7 +475,6 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                 <Paper
                     hiddenFrom="sm"
                     shadow="lg"
-                    radius={0}
                     p="sm"
                     withBorder
                     style={{

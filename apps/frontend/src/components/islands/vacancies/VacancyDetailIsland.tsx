@@ -26,17 +26,18 @@ export default function VacancyDetailIsland({ vacancy }: VacancyDetailIslandProp
                     <Button
                         component={Link}
                         href="/bijbanenbank"
-                        variant="default"
                         leftSection={<ChevronLeft size={18} />}
                     >
                         Terug
                     </Button>
                 </Box>
 
-                <Card padding={0} radius="xl" shadow="lg" withBorder style={{ overflow: 'hidden' }}>
+                <Card padding={0} shadow="lg" withBorder style={{ overflow: 'hidden' }}>
                     {vacancy.image && (
-                        <AspectRatio ratio={16 / 9} w="100%">
-                            <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" priority />
+                        <AspectRatio ratio={16 / 9} w="100%" pos="relative">
+                            <Box pos="relative" w="100%" h="100%">
+                                <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" priority />
+                            </Box>
                         </AspectRatio>
                     )}
 
@@ -120,7 +121,7 @@ export default function VacancyDetailIsland({ vacancy }: VacancyDetailIslandProp
                                 <Title order={2} size="h6">ICT-richtingen</Title>
                                 <Group gap="xs" wrap="wrap">
                                     {vacancy.directions.map((direction) => (
-                                        <Badge key={direction} size="md" variant="outline" color="brand">
+                                        <Badge key={direction} size="md">
                                             {direction}
                                         </Badge>
                                     ))}
@@ -133,7 +134,7 @@ export default function VacancyDetailIsland({ vacancy }: VacancyDetailIslandProp
                                 <Title order={2} size="h6">Gewenste vaardigheden</Title>
                                 <Group gap="xs" wrap="wrap">
                                     {vacancy.skills.map((skill) => (
-                                        <Badge key={skill} size="md" variant="light" color="brand">
+                                        <Badge key={skill} size="md">
                                             {skill}
                                         </Badge>
                                     ))}

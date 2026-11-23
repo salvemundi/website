@@ -120,11 +120,11 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
 
     const statusStyle = result
         ? successful
-            ? { borderColor: 'var(--success)', backgroundColor: 'color-mix(in srgb, var(--success) 25%, var(--mantine-color-darkBase-filled))' }
+            ? { borderColor: 'var(--mantine-color-success-filled)', backgroundColor: 'color-mix(in srgb, var(--mantine-color-success-filled) 25%, var(--mantine-color-darkBase-filled))' }
             : warning
-                ? { borderColor: 'var(--accent)', backgroundColor: 'color-mix(in srgb, var(--accent) 20%, var(--mantine-color-darkBase-filled))' }
-                : { borderColor: 'var(--destructive)', backgroundColor: 'color-mix(in srgb, var(--destructive) 25%, var(--mantine-color-darkBase-filled))' }
-        : { borderColor: 'rgba(255, 255, 255, 0.15)', backgroundColor: 'rgba(255, 255, 255, 0.06)' };
+                ? { borderColor: 'var(--mantine-color-accent-filled)', backgroundColor: 'color-mix(in srgb, var(--mantine-color-accent-filled) 20%, var(--mantine-color-darkBase-filled))' }
+                : { borderColor: 'var(--mantine-color-error-filled)', backgroundColor: 'color-mix(in srgb, var(--mantine-color-error-filled) 25%, var(--mantine-color-darkBase-filled))' }
+        : { borderColor: 'var(--surface-dark-glass-border)', backgroundColor: 'var(--surface-dark-glass)' };
 
     return (
         <Box component="section" mod={{ 'scanner-screen': true }} aria-label="Kroegentocht ticketscanner">
@@ -138,7 +138,7 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
                             <Title order={1} size="h4" c="white">
                                 Tickets scannen
                             </Title>
-                            <Text size="sm" truncate style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                            <Text size="sm" truncate style={{ color: 'var(--text-on-dark-muted)' }}>
                                 {eventName}
                             </Text>
                         </Box>
@@ -156,11 +156,11 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
                             ...groups.map(name => ({ value: name, label: name })),
                         ]}
                         styles={{
-                            label: { color: '#FFFFFF' },
+                            label: { color: 'var(--mantine-color-white)' },
                             input: {
                                 backgroundColor: 'var(--mantine-color-darkBase-filled)',
-                                color: '#FFFFFF',
-                                borderColor: 'rgba(255, 255, 255, 0.25)',
+                                color: 'var(--mantine-color-white)',
+                                borderColor: 'var(--surface-dark-glass-border-strong)',
                             },
                         }}
                     />
@@ -186,11 +186,11 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
                         <Text span c="lightPurple" lh={1}>
                             <Camera size={48} aria-hidden="true" />
                         </Text>
-                        <Text size="md" maw={360} style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+                        <Text size="md" maw={360} style={{ color: 'var(--text-on-dark-soft)' }}>
                             {error || (running ? 'Camera openen…' : !groups.length ? 'Er zijn nog geen groepen ingesteld. Vraag de organisatie om groepen toe te voegen.' : !group ? 'Kies hierboven je groep om te beginnen.' : 'Klaar om te scannen. De achtercamera opent automatisch.')}
                         </Text>
                         {error && (
-                            <Button type="button" variant="outline" color="white" size="md" onClick={switchCamera}>
+                            <Button type="button" size="md" onClick={switchCamera}>
                                 Andere camera proberen
                             </Button>
                         )}
@@ -228,7 +228,7 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
                                 </Box>
                             </>
                         ) : (
-                            <Text size="sm" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>
+                            <Text size="sm" style={{ color: 'var(--text-on-dark-muted)' }}>
                                 {ready ? 'Houd een QR-code in het kader. De uitslag verschijnt hier; je kunt direct verder scannen.' : running ? 'Geef toestemming om je camera te gebruiken.' : 'Alleen tickets van jouw groep worden ingecheckt.'}
                             </Text>
                         )}
@@ -254,8 +254,6 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
                             <ActionIcon
                                 type="button"
                                 size={56}
-                                variant="outline"
-                                color="white"
                                 disabled={!ready}
                                 onClick={switchCamera}
                                 aria-label="Wissel tussen voor- en achtercamera"

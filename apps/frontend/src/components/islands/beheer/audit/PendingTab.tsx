@@ -49,7 +49,7 @@ export default function PendingTab({
     const partiallySelected = selectedIds.size > 0 && selectedIds.size < filteredSignups.length;
 
     return (
-        <Paper withBorder radius="lg" style={{ overflow: 'hidden' }}>
+        <Paper withBorder style={{ overflow: 'hidden' }}>
             <Group justify="space-between" align="center" p="lg" wrap="wrap" gap="md">
                 <Text size="xs" fw={600} c="dimmed">
                     Lidmaatschap Wachtrij
@@ -60,7 +60,6 @@ export default function PendingTab({
                         <ActionIcon
                             type="button"
                             color="success"
-                            variant="light"
                             size="lg"
                             disabled={selectedIds.size === 0 || !!isBulkProcessing}
                             loading={isBulkProcessing === 'approve'}
@@ -75,7 +74,6 @@ export default function PendingTab({
                         <ActionIcon
                             type="button"
                             color="error"
-                            variant="light"
                             size="lg"
                             disabled={selectedIds.size === 0 || !!isBulkProcessing}
                             loading={isBulkProcessing === 'reject'}
@@ -89,7 +87,6 @@ export default function PendingTab({
                     <Tooltip label="Vernieuwen">
                         <ActionIcon
                             type="button"
-                            variant="default"
                             size="lg"
                             onClick={onRefresh}
                             aria-label="Vernieuwen"
@@ -176,7 +173,6 @@ export default function PendingTab({
                                     <Table.Td ta="center">
                                         <Badge
                                             color={s.payment_status === 'paid' ? 'success' : 'accent'}
-                                            variant="light"
                                             size="sm"
                                         >
                                             {s.payment_status}
@@ -188,7 +184,6 @@ export default function PendingTab({
                                                 <ActionIcon
                                                     type="button"
                                                     color="success"
-                                                    variant="light"
                                                     size="md"
                                                     disabled={!!isProcessing}
                                                     loading={isProcessing === s.id}
@@ -202,7 +197,6 @@ export default function PendingTab({
                                                 <ActionIcon
                                                     type="button"
                                                     color="error"
-                                                    variant="light"
                                                     size="md"
                                                     disabled={!!isProcessing}
                                                     loading={isProcessing === s.id}

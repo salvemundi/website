@@ -139,8 +139,6 @@ export default function MemberProfileTab({
                             {hasAccess && !isEditing && (
                                 <ActionIcon
                                     type="button"
-                                    variant="subtle"
-                                    color="brand"
                                     onClick={() => setIsEditing(true)}
                                     aria-label="Gegevens bewerken"
                                 >
@@ -212,7 +210,6 @@ export default function MemberProfileTab({
                                     </Button>
                                     <Button
                                         type="button"
-                                        variant="default"
                                         onClick={() => setIsEditing(false)}
                                     >
                                         Annuleren
@@ -259,7 +256,7 @@ export default function MemberProfileTab({
                     <Card p="xl" shadow="sm">
                         <Stack gap="lg">
                             <Group gap="md">
-                                <ThemeIcon size={48} radius="md" variant="light" color="accent">
+                                <ThemeIcon size="lg" color="accent">
                                     <Award size={22} />
                                 </ThemeIcon>
                                 <Box>
@@ -294,7 +291,7 @@ export default function MemberProfileTab({
                     <Card p="xl" shadow="sm">
                         <Stack gap="lg">
                             <Group gap="md">
-                                <ThemeIcon size={48} radius="md" variant="light" color="brand">
+                                <ThemeIcon size="lg">
                                     <Layers size={22} />
                                 </ThemeIcon>
                                 <Box>

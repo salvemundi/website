@@ -24,7 +24,7 @@ export default function StatusPaidActivity({
     return (
         <Stack gap="xl">
             <Stack align="center" gap="md" ta="center">
-                <ThemeIcon size={96} radius="xl" variant="light" color="success">
+                <ThemeIcon size="xl" color="success">
                     <CheckCircle2 size={48} />
                 </ThemeIcon>
                 <Title order={1} fz={{ base: '2.25rem', md: '3.75rem' }} lh={1}>
@@ -48,14 +48,12 @@ export default function StatusPaidActivity({
                             id={`ticket-card-${i}`}
                             pos="relative"
                             padding="xl"
-                            radius="xl"
                             withBorder
                             shadow="lg"
                         >
                             <ActionIcon
                                 type="button"
                                 onClick={() => downloadTicket(`ticket-card-${i}`, eventName)}
-                                variant="default"
                                 size="lg"
                                 pos="absolute"
                                 top={16}
@@ -70,7 +68,7 @@ export default function StatusPaidActivity({
                                 <Text size="md" fw={600} c="brand">
                                     Ticket {i + 1} / {amount}
                                 </Text>
-                                <Box p="md" bg="#FFFFFF" style={{ borderRadius: 'var(--mantine-radius-lg)', boxShadow: 'var(--mantine-shadow-md)' }}>
+                                <Box p="md" bg="var(--mantine-color-white)" style={{ borderRadius: 'var(--mantine-radius-lg)', boxShadow: 'var(--mantine-shadow-md)' }}>
                                     <QRDisplay
                                         qrToken={(() => {
                                             const tickets = signupData?.tickets || [];
@@ -107,7 +105,6 @@ export default function StatusPaidActivity({
                     <Button
                         component={Link}
                         href="/profiel/tickets"
-                        variant="default"
                         size="lg"
                         leftSection={<QrCode size={18} />}
                     >

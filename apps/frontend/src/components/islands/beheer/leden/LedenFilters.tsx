@@ -29,7 +29,6 @@ export default function LedenFilters({
             <Tabs
                 value={activeTab}
                 onChange={(val) => onTabChange((val as 'active' | 'inactive' | null) ?? 'active')}
-                variant="pills"
             >
                 <Tabs.List>
                     <Tabs.Tab value="active" leftSection={<UserCheck size={16} />}>
@@ -55,7 +54,6 @@ export default function LedenFilters({
                 {onExport && (
                     <Button
                         type="button"
-                        variant="default"
                         onClick={onExport}
                         leftSection={<Download size={16} />}
                     >

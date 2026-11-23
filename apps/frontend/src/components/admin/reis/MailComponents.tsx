@@ -6,10 +6,10 @@ import { Button, Group, Paper, Select, Stack, Text, ThemeIcon } from '@mantine/c
 
 export function Card({ title, icon, children }: { title: string, icon: ReactNode, children: ReactNode }) {
     return (
-        <Paper withBorder radius="lg" p="lg">
+        <Paper withBorder p="lg">
             <Stack gap="md">
                 <Group gap="sm">
-                    <ThemeIcon variant="light" color="accent" size="md" radius="md">
+                    <ThemeIcon color="accent" size="md">
                         {icon}
                     </ThemeIcon>
                     <Text size="xs" fw={700} tt="uppercase" c="dimmed" lts={1}>
@@ -64,7 +64,7 @@ export function TypeTab({ active, onClick, children }: { active: boolean, onClic
 export function TickItem({ children }: { children: ReactNode }) {
     return (
         <Group component="li" gap="sm" wrap="nowrap" py={2}>
-            <ThemeIcon size="sm" radius="xl" variant="light" color="success">
+            <ThemeIcon size="sm" color="success">
                 <Check size={12} />
             </ThemeIcon>
             <Text size="xs" fw={600} c="dimmed">

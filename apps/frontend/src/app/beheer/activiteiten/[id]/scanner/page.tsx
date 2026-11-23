@@ -84,7 +84,6 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
                         <Button
                             component={Link}
                             href={`/beheer/activiteiten/${id}/aanmeldingen`}
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

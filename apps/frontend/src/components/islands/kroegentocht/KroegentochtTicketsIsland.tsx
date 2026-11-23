@@ -82,7 +82,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
     if (tickets.length === 0) return null;
 
     return (
-        <Card padding="xl" radius="xl" shadow="xl" withBorder mb="xl">
+        <Card padding="xl" shadow="xl" withBorder mb="xl">
             <Stack gap="lg">
                 <Stack gap={4}>
                     <Group gap="xs">
@@ -100,9 +100,9 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
 
                 <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="lg">
                     {tickets.map((ticket, i) => (
-                        <Paper key={ticket.id} p="lg" radius="lg" withBorder>
+                        <Paper key={ticket.id} p="lg" withBorder>
                             <Stack align="center" gap="md">
-                                <Box p="xs" bg="#FFFFFF" style={{ borderRadius: 'var(--mantine-radius-md)' }}>
+                                <Box p="xs" bg="var(--mantine-color-white)" style={{ borderRadius: 'var(--mantine-radius-md)' }}>
                                     <QRDisplay qrToken={ticket.qr_token} size={180} />
                                 </Box>
 
@@ -122,7 +122,6 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
                                         </Text>
                                         <Badge
                                             size="sm"
-                                            variant="light"
                                             color={ticket.checked_in ? 'success' : 'brand'}
                                         >
                                             {ticket.checked_in ? 'Ingecheckt' : 'Geldig'}
@@ -132,7 +131,6 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
 
                                 <Button
                                     type="button"
-                                    variant="default"
                                     fullWidth
                                     size="sm"
                                     mt="xs"

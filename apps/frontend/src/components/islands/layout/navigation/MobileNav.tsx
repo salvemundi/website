@@ -49,7 +49,6 @@ export function MobileNav({ user, isAuthenticated, navItems, canAccessAdmin, vis
     return (
         <>
             <ActionIcon
-                variant="subtle"
                 size="lg"
                 pos="relative"
                 style={{ zIndex: 210 }}

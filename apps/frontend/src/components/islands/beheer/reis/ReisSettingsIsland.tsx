@@ -120,14 +120,13 @@ export default function ReisSettingsIsland({
 
     return (
         <>
-            <Paper radius={0} shadow="xs" py="md">
+            <Paper shadow="xs" py="md">
                 <Container size="xl" py={0}>
                     <Group justify="space-between" wrap="wrap" gap="md">
                         <Group gap="md">
                             <Button
                                 component={Link}
                                 href="/beheer/reis"
-                                variant="default"
                                 size="sm"
                                 leftSection={<ChevronLeft size={16} />}
                             >

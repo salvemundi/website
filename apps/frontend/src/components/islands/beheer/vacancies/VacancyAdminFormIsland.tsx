@@ -23,6 +23,7 @@ import {
     Checkbox,
     Container,
     Divider,
+    FileButton,
     Group,
     Input,
     NativeSelect,
@@ -133,13 +134,12 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
 
     return (
         <Box pb={64}>
-            <Paper radius={0} shadow="xs" py="md">
+            <Paper shadow="xs" py="md">
                 <Container size="xl" py={0}>
                     <Group gap="md">
                         <Button
                             component={Link}
                             href="/beheer/bijbanenbank"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -156,7 +156,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                 <Card p="xl" shadow="md">
                     <Stack gap="lg">
                         <Group gap="sm">
-                            <ThemeIcon size="xl" variant="light" color="brand">
+                            <ThemeIcon size="xl">
                                 <Briefcase size={22} />
                             </ThemeIcon>
                             <Title order={2} size="h3">
@@ -164,7 +164,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                             </Title>
                         </Group>
 
-                        <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
+                        <Box component="form" onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
                             <Stack gap="lg">
                                 <Controller
                                     control={control}
@@ -309,24 +309,22 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                             )}
                                             <Button
                                                 type="button"
-                                                variant="default"
                                                 flex={1}
                                                 leftSection={<ImageIcon size={16} />}
                                                 onClick={() => imageInputRef.current?.click()}
                                             >
                                                 {imageFile ? imageFile.name : 'Kies afbeelding'}
                                             </Button>
-                                            <input
+                                            <FileButton
                                                 ref={imageInputRef}
-                                                type="file"
                                                 accept="image/jpeg,image/jpg,image/png,image/webp"
-                                                onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
-                                                style={{ display: 'none' }}
-                                            />
+                                                onChange={(file) => handleImageChange(file)}
+                                            >
+                                                {() => null}
+                                            </FileButton>
                                             {(imagePreview || (initialData?.image && !removeExistingImage)) && (
                                                 <ActionIcon
                                                     type="button"
-                                                    variant="light"
                                                     color="error"
                                                     size="lg"
                                                     onClick={() => {
@@ -345,27 +343,25 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                         <Group gap="xs" mt={4} wrap="nowrap">
                                             <Button
                                                 type="button"
-                                                variant="default"
                                                 flex={1}
                                                 leftSection={<FileText size={16} />}
                                                 onClick={() => documentInputRef.current?.click()}
                                             >
                                                 {documentFile ? documentFile.name : 'Kies bestand'}
                                             </Button>
-                                            <input
+                                            <FileButton
                                                 ref={documentInputRef}
-                                                type="file"
                                                 accept="application/pdf,.doc,.docx"
-                                                onChange={(e) => {
-                                                    setDocumentFile(e.target.files?.[0] || null);
+                                                onChange={(file) => {
+                                                    setDocumentFile(file);
                                                     setRemoveExistingDocument(false);
                                                 }}
-                                                style={{ display: 'none' }}
-                                            />
+                                            >
+                                                {() => null}
+                                            </FileButton>
                                             {(documentFile || (initialData?.document && !removeExistingDocument)) && (
                                                 <ActionIcon
                                                     type="button"
-                                                    variant="light"
                                                     color="error"
                                                     size="lg"
                                                     onClick={() => {
@@ -433,7 +429,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                     {isPending ? 'Opslaan...' : isEditing ? 'Wijzigingen opslaan' : 'Vacature aanmaken'}
                                 </Button>
                             </Stack>
-                        </form>
+                        </Box>
                     </Stack>
                 </Card>
             </Container>

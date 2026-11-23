@@ -19,7 +19,7 @@ export default function ActiviteitList({ events, onEventClick, variant = 'list',
 
     if (events.length === 0) {
         return (
-            <Card padding="xl" radius="xl" shadow="sm" ta="center">
+            <Card padding="xl" shadow="sm" ta="center">
                 <Text c="dimmed">Geen activiteiten gevonden.</Text>
             </Card>
         );

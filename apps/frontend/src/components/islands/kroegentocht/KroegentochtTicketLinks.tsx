@@ -59,7 +59,7 @@ export function KroegentochtMyTicketsCard({ items }: { items: MyKroegTickets[] }
             <Stack gap="lg">
                 <Stack gap={4}>
                     <Group gap="sm">
-                        <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                        <ThemeIcon size="lg">
                             <Ticket size={20} />
                         </ThemeIcon>
                         <Title order={2} size="h3" c="brand">
@@ -132,13 +132,12 @@ export function KroegentochtClaimTicketsPopup({
             opened={isOpen}
             onClose={() => setIsOpen(false)}
             centered
-            radius="xl"
             size="sm"
             withCloseButton
             aria-label="Je bent ingeschreven!"
         >
             <Stack gap="md">
-                <ThemeIcon size={48} radius="md" variant="light" color="brand">
+                <ThemeIcon size="lg">
                     <Ticket size={24} />
                 </ThemeIcon>
 

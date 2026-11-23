@@ -145,7 +145,6 @@ export default function CouponManagementIsland({
                         <ActionIcon
                             component={Link}
                             href="/beheer"
-                            variant="default"
                             size="lg"
                             aria-label="Terug"
                         >
@@ -182,7 +181,7 @@ export default function CouponManagementIsland({
 
                 <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md">
                     {adminStats.map((stat) => (
-                        <Paper key={stat.label} withBorder p="md" radius="lg">
+                        <Paper key={stat.label} withBorder p="md">
                             <Group justify="space-between" align="center" wrap="nowrap">
                                 <Stack gap={2}>
                                     <Text size="xs" c="dimmed" fw={600}>
@@ -192,7 +191,7 @@ export default function CouponManagementIsland({
                                         {stat.value}
                                     </Text>
                                 </Stack>
-                                <ThemeIcon variant="light" color="brand" size="lg" radius="md">
+                                <ThemeIcon size="lg">
                                     <stat.icon size={18} />
                                 </ThemeIcon>
                             </Group>
@@ -203,7 +202,7 @@ export default function CouponManagementIsland({
                 <Stack gap="md">
                     <Group gap="sm">
                         <Title order={2} size="h4">Coupons</Title>
-                        <Badge color="success" variant="light">{validCoupons.length}</Badge>
+                        <Badge color="success">{validCoupons.length}</Badge>
                     </Group>
 
                     <Card withBorder padding={0} style={{ overflow: 'hidden' }}>
@@ -247,11 +246,9 @@ export default function CouponManagementIsland({
                     <Group>
                         <Button
                             type="button"
-                            variant="subtle"
-                            color="brand"
                             onClick={() => setShowExpired(!showExpired)}
                             leftSection={showExpired ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
-                            rightSection={<Badge variant="default" size="sm">{inactiveCoupons.length}</Badge>}
+                            rightSection={<Badge size="sm">{inactiveCoupons.length}</Badge>}
                         >
                             Verlopen Coupons
                         </Button>

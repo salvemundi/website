@@ -30,7 +30,7 @@ export function PaymentSummary({ pricing, paymentType, hideHeader = false }: Pay
             )}
 
             <Stack gap="md">
-                <Card padding="lg" radius="lg" withBorder shadow="md">
+                <Card padding="lg" withBorder shadow="md">
                     <Stack gap="sm">
                         <Group justify="space-between">
                             <Text size="sm" c="dimmed">Basisprijs Reis</Text>
@@ -64,9 +64,8 @@ export function PaymentSummary({ pricing, paymentType, hideHeader = false }: Pay
 
                 <Card
                     padding="xl"
-                    radius="xl"
                     shadow="lg"
-                    style={{ backgroundColor: 'var(--primary)', color: '#FFFFFF' }}
+                    style={{ backgroundColor: 'var(--mantine-color-brand-filled)', color: 'var(--mantine-color-white)' }}
                 >
                     <Group justify="space-between" align="flex-end">
                         <Stack gap={4}>

@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { selectPubCrawlEventsSchema, selectPubCrawlSignupsSchema, selectPubCrawlTicketsSchema } from './db.zod.ts';
+import { createSelectSchema } from 'drizzle-zod';
+import { pub_crawl_events as pub_crawl_eventsTable, pub_crawl_signups as pub_crawl_signupsTable, pub_crawl_tickets as pub_crawl_ticketsTable } from '@salvemundi/db/schema';
+
+const selectPubCrawlEventsSchema = createSelectSchema(pub_crawl_eventsTable);
+const selectPubCrawlSignupsSchema = createSelectSchema(pub_crawl_signupsTable);
+const selectPubCrawlTicketsSchema = createSelectSchema(pub_crawl_ticketsTable);
 
 export const PUB_CRAWL_ASSOCIATIONS = [
     'Salve Mundi',

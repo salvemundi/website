@@ -69,10 +69,8 @@ export default function CouponRow({
             <Table.Td>
                 <Group gap="sm" wrap="nowrap">
                     <ThemeIcon
-                        variant="light"
                         color={isExpiredOrMaxed ? 'brand' : 'accent'}
                         size="lg"
-                        radius="md"
                         style={isExpiredOrMaxed ? { opacity: 0.5 } : undefined}
                     >
                         <Ticket size={16} />
@@ -119,7 +117,6 @@ export default function CouponRow({
                             color={isExpiredOrMaxed ? 'brand' : 'accent'}
                             size="sm"
                             w={96}
-                            radius="xl"
                         />
                     )}
                 </Stack>
@@ -168,12 +165,11 @@ export default function CouponRow({
             <Table.Td ta="right">
                 <Group justify="flex-end" gap="xs" wrap="nowrap">
                     {coupon.isOptimistic ? (
-                        <Loader size="sm" color="accent" />
+                        <Loader size="sm" />
                     ) : (
                         <>
                             <ActionIcon
                                 type="button"
-                                variant="subtle"
                                 color={coupon.is_active ? 'success' : 'brand'}
                                 onClick={() => onToggle(coupon)}
                                 loading={isToggling}
@@ -184,7 +180,6 @@ export default function CouponRow({
                             </ActionIcon>
                             <ActionIcon
                                 type="button"
-                                variant="subtle"
                                 color="error"
                                 onClick={() => onDelete(coupon.id)}
                                 loading={isDeleting}
