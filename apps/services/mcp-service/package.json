@@ -8,7 +8,7 @@
     "build": "tsc",
     "type-check": "bun check",
     "lint": "eslint src",
-    "test": "vitest run"
+    "test": "bun test"
   },
   "dependencies": {
     "@azure/identity": "catalog:",
@@ -22,9 +22,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@types/bun": "1.4.5",
     "@types/node": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "5.1.1"
+    "typescript": "catalog:"
   }
 }

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import JSZip from 'jszip';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'bun:test';
 import type { UserContext } from '../src/auth/jwt.js';
 import { AccessDeniedError, createGraphDownloader, FileTooLargeError, resolveGraphUrl, SourceUnavailableError, type FileDownloader, type GraphReader } from '../src/graph/client.js';
 import { extractText, FileUnreadableError, zipUncompressedSize } from '../src/graph/extract.js';
