@@ -24,7 +24,7 @@ interface BoardYearCardProps {
 
 export const BoardYearCard = ({ board }: BoardYearCardProps) => {
     return (
-        <Card component="section" padding="xl" radius="lg">
+        <Card component="section" padding="xl">
             <Grid gap="xl" align="flex-start">
                 <GridCol span={{ base: 12, lg: 5 }}>
                     <Box
@@ -38,10 +38,12 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
                         }}
                     >
                         {!board.image ? (
-                            <FallbackLogo
-                                alt={board.naam || 'Bestuur'}
-                                className="object-contain p-6 opacity-40"
-                            />
+                            <Box pos="relative" w="100%" h="100%" p="lg" style={{ opacity: 0.4 }}>
+                                <FallbackLogo
+                                    alt={board.naam || 'Bestuur'}
+                                    className="object-contain"
+                                />
+                            </Box>
                         ) : (
                             <Image
                                 src={getImageUrl(board.image)}
@@ -56,7 +58,7 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
                 <GridCol span={{ base: 12, lg: 7 }}>
                     <Stack gap="lg">
                         <Stack gap="xs">
-                            <Badge variant="light" color="brand" size="md" w="fit-content">
+                            <Badge size="md" w="fit-content">
                                 {board.year}
                             </Badge>
                             <Title order={2} c="brand">
@@ -70,7 +72,7 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
                                 const isLeader = member.functie?.toLowerCase().includes('voorzitter');
 
                                 return (
-                                    <Paper key={idx} p="sm" radius="md" bg="var(--mantine-color-body)">
+                                    <Paper key={idx} p="sm" bg="var(--mantine-color-body)">
                                         <Group gap="sm" wrap="nowrap">
                                             {member.user_id?.avatar ? (
                                                 <Box
@@ -91,7 +93,7 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
                                                     />
                                                 </Box>
                                             ) : (
-                                                <ThemeIcon size={40} radius="xl" variant="light" color="brand">
+                                                <ThemeIcon size="lg">
                                                     {isLeader ? <Medal size={16} /> : <User size={16} />}
                                                 </ThemeIcon>
                                             )}

@@ -28,7 +28,7 @@ async function RegistrationSection() {
         return (
             <Card padding="xl">
                 <Stack align="center" ta="center" gap="md">
-                    <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                    <ThemeIcon size="xl">
                         <Calendar size={32} />
                     </ThemeIcon>
                     <Title order={2} size="h3" c="brand">
@@ -68,7 +68,7 @@ async function RegistrationSection() {
                     <Card component="section" padding="xl">
                         <Stack gap="md">
                             <Group gap="sm">
-                                <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                                <ThemeIcon size="lg">
                                     <Info size={20} />
                                 </ThemeIcon>
                                 <Title order={2} size="h3" c="brand">
@@ -97,7 +97,7 @@ async function RegistrationSection() {
                     <Card component="section" padding="xl">
                         <Stack gap="lg">
                             <Group gap="sm">
-                                <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                                <ThemeIcon size="lg">
                                     <Calendar size={20} />
                                 </ThemeIcon>
                                 <Title order={2} size="h3" c="brand">
@@ -107,7 +107,7 @@ async function RegistrationSection() {
 
                             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
                                 <Group align="flex-start" gap="sm" wrap="nowrap">
-                                    <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                                    <ThemeIcon size="md">
                                         <Clock size={16} />
                                     </ThemeIcon>
                                     <Stack gap={2}>
@@ -117,7 +117,7 @@ async function RegistrationSection() {
                                 </Group>
 
                                 <Group align="flex-start" gap="sm" wrap="nowrap">
-                                    <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                                    <ThemeIcon size="md">
                                         <MapPin size={16} />
                                     </ThemeIcon>
                                     <Stack gap={2}>
@@ -127,7 +127,7 @@ async function RegistrationSection() {
                                 </Group>
 
                                 <Group align="flex-start" gap="sm" wrap="nowrap">
-                                    <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                                    <ThemeIcon size="md">
                                         <Users size={16} />
                                     </ThemeIcon>
                                     <Stack gap={2}>
@@ -137,7 +137,7 @@ async function RegistrationSection() {
                                 </Group>
 
                                 <Group align="flex-start" gap="sm" wrap="nowrap">
-                                    <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                                    <ThemeIcon size="md">
                                         <Mail size={16} />
                                     </ThemeIcon>
                                     <Stack gap={2} miw={0}>
@@ -160,7 +160,7 @@ async function RegistrationSection() {
                                 <Stack gap={4}>
                                     <Text size="xs" fw={700} tt="uppercase" c="dimmed">Lidmaatschap</Text>
                                     <Text size="sm" fw={500}>
-                                        Je hoeft <strong>geen lid</strong> te zijn om deel te nemen.
+                                        Je hoeft <Text span fw={700}>geen lid</Text> te zijn om deel te nemen.
                                     </Text>
                                 </Stack>
                                 <Stack gap={4}>

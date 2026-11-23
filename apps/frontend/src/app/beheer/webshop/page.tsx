@@ -13,7 +13,7 @@ import {
 } from '@/server/queries/webshop/beheer-webshop.queries';
 import { getWebshopSettings } from '@/server/actions/public/webshop.actions';
 import { checkBeheerAccess } from '@/server/actions/beheer/beheer-utils.actions';
-import { COMMITTEES } from '@/shared/lib/permissions-config';
+import { canAccess } from '@/shared/lib/permissions';
 import { type AdminProductSales } from '@/components/islands/beheer/webshop/webshop-admin-types';
 
 export const metadata: Metadata = {
@@ -74,9 +74,7 @@ export default async function AdminWebshopPage() {
         loadWebshopAdminData(),
         checkBeheerAccess()
     ]);
-    const isBoardOrIct = Boolean(accessData.user?.committees.some(
-        c => c.azure_group_id === COMMITTEES.BESTUUR || c.azure_group_id === COMMITTEES.ICT
-    ));
+    const canViewPickupList = canAccess(accessData.user?.committees, 'webshop_pickup');
 
     return (
         <Container size="xl" py="lg">
@@ -86,7 +84,6 @@ export default async function AdminWebshopPage() {
                         <Button
                             component={Link}
                             href="/beheer"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -101,17 +98,15 @@ export default async function AdminWebshopPage() {
                         <Button
                             component={Link}
                             href="/beheer/webshop/bestellingen"
-                            variant="default"
                             size="sm"
                             leftSection={<ClipboardList size={14} />}
                         >
                             Bestellingen
                         </Button>
-                        {isBoardOrIct && (
+                        {canViewPickupList && (
                             <Button
                                 component={Link}
                                 href="/beheer/webshop/afhalen"
-                                variant="default"
                                 size="sm"
                                 leftSection={<ClipboardCheck size={14} />}
                             >

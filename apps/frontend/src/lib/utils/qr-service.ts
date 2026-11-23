@@ -1,4 +1,5 @@
 import QRCode from 'qrcode';
+import { BRAND_COLORS } from '@/lib/config/theme';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export async function generateQRCode(data: string): Promise<string> {
@@ -8,7 +9,7 @@ export async function generateQRCode(data: string): Promise<string> {
             type: 'image/png',
             margin: 1,
             width: 300,
-            color: { dark: '#7B2CBF', light: '#FFFFFF' }
+            color: { dark: BRAND_COLORS.purple, light: BRAND_COLORS.lightSurface }
         });
     } catch (error) {
         safeConsoleError('[qr-service.ts][generateQRCode] ', error);

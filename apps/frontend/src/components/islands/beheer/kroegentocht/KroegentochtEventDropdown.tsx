@@ -48,21 +48,16 @@ export default function KroegentochtEventDropdown({
             <Menu.Target>
                 <Button
                     type="button"
-                    variant="default"
                     h="auto"
                     py={8}
                     px="sm"
                     miw={210}
                     justify="space-between"
-                    leftSection={
-                        <ThemeIcon size="sm" variant="light" color="brand" radius="sm">
-                            <Beer size={14} />
-                        </ThemeIcon>
-                    }
+                    leftSection={<Beer size={16} />}
                     rightSection={<ChevronDown size={16} />}
                 >
                     <Stack gap={0} align="flex-start" miw={0}>
-                        <Text size="xs" c="dimmed" fw={600} lh={1.1}>
+                        <Text size="xs" fw={600} lh={1.1} opacity={0.8}>
                             Selecteer Event
                         </Text>
                         <Text size="sm" fw={600} truncate maw={160}>
@@ -109,7 +104,7 @@ export default function KroegentochtEventDropdown({
                                                 {formatDate(eventDate)}
                                             </Text>
                                             {isUpcoming && (
-                                                <Badge size="xs" variant="light" color="success">
+                                                <Badge size="xs" color="success">
                                                     Live
                                                 </Badge>
                                             )}

@@ -78,7 +78,7 @@ export default function NdaSignIsland({ signatureId, committeeName, documentFile
 
     return (
         <Stack gap="lg">
-            <Card padding="lg" radius="xl" withBorder>
+            <Card padding="lg" withBorder>
                 <Stack gap="xs">
                     <Title order={2} size="h4">
                         NDA — {committeeName}
@@ -99,7 +99,7 @@ export default function NdaSignIsland({ signatureId, committeeName, documentFile
                 </Stack>
             </Card>
 
-            <Card padding="lg" radius="xl" withBorder>
+            <Card padding="lg" withBorder>
                 <Stack gap="sm">
                     <Title order={3} size="h5">
                         Locatie
@@ -113,7 +113,6 @@ export default function NdaSignIsland({ signatureId, committeeName, documentFile
                         />
                         <Button
                             type="button"
-                            variant="light"
                             onClick={handleUseLocation}
                             loading={locating}
                             leftSection={<MapPin size={16} />}
@@ -129,7 +128,7 @@ export default function NdaSignIsland({ signatureId, committeeName, documentFile
                 </Stack>
             </Card>
 
-            <Card padding="lg" radius="xl" withBorder>
+            <Card padding="lg" withBorder>
                 <Stack gap="sm">
                     <Title order={3} size="h5">
                         Jouw handtekening
@@ -139,7 +138,7 @@ export default function NdaSignIsland({ signatureId, committeeName, documentFile
             </Card>
 
             {submitError && (
-                <Alert color="error" variant="light">
+                <Alert color="error">
                     {submitError}
                 </Alert>
             )}

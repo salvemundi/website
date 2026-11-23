@@ -81,13 +81,12 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                         <Card
                             key={activity.id}
                             padding={0}
-                            radius="lg"
                             withBorder
                             shadow={isSelected ? 'md' : 'xs'}
                             style={{
                                 overflow: 'hidden',
-                                borderColor: isSelected ? 'var(--primary)' : undefined,
-                                backgroundColor: isSelected ? 'color-mix(in srgb, var(--primary) 8%, var(--mantine-color-default))' : undefined,
+                                borderColor: isSelected ? 'var(--mantine-color-brand-filled)' : undefined,
+                                backgroundColor: isSelected ? 'color-mix(in srgb, var(--mantine-color-brand-filled) 8%, var(--mantine-color-default))' : undefined,
                             }}
                         >
                             <Flex direction={{ base: 'column', md: 'row' }}>
@@ -150,11 +149,10 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                                                 >
                                                     <Paper
                                                         p="sm"
-                                                        radius="md"
                                                         withBorder
                                                         style={{
-                                                            borderColor: isOptSelected ? 'var(--primary)' : undefined,
-                                                            backgroundColor: isOptSelected ? 'color-mix(in srgb, var(--primary) 12%, transparent)' : undefined,
+                                                            borderColor: isOptSelected ? 'var(--mantine-color-brand-filled)' : undefined,
+                                                            backgroundColor: isOptSelected ? 'var(--surface-subtle)' : undefined,
                                                         }}
                                                     >
                                                         <Group justify="space-between" wrap="nowrap" gap="sm">
@@ -184,7 +182,7 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
             </Stack>
 
             {activities.length === 0 && (
-                <Paper p="xl" radius="lg" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
+                <Paper p="xl" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
                     <Text c="dimmed">Geen optionele activiteiten beschikbaar.</Text>
                 </Paper>
             )}

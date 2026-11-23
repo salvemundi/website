@@ -19,7 +19,7 @@ export default function BeheerUnauthorized({
         <Container size="sm" py="xl">
             <Center mih="70vh">
                 <Stack align="center" ta="center" gap="lg">
-                    <ThemeIcon size={72} radius="xl" variant="light" color="brand">
+                    <ThemeIcon size="xl">
                         <ShieldAlert size={36} />
                     </ThemeIcon>
 
@@ -49,7 +49,6 @@ export default function BeheerUnauthorized({
                             <Button
                                 component={Link}
                                 href={backHref}
-                                variant="default"
                                 size="md"
                                 leftSection={<ArrowLeft size={16} />}
                             >
@@ -58,7 +57,6 @@ export default function BeheerUnauthorized({
                         ) : (
                             <Button
                                 type="button"
-                                variant="default"
                                 size="md"
                                 onClick={() => window.history.back()}
                                 leftSection={<ArrowLeft size={16} />}

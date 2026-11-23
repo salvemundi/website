@@ -13,8 +13,7 @@
     },
     "scripts": {
         "type-check": "bun check",
-        "lint": "eslint src",
-        "generate:zod": "node scripts/generate-zod.mjs"
+        "lint": "eslint src"
     },
     "dependencies": {
         "@salvemundi/db": "workspace:*",

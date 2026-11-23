@@ -16,7 +16,10 @@ export class SyncProcessor {
 
         if (isUpnConversionEnabled && ctx.options.convertUpn && !shouldExcludeUser(currentUpn)) {
             const azureMemberships = ctx.membershipMap.get(aUser.id) || new Map<number, boolean>();
-            const isInCommittee = azureMemberships.size > 0;
+            const isInCommittee = Array.from(azureMemberships.keys()).some((committeeId) => {
+                const committee = ctx.committeeByIdCache?.get(Number(committeeId));
+                return Boolean(committee?.is_visible);
+            });
 
             if (isInCommittee && currentUpn.endsWith('@lid.salvemundi.nl')) {
                 targetUpn = currentUpn.replace('@lid.salvemundi.nl', '@salvemundi.nl');

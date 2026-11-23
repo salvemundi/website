@@ -104,7 +104,7 @@ export default function MailFilters({
                 </Stack>
             </Card>
 
-            <Paper withBorder radius="lg" p="lg">
+            <Paper withBorder p="lg">
                 <Stack gap={4}>
                     <Group gap="sm">
                         <Text span c="accent" lh={1}>
@@ -131,12 +131,12 @@ export default function MailFilters({
                             {filteredRecipients.map(recipient => {
                                 const badge = getStatusBadgeProps(recipient.status);
                                 return (
-                                    <Paper key={recipient.id} withBorder radius="md" p="xs">
+                                    <Paper key={recipient.id} withBorder p="xs">
                                         <Group justify="space-between" wrap="nowrap" gap="xs">
                                             <Text size="xs" fw={700} truncate="end">
                                                 {recipient.first_name} {recipient.last_name}
                                             </Text>
-                                            <Badge color={badge.color} variant="light" size="xs">
+                                            <Badge color={badge.color} size="xs">
                                                 {badge.label}
                                             </Badge>
                                         </Group>

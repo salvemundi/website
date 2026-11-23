@@ -118,7 +118,6 @@ export default function CameraCalendar({
             <Group justify="space-between" align="center">
                 <ActionIcon
                     type="button"
-                    variant="subtle"
                     onClick={() => shift(-1)}
                     aria-label="Vorige maand"
                 >
@@ -127,7 +126,6 @@ export default function CameraCalendar({
                 <Title order={3} size="h5" tt="capitalize">{monthLabel}</Title>
                 <ActionIcon
                     type="button"
-                    variant="subtle"
                     onClick={() => shift(1)}
                     aria-label="Volgende maand"
                 >
@@ -141,14 +139,14 @@ export default function CameraCalendar({
                         {label}
                     </Badge>
                 ))}
-                <Badge variant="default" size="sm">
+                <Badge size="sm">
                     Beschikbaar
                 </Badge>
             </Group>
 
             <SimpleGrid cols={7} spacing={4}>
                 {WEEKDAYS.map((w) => (
-                    <Text key={w} ta="center" size="xs" fw={700} c="dimmed" tt="uppercase">
+                    <Text key={w} ta="center" size="xs" fw={600} c="dimmed" tt="uppercase">
                         {w}
                     </Text>
                 ))}
@@ -167,7 +165,6 @@ export default function CameraCalendar({
                             type="button"
                             withBorder
                             p={6}
-                            radius="md"
                             onClick={() => setSelected(day)}
                             style={{
                                 minHeight: 76,
@@ -191,7 +188,6 @@ export default function CameraCalendar({
                                         color={meta.color}
                                         variant={meta.variant}
                                         size="xs"
-                                        radius="sm"
                                         fullWidth
                                     >
                                         {e.label}
@@ -206,9 +202,9 @@ export default function CameraCalendar({
                 })}
             </SimpleGrid>
 
-            <Card withBorder padding="md" radius="lg">
+            <Card withBorder padding="md">
                 <Stack gap="xs">
-                    <Title order={4} size="xs" fw={700}>
+                    <Title order={4} size="xs">
                         {formatDate(selected, 'EEEE d MMMM yyyy')}
                     </Title>
                     {selectedEntries.length === 0 ? (

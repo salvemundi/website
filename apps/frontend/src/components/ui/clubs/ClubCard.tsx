@@ -22,7 +22,7 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
     const description = club.description ? stripHtmlToText(club.description) : null;
 
     return (
-        <Card h="100%" padding="lg" radius="lg" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Card h="100%" padding="lg" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <CardSection
                 pos="relative"
                 h={244}
@@ -32,17 +32,19 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                 }}
             >
                 {!hasImage ? (
-                    <FallbackLogo
-                        alt={club.name}
-                        className="object-contain p-12 opacity-40 transition-all duration-500"
-                        priority={index < 4}
-                    />
+                    <Box pos="relative" w="100%" h="100%" p={48} style={{ opacity: 0.4 }}>
+                        <FallbackLogo
+                            alt={club.name}
+                            className="object-contain"
+                            priority={index < 4}
+                        />
+                    </Box>
                 ) : (
                     <Image
                         src={imageUrl}
                         alt={club.name}
                         fill
-                        className="object-cover transition-all duration-500"
+                        className="object-cover"
                         unoptimized
                         priority={index < 4}
                     />
@@ -52,7 +54,7 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                     inset={0}
                     style={{
                         pointerEvents: 'none',
-                        background: 'linear-gradient(to top, rgba(0, 0, 0, 0.2), transparent)',
+                        background: 'linear-gradient(to top, var(--overlay-scrim-subtle), transparent)',
                     }}
                 />
             </CardSection>
@@ -86,7 +88,6 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                                     href={club.whatsapp_link}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    variant="light"
                                     fullWidth
                                     leftSection={<MessageCircle size={16} />}
                                 >
@@ -96,7 +97,6 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                                 <Button
                                     component={Link}
                                     href={ROUTES.MEMBERSHIP}
-                                    variant="default"
                                     fullWidth
                                     leftSection={<Lock size={16} />}
                                     title="Alleen zichtbaar voor leden met een actief lidmaatschap"
@@ -112,10 +112,8 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                                 href={club.discord_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                variant="light"
-                                color="brand"
                                 fullWidth
-                                leftSection={<DiscordIcon className="size-4" />}
+                                leftSection={<DiscordIcon width={16} height={16} />}
                             >
                                 Discord
                             </Button>

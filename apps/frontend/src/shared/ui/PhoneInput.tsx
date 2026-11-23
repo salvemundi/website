@@ -100,7 +100,6 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(({
                 <Popover.Target>
                     <Button
                         type="button"
-                        variant="default"
                         disabled={disabled}
                         onClick={() => setIsOpen((prev) => !prev)}
                         aria-label={`Selecteer land, huidig: ${countryDisplayName} (${selectedCountry.dialCode})`}

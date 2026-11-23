@@ -50,7 +50,6 @@ export default async function BeheerIntroPage() {
                         <Button
                             component={Link}
                             href="/beheer"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -60,8 +59,6 @@ export default async function BeheerIntroPage() {
                             Introductie Beheer
                         </Title>
                         <Badge
-                            variant="light"
-                            color="brand"
                             size="lg"
                             leftSection={<QrCode size={14} />}
                         >

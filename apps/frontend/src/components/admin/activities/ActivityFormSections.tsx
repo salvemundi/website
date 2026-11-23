@@ -10,6 +10,7 @@ import {
     Card,
     Checkbox,
     Divider,
+    FileButton,
     Group,
     NumberInput,
     Paper,
@@ -77,7 +78,7 @@ const toAmsterdamLocalString = (val: string | null): string => {
 function SectionTitle({ icon, title }: { icon: React.ReactNode; title: string }) {
     return (
         <Group gap="sm" mb="md">
-            <ThemeIcon size="md" radius="md" variant="light" color="accent">
+            <ThemeIcon size="md" color="accent">
                 {icon}
             </ThemeIcon>
             <Title order={2} size="h5">{title}</Title>
@@ -93,7 +94,7 @@ export function GeneralInfoSection({
     formErrors?: FormErrorsMap
 }) {
     return (
-        <Card withBorder radius="lg" padding="lg">
+        <Card withBorder padding="lg">
             <SectionTitle icon={<Info size={16} />} title="Beschrijving" />
             <Divider mb="lg" />
             <Stack gap="lg">
@@ -211,13 +212,13 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
     };
 
     return (
-        <Card withBorder radius="lg" padding="lg" h="100%">
+        <Card withBorder padding="lg" h="100%">
             <SectionTitle icon={<CalendarIcon size={16} />} title="Planning & locatie" />
             <Divider mb="lg" />
             <Stack gap="lg" style={{ flex: 1 }}>
                 <Group align="flex-start" gap="md" wrap="wrap">
                     <Box style={{ flex: 1, minWidth: 180 }}>
-                        <input type="hidden" name="event_date" value={startDate ?? ''} />
+                        <TextInput display="none" name="event_date" value={startDate ?? ''} readOnly />
                         <DateInput
                             id="event_date"
                             label="Startdatum"
@@ -249,7 +250,7 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
 
                 <Group align="flex-start" gap="md" wrap="wrap">
                     <Box style={{ flex: 1, minWidth: 180 }}>
-                        <input type="hidden" name="event_date_end" value={endDate ?? ''} />
+                        <TextInput display="none" name="event_date_end" value={endDate ?? ''} readOnly />
                         <DateInput
                             id="event_date_end"
                             label="Einddatum"
@@ -277,7 +278,7 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
 
                 <Group align="flex-start" gap="md" wrap="wrap">
                     <Box style={{ flex: 1, minWidth: 180 }}>
-                        <input type="hidden" name="registration_deadline" value={deadlineValue} />
+                        <TextInput display="none" name="registration_deadline" value={deadlineValue} readOnly />
                         <Group justify="space-between" mb={4}>
                             <Text component="label" htmlFor="registration_deadline_date" size="sm" fw={500}>
                                 Inschrijfdeadline
@@ -285,7 +286,6 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                             {(deadlineDate || deadlineTime) && (
                                 <Button
                                     type="button"
-                                    variant="subtle"
                                     color="error"
                                     size="compact-xs"
                                     onClick={handleClearDeadline}
@@ -364,7 +364,7 @@ export function CapacityCostsSection({
     const [committeeId, setCommitteeId] = React.useState<string>(toInputSafe(initialData?.committee_id));
 
     return (
-        <Card withBorder radius="lg" padding="lg" h="100%">
+        <Card withBorder padding="lg" h="100%">
             <SectionTitle icon={<Euro size={16} />} title="Kosten & capaciteit" />
             <Divider mb="lg" />
             <Stack gap="lg" style={{ flex: 1 }}>
@@ -403,7 +403,7 @@ export function CapacityCostsSection({
 
                 <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
                     <Box>
-                        <input type="hidden" name="committee_id" value={committeeId} />
+                        <TextInput display="none" name="committee_id" value={committeeId} readOnly />
                         <Select
                             id="committee_id"
                             label="Organiserende commissie"
@@ -433,13 +433,12 @@ export function CapacityCostsSection({
                     />
                 </SimpleGrid>
 
-                <Paper withBorder radius="md" p="md" mt="auto">
+                <Paper withBorder p="md" mt="auto">
                     <Checkbox
                         id="only_members"
                         checked={onlyMembers}
                         onChange={(e) => onOnlyMembersChange(e.currentTarget.checked)}
                         label="Alleen toegankelijk voor leden"
-                        color="accent"
                     />
                 </Paper>
             </Stack>
@@ -455,13 +454,12 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }) {
     return (
-        <Card withBorder radius="lg" padding="lg">
+        <Card withBorder padding="lg">
             <SectionTitle icon={<Upload size={16} />} title="Banner" />
             <Divider mb="md" />
             {!imagePreview ? (
                 <Paper
                     withBorder
-                    radius="md"
                     p="xl"
                     onClick={onUploadClick}
                     style={{
@@ -478,13 +476,14 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
                     <Text size="sm" fw={600} c="dimmed" mt="xs" ta="center">
                         Upload banner
                     </Text>
-                    <input
+                    <FileButton
                         ref={fileInputRef}
-                        type="file"
                         accept="image/*,video/*"
-                        onChange={onFileChange}
-                        style={{ display: 'none' }}
-                    />
+                        onChange={() => {}}
+                        inputProps={{ onChange: onFileChange }}
+                    >
+                        {() => null}
+                    </FileButton>
                 </Paper>
             ) : (
                 <Box
@@ -511,7 +510,6 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
                     >
                         <ActionIcon
                             type="button"
-                            variant="default"
                             size="md"
                             onClick={onUploadClick}
                             aria-label="Banner wijzigen"
@@ -521,7 +519,6 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
                         <ActionIcon
                             type="button"
                             color="error"
-                            variant="filled"
                             size="md"
                             onClick={onRemoveClick}
                             aria-label="Banner verwijderen"
@@ -529,13 +526,14 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
                             <X size={14} />
                         </ActionIcon>
                     </Group>
-                    <input
+                    <FileButton
                         ref={fileInputRef}
-                        type="file"
                         accept="image/*,video/*"
-                        onChange={onFileChange}
-                        style={{ display: 'none' }}
-                    />
+                        onChange={() => {}}
+                        inputProps={{ onChange: onFileChange }}
+                    >
+                        {() => null}
+                    </FileButton>
                 </Box>
             )}
         </Card>
@@ -547,20 +545,20 @@ export function StatusSection({ status, onStatusChange, initialData }: { status:
     const [publishDate, setPublishDate] = React.useState<string | null>(initialPublishDate || null);
 
     return (
-        <Card withBorder radius="lg" padding="lg">
+        <Card withBorder padding="lg">
             <SectionTitle icon={<Eye size={16} />} title="Status" />
             <Divider mb="md" />
             <Radio.Group value={status} onChange={onStatusChange}>
                 <Stack gap="sm">
-                    <Radio value="published" label="Gepubliceerd" color="accent" />
-                    <Radio value="draft" label="Concept" color="accent" />
-                    <Radio value="scheduled" label="Inplannen" color="accent" />
+                    <Radio value="published" label="Gepubliceerd" />
+                    <Radio value="draft" label="Concept" />
+                    <Radio value="scheduled" label="Inplannen" />
                 </Stack>
             </Radio.Group>
 
             {status === 'scheduled' && (
                 <Box mt="md">
-                    <input type="hidden" name="publish_date" value={toAmsterdamLocalString(publishDate)} />
+                    <TextInput display="none" name="publish_date" value={toAmsterdamLocalString(publishDate)} readOnly />
                     <DateTimePicker
                         label="Publicatiedatum & -tijd"
                         placeholder="Kies datum en tijd"

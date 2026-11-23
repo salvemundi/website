@@ -44,7 +44,6 @@ export default function CoboQueueItem({
         <Paper
             withBorder
             p="md"
-            radius="md"
             draggable
             onDragStart={onDragStart}
             onDragOver={onDragOver}
@@ -100,8 +99,6 @@ export default function CoboQueueItem({
                     {index > 0 && (
                         <Button
                             type="button"
-                            variant="light"
-                            color="brand"
                             size="xs"
                             onClick={() => onReorder(index, 0)}
                             title="Direct naar boven (#1)"
@@ -114,7 +111,6 @@ export default function CoboQueueItem({
                     <ActionIcon.Group>
                         <ActionIcon
                             type="button"
-                            variant="default"
                             size="md"
                             onClick={() => onReorder(index, index - 1)}
                             disabled={index === 0}
@@ -125,7 +121,6 @@ export default function CoboQueueItem({
                         </ActionIcon>
                         <ActionIcon
                             type="button"
-                            variant="default"
                             size="md"
                             onClick={() => onReorder(index, index + 1)}
                             disabled={index === totalCount - 1}
@@ -138,8 +133,6 @@ export default function CoboQueueItem({
 
                     <Button
                         type="button"
-                        variant="light"
-                        color="brand"
                         size="xs"
                         onClick={() => onStatusChange(board.id, 'current', board.board_name || 'Bestuur')}
                         title="Nu aan de beurt zetten"
@@ -150,8 +143,6 @@ export default function CoboQueueItem({
 
                     <ActionIcon
                         type="button"
-                        variant="subtle"
-                        color="accent"
                         onClick={() => onStatusChange(board.id, 'late', board.board_name || 'Bestuur')}
                         title="Markeren als niet op tijd"
                         aria-label="Markeren als niet op tijd"
@@ -161,7 +152,6 @@ export default function CoboQueueItem({
 
                     <ActionIcon
                         type="button"
-                        variant="subtle"
                         color="error"
                         onClick={() => onDelete(board.id, board.board_name || 'Bestuur')}
                         title="Verwijderen"

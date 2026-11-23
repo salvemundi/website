@@ -238,22 +238,21 @@ export default function NdaSignatureLayoutEditor({ templateId, documentFileId, i
                 </Text>
             )}
 
-            {loadError && <Alert color="error" variant="light">{loadError}</Alert>}
-            {saveError && <Alert color="error" variant="light">{saveError}</Alert>}
+            {loadError && <Alert color="error">{loadError}</Alert>}
+            {saveError && <Alert color="error">{saveError}</Alert>}
 
             <Paper
                 ref={containerRef}
                 withBorder
-                radius="md"
                 pos="relative"
                 w="100%"
                 maw={672}
-                bg="white"
+                bg="var(--mantine-color-white)"
                 style={{ overflow: 'hidden' }}
             >
                 {loading && (
                     <Center py={80}>
-                        <Loader size="md" color="brand" />
+                        <Loader size="md" />
                     </Center>
                 )}
                 <canvas ref={canvasRef} style={{ display: 'block', height: 'auto', width: '100%' }} />
@@ -275,8 +274,8 @@ export default function NdaSignatureLayoutEditor({ templateId, documentFileId, i
                                 pos="absolute"
                                 style={{
                                     pointerEvents: 'none',
-                                    border: '2px solid var(--primary)',
-                                    backgroundColor: 'color-mix(in srgb, var(--primary) 15%, transparent)',
+                                    border: '2px solid var(--mantine-color-brand-filled)',
+                                    backgroundColor: 'var(--surface-subtle)',
                                     display: 'flex',
                                     alignItems: 'flex-start',
                                     left: style.left,
@@ -285,7 +284,7 @@ export default function NdaSignatureLayoutEditor({ templateId, documentFileId, i
                                     height: style.height,
                                 }}
                             >
-                                <Badge size="xs" radius="xs" variant="filled" color="brand">
+                                <Badge size="xs">
                                     {step.label}
                                 </Badge>
                             </Box>
@@ -296,8 +295,8 @@ export default function NdaSignatureLayoutEditor({ templateId, documentFileId, i
                             pos="absolute"
                             style={{
                                 pointerEvents: 'none',
-                                border: '2px dashed var(--primary)',
-                                backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
+                                border: '2px dashed var(--mantine-color-brand-filled)',
+                                backgroundColor: 'var(--surface-subtle)',
                                 left: Math.min(drawing.x0, drawing.x1),
                                 top: Math.min(drawing.y0, drawing.y1),
                                 width: Math.abs(drawing.x1 - drawing.x0),
@@ -320,7 +319,6 @@ export default function NdaSignatureLayoutEditor({ templateId, documentFileId, i
                 </Button>
                 <Button
                     type="button"
-                    variant="subtle"
                     onClick={handleReset}
                     leftSection={<RotateCcw size={16} />}
                 >

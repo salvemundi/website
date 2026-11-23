@@ -127,7 +127,6 @@ export default function SystemManagementIsland({
                             setActiveTab(val);
                         }
                     }}
-                    variant="pills"
                 >
                     <Tabs.List>
                         <Tabs.Tab value="status" leftSection={<Activity size={14} />}>
@@ -141,7 +140,6 @@ export default function SystemManagementIsland({
 
                 <Button
                     type="button"
-                    variant="default"
                     onClick={() => { void fetchStatus(); }}
                     loading={isRefreshing}
                     leftSection={<RefreshCw size={16} />}
@@ -166,12 +164,11 @@ export default function SystemManagementIsland({
                                 <Card key={service.name} withBorder padding="lg">
                                     <Stack gap="md">
                                         <Group justify="space-between" align="flex-start">
-                                            <ThemeIcon size="xl" radius="md" variant="light" color="accent">
+                                            <ThemeIcon size="xl" color="accent">
                                                 {service.name.toLowerCase().includes('database') ? <Database size={22} /> : <Zap size={22} />}
                                             </ThemeIcon>
                                             <Badge
                                                 color={statusColor}
-                                                variant="light"
                                                 size="lg"
                                                 leftSection={getStatusIcon(service.status)}
                                             >
@@ -212,7 +209,6 @@ export default function SystemManagementIsland({
                                         {service.error && (
                                             <Alert
                                                 color={service.status === 'online' ? 'brand' : 'error'}
-                                                variant="light"
                                                 title={service.status === 'online' ? 'Laatste Foutmelding' : 'Foutmelding Detail'}
                                             >
                                                 <Text size="xs">{service.error}</Text>
@@ -234,8 +230,6 @@ export default function SystemManagementIsland({
                                         <Group gap="md">
                                             <ThemeIcon
                                                 size="xl"
-                                                radius="md"
-                                                variant="light"
                                                 color={setting.isActive ? 'success' : 'error'}
                                             >
                                                 {setting.id === 'mail_expiry_check' ? <CalendarClock size={22} /> :
@@ -254,7 +248,6 @@ export default function SystemManagementIsland({
                                         <Group justify="space-between" align="center" wrap="wrap" gap="sm">
                                             <Badge
                                                 color={setting.isActive ? 'success' : 'error'}
-                                                variant="dot"
                                                 size="md"
                                             >
                                                 {setting.isActive ? 'Actief' : 'Gepauzeerd'}
@@ -276,13 +269,12 @@ export default function SystemManagementIsland({
 
                     <Alert
                         color="accent"
-                        variant="light"
                         icon={<ShieldCheck size={24} />}
                         title="Systeem Veiligheids Protocol"
                     >
                         <Text size="xs" lh={1.6}>
                             Deze toggles beheren kritieke achtergrondprocessen. Wijzigingen treden onmiddellijk in werking.
-                            De <strong>Nachtelijke Sync</strong> draait dagelijks om 03:00 en zorgt dat alle Azure-rechten in de cockpit up-to-date zijn.
+                            De <Text span fw={700}>Nachtelijke Sync</Text> draait dagelijks om 03:00 en zorgt dat alle Azure-rechten in de cockpit up-to-date zijn.
                             Schakel processen alleen uit bij onderhoud of debugging om data-inconsistentie te voorkomen.
                         </Text>
                     </Alert>

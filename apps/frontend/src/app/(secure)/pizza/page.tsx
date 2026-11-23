@@ -30,7 +30,6 @@ export default async function PizzaPage() {
                         <Button
                             component={Link}
                             href="/profiel"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

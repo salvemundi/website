@@ -54,7 +54,7 @@ async function SafeHavensContent() {
                         <Card component="section" padding="xl">
                             <Stack gap="lg">
                                 <Group align="flex-start" gap="lg" wrap="nowrap">
-                                    <ThemeIcon size={56} radius="lg" variant="filled" color="brand">
+                                    <ThemeIcon size="xl">
                                         <Shield size={28} />
                                     </ThemeIcon>
 
@@ -71,9 +71,9 @@ async function SafeHavensContent() {
                                 </Group>
 
                                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                                    <Paper p="lg" radius="lg" bg="var(--mantine-color-body)">
+                                    <Paper p="lg" bg="var(--mantine-color-body)">
                                         <Group align="flex-start" gap="sm" wrap="nowrap">
-                                            <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                                            <ThemeIcon size="md">
                                                 <Lock size={16} />
                                             </ThemeIcon>
                                             <Stack gap={4}>
@@ -86,9 +86,9 @@ async function SafeHavensContent() {
                                         </Group>
                                     </Paper>
 
-                                    <Paper p="lg" radius="lg" bg="var(--mantine-color-body)">
+                                    <Paper p="lg" bg="var(--mantine-color-body)">
                                         <Group align="flex-start" gap="sm" wrap="nowrap">
-                                            <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                                            <ThemeIcon size="md">
                                                 <Users size={16} />
                                             </ThemeIcon>
                                             <Stack gap={4}>
@@ -122,9 +122,9 @@ async function SafeHavensContent() {
                                         ))}
                                     </SimpleGrid>
                                 ) : (
-                                    <Paper p="xl" radius="lg" bg="var(--mantine-color-body)">
+                                    <Paper p="xl" bg="var(--mantine-color-body)">
                                         <Stack align="center" ta="center" gap="sm">
-                                            <ThemeIcon size={48} radius="xl" variant="light" color="brand">
+                                            <ThemeIcon size="lg">
                                                 <Shield size={24} />
                                             </ThemeIcon>
                                             <Text size="lg" fw={700} c="dimmed">
@@ -153,9 +153,9 @@ async function SafeHavensContent() {
 
                                 <Stack gap="xs">
                                     {topics.map((topic) => (
-                                        <Paper key={topic.text} p="sm" radius="md" bg="var(--mantine-color-body)">
+                                        <Paper key={topic.text} p="sm" bg="var(--mantine-color-body)">
                                             <Group gap="sm" wrap="nowrap">
-                                                <ThemeIcon size="md" radius="md" variant="filled" color="brand">
+                                                <ThemeIcon size="md">
                                                     <topic.Icon size={16} />
                                                 </ThemeIcon>
                                                 <Text size="sm" fw={500}>
@@ -171,7 +171,7 @@ async function SafeHavensContent() {
                         <Card component="section" padding="xl">
                             <Stack gap="lg">
                                 <Stack align="center" ta="center" gap="sm">
-                                    <ThemeIcon size={56} radius="lg" variant="filled" color="brand">
+                                    <ThemeIcon size="xl">
                                         <MapPin size={28} />
                                     </ThemeIcon>
                                     <Title order={2} size="h3" c="brand">
@@ -196,14 +196,14 @@ async function SafeHavensContent() {
                                         Fontys Safe Haven
                                     </Button>
 
-                                    <Paper p="md" radius="md" bg="var(--mantine-color-body)" ta="center">
+                                    <Paper p="md" bg="var(--mantine-color-body)" ta="center">
                                         <ObfuscatedEmail
                                             email="bestuur@salvemundi.nl"
                                             showIcon={false}
                                         />
                                     </Paper>
 
-                                    <Alert color="error" variant="light" icon={<Phone size={16} />}>
+                                    <Alert color="error" icon={<Phone size={16} />}>
                                         <Text size="sm" fw={700}>Noodgeval? Bel 112</Text>
                                     </Alert>
                                 </Stack>

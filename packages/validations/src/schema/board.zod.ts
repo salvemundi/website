@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { selectBoardSchema, selectBoardMembersSchema, selectDirectusUsersSchema } from './db.zod.ts';
+import { createSelectSchema } from 'drizzle-zod';
+import { Board as BoardTable, Board_Members as Board_MembersTable, directus_users as directus_usersTable } from '@salvemundi/db/schema';
+
+const selectBoardSchema = createSelectSchema(BoardTable);
+const selectBoardMembersSchema = createSelectSchema(Board_MembersTable);
+const selectDirectusUsersSchema = createSelectSchema(directus_usersTable);
 
 export const boardMemberSchema = selectBoardMembersSchema.omit({
     date_created: true,

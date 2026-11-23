@@ -52,7 +52,6 @@ export default function ReisTableRow({
     return (
         <Card
             withBorder
-            radius="lg"
             padding="md"
             h="100%"
             onClick={() => onSelect(signup)}
@@ -77,7 +76,6 @@ export default function ReisTableRow({
                     <Group gap={4} wrap="nowrap">
                         <ActionIcon
                             type="button"
-                            variant="default"
                             size="md"
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -90,7 +88,6 @@ export default function ReisTableRow({
                         </ActionIcon>
                         <ActionIcon
                             type="button"
-                            variant="subtle"
                             color="error"
                             size="md"
                             disabled={isDeleteLoading}
@@ -120,12 +117,12 @@ export default function ReisTableRow({
 
                         <Group gap="xs">
                             {isBusTrip && signup.willing_to_drive && (
-                                <Badge color="success" variant="light" size="xs" leftSection={<Bus size={10} />}>
+                                <Badge color="success" size="xs" leftSection={<Bus size={10} />}>
                                     Chauffeur
                                 </Badge>
                             )}
                             {!isBusTrip && signup.extra_luggage && (
-                                <Badge color="brand" variant="light" size="xs" leftSection={<Briefcase size={10} />}>
+                                <Badge size="xs" leftSection={<Briefcase size={10} />}>
                                     +1 Koffer
                                 </Badge>
                             )}
@@ -137,7 +134,7 @@ export default function ReisTableRow({
 
                 <Group justify="space-between" wrap="wrap" gap="xs">
                     {isStatusLoading ? (
-                        <Loader size="xs" color="accent" />
+                        <Loader size="xs" />
                     ) : (
                         <StatusDropdown
                             currentStatus={signup.status}
@@ -145,7 +142,7 @@ export default function ReisTableRow({
                         />
                     )}
 
-                    <Badge color={getPaymentBadgeColor(signup)} variant="light" size="sm">
+                    <Badge color={getPaymentBadgeColor(signup)} size="sm">
                         {paymentStatus.label}
                     </Badge>
                 </Group>
@@ -190,7 +187,6 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
                 <Button
                     type="button"
                     size="compact-xs"
-                    variant="light"
                     color={current.color}
                     onClick={(e) => e.stopPropagation()}
                     leftSection={<current.icon size={12} />}

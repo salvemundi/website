@@ -60,9 +60,8 @@ export function HeroIsland({ banners = [], activiteiten = [], initialSession }: 
                     <Stack gap="xl">
                         <Stack gap="md">
                             <Title order={1} fz={{ base: '2.5rem', md: '4rem' }} lh={1.1}>
-                                Studievereniging
-                                <br />
-                                <Text span inherit c="brand">Salve Mundi</Text>
+                                <Text span inherit display="block">Studievereniging</Text>
+                                <Text span inherit c="brand" display="block">Salve Mundi</Text>
                             </Title>
                             <Text size="lg" c="dimmed" maw={560}>
                                 Dè studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd.
@@ -78,7 +77,7 @@ export function HeroIsland({ banners = [], activiteiten = [], initialSession }: 
                                             <Text size="lg" fw={700} truncate>Sluit je aan bij Salve Mundi</Text>
                                             <Text size="sm" c="dimmed" lineClamp={2}>Ontdek alle voordelen van een lidmaatschap!</Text>
                                         </Stack>
-                                        <ThemeIcon size="lg" radius="xl" variant="light">
+                                        <ThemeIcon size="lg">
                                             <ChevronRight size={20} />
                                         </ThemeIcon>
                                     </Group>
@@ -101,7 +100,7 @@ export function HeroIsland({ banners = [], activiteiten = [], initialSession }: 
                                                 {nextEvent.description ?? 'Kom gezellig langs!'}
                                             </Text>
                                         </Stack>
-                                        <ThemeIcon size="lg" radius="xl" variant="light">
+                                        <ThemeIcon size="lg">
                                             <ChevronRight size={20} />
                                         </ThemeIcon>
                                     </Group>

@@ -32,7 +32,7 @@ export function InfoRow({
 }) {
     return (
         <Group gap="md" wrap="nowrap">
-            <ThemeIcon size={40} variant="default" radius="md">
+            <ThemeIcon size="lg">
                 <Icon size={18} />
             </ThemeIcon>
             <Box miw={0} flex={1}>
@@ -57,7 +57,7 @@ export function CommitteeCard({
     return (
         <Card p="md" shadow="sm">
             <Group gap="md" wrap="nowrap">
-                <ThemeIcon size={40} radius="xl" variant="light" color="brand">
+                <ThemeIcon size="lg">
                     <Shield size={18} />
                 </ThemeIcon>
                 <Box miw={0} flex={1}>
@@ -69,8 +69,6 @@ export function CommitteeCard({
                             <Badge
                                 mt={4}
                                 size="xs"
-                                variant="light"
-                                color="brand"
                                 leftSection={<Award size={12} />}
                             >
                                 Commissie Leider
@@ -92,7 +90,7 @@ export function GroupCard({
     return (
         <Card p="sm" shadow="sm">
             <Group gap="md" wrap="nowrap">
-                <ThemeIcon size={40} variant="default" radius="md">
+                <ThemeIcon size="lg">
                     <Hash size={18} />
                 </ThemeIcon>
                 <Text size="sm" fw={600} truncate>
@@ -107,20 +105,20 @@ export function SignupStatus({ status }: { status: string }) {
     switch (status) {
         case 'paid':
             return (
-                <Badge size="sm" variant="light" color="success">
+                <Badge size="sm" color="success">
                     Betaald
                 </Badge>
             );
         case 'failed':
         case 'canceled':
             return (
-                <Badge size="sm" variant="light" color="error">
+                <Badge size="sm" color="error">
                     Mislukt
                 </Badge>
             );
         default:
             return (
-                <Badge size="sm" variant="light" color="accent">
+                <Badge size="sm" color="accent">
                     Open
                 </Badge>
             );
@@ -129,9 +127,9 @@ export function SignupStatus({ status }: { status: string }) {
 
 export function EmptyState({ icon: Icon, message }: { icon: LucideIcon; message: string }) {
     return (
-        <Paper p="xl" withBorder radius="lg" style={{ borderStyle: 'dashed' }} ta="center">
+        <Paper p="xl" withBorder style={{ borderStyle: 'dashed' }} ta="center">
             <Stack align="center" gap="xs" py="md">
-                <ThemeIcon size={48} radius="xl" variant="default">
+                <ThemeIcon size="lg">
                     <Icon size={22} />
                 </ThemeIcon>
                 <Text size="sm" fw={500} c="dimmed" fs="italic">

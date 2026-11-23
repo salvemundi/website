@@ -18,6 +18,7 @@ import {
     Button,
     Card,
     Divider,
+    FileButton,
     Grid,
     Group,
     Input,
@@ -132,7 +133,7 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
             <Stack gap="xl">
                 <Group justify="space-between">
                     <Group gap="sm">
-                        <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                        <ThemeIcon size="lg">
                             {activity?.id ? <Save size={20} /> : <Plus size={20} />}
                         </ThemeIcon>
                         <Title order={2} size="h3">
@@ -141,7 +142,6 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                     </Group>
                     <ActionIcon
                         type="button"
-                        variant="default"
                         size="lg"
                         onClick={onCancel}
                         aria-label="Sluiten"
@@ -150,13 +150,13 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                     </ActionIcon>
                 </Group>
 
-                <form onSubmit={handleSubmit}>
-                    {activity?.id && <input type="hidden" name="id" value={activity.id} />}
-                    <input type="hidden" name="existing_image_id" value={existingImageId || ''} />
+                <Box component="form" onSubmit={handleSubmit}>
+                    {activity?.id && <TextInput display="none" name="id" value={String(activity.id)} readOnly />}
+                    <TextInput display="none" name="existing_image_id" value={existingImageId || ''} readOnly />
 
                     <Stack gap="xl">
                         {imageError && (
-                            <Alert color="error" variant="light" icon={<Info size={16} />}>
+                            <Alert color="error" icon={<Info size={16} />}>
                                 {imageError}
                             </Alert>
                         )}
@@ -191,7 +191,6 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                                 {!imagePreview ? (
                                                     <Button
                                                         type="button"
-                                                        variant="default"
                                                         fullWidth
                                                         h={128}
                                                         style={{ borderStyle: 'dashed' }}
@@ -199,7 +198,7 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                                     >
                                                         <Stack align="center" gap="xs">
                                                             <Upload size={20} />
-                                                            <Text size="xs" c="dimmed">
+                                                            <Text size="xs" fw={600}>
                                                                 Upload afbeelding
                                                             </Text>
                                                         </Stack>
@@ -207,7 +206,6 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                                 ) : (
                                                     <Paper
                                                         withBorder
-                                                        radius="md"
                                                         pos="relative"
                                                         h={128}
                                                         style={{ overflow: 'hidden' }}
@@ -227,7 +225,6 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                                         >
                                                             <ActionIcon
                                                                 type="button"
-                                                                variant="default"
                                                                 onClick={() =>
                                                                     fileInputRef.current?.click()
                                                                 }
@@ -237,7 +234,6 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                                             </ActionIcon>
                                                             <ActionIcon
                                                                 type="button"
-                                                                variant="filled"
                                                                 color="error"
                                                                 onClick={handleRemoveImage}
                                                                 aria-label="Afbeelding verwijderen"
@@ -247,14 +243,15 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                                         </Group>
                                                     </Paper>
                                                 )}
-                                                <input
+                                                <FileButton
                                                     ref={fileInputRef}
-                                                    type="file"
                                                     name="image_file"
                                                     accept="image/*"
-                                                    onChange={handleImageChange}
-                                                    style={{ display: 'none' }}
-                                                />
+                                                    onChange={() => {}}
+                                                    inputProps={{ onChange: handleImageChange }}
+                                                >
+                                                    {() => null}
+                                                </FileButton>
                                             </Box>
                                         </Input.Wrapper>
                                     </Grid.Col>
@@ -293,7 +290,7 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                     </Grid.Col>
 
                                     <Grid.Col span={12}>
-                                        <Paper withBorder p="md" radius="md">
+                                        <Paper withBorder p="md">
                                             <Switch
                                                 name="is_active"
                                                 label="Activiteit is zichtbaar"
@@ -305,7 +302,7 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                             </Grid.Col>
                         </Grid>
 
-                        <Paper withBorder p="lg" radius="md">
+                        <Paper withBorder p="lg">
                             <Stack gap="lg">
                                 <Group justify="space-between" wrap="wrap" gap="md">
                                     <Box>
@@ -323,7 +320,6 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                     </Box>
                                     <Button
                                         type="button"
-                                        variant="light"
                                         size="xs"
                                         onClick={addOption}
                                         leftSection={<Plus size={14} />}
@@ -332,7 +328,7 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                     </Button>
                                 </Group>
 
-                                <Paper withBorder p="md" radius="md">
+                                <Paper withBorder p="md">
                                     <Group gap="xl">
                                         <Radio
                                             name="max_selections"
@@ -375,7 +371,6 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                             />
                                             <ActionIcon
                                                 type="button"
-                                                variant="light"
                                                 color="error"
                                                 size="lg"
                                                 onClick={() => removeOption(idx)}
@@ -389,7 +384,6 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                         <Paper
                                             withBorder
                                             py="xl"
-                                            radius="md"
                                             style={{ borderStyle: 'dashed' }}
                                             ta="center"
                                         >
@@ -405,7 +399,7 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                         <Divider />
 
                         <Group justify="flex-end" gap="sm">
-                            <Button type="button" variant="default" onClick={onCancel}>
+                            <Button type="button" onClick={onCancel}>
                                 Annuleren
                             </Button>
                             <Button
@@ -417,7 +411,7 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                             </Button>
                         </Group>
                     </Stack>
-                </form>
+                </Box>
             </Stack>
         </Card>
     );

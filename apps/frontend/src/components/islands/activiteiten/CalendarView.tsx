@@ -71,7 +71,7 @@ export default function CalendarView({
     }, [days, events]);
 
     return (
-        <Card component="section" aria-label="Activiteitenkalender" padding={0} radius="xl" shadow="xl" withBorder style={{ overflow: 'hidden' }}>
+        <Card component="section" aria-label="Activiteitenkalender" padding={0} shadow="xl" withBorder style={{ overflow: 'hidden' }}>
             <Group justify="space-between" align="center" p={{ base: 'md', sm: 'lg' }}>
                 <Title order={2} size="h3" tt="capitalize" c="brand">
                     {currentDate.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}
@@ -79,8 +79,6 @@ export default function CalendarView({
                 <Group gap="xs">
                     <ActionIcon
                         type="button"
-                        variant="subtle"
-                        color="brand"
                         size="lg"
                         onClick={onPrevMonth}
                         aria-label="Vorige maand"
@@ -89,8 +87,6 @@ export default function CalendarView({
                     </ActionIcon>
                     <Button
                         type="button"
-                        variant="light"
-                        color="brand"
                         size="xs"
                         onClick={() => {
                             const today = new Date();
@@ -102,8 +98,6 @@ export default function CalendarView({
                     </Button>
                     <ActionIcon
                         type="button"
-                        variant="subtle"
-                        color="brand"
                         size="lg"
                         onClick={onNextMonth}
                         aria-label="Volgende maand"
@@ -117,9 +111,9 @@ export default function CalendarView({
                 cols={7}
                 spacing={0}
                 style={{
-                    borderTop: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)',
-                    borderBottom: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)',
-                    backgroundColor: 'color-mix(in srgb, var(--primary) 6%, transparent)',
+                    borderTop: '1px solid var(--surface-subtle-border)',
+                    borderBottom: '1px solid var(--surface-subtle-border)',
+                    backgroundColor: 'var(--surface-subtle)',
                 }}
             >
                 {WEEK_DAYS.map(day => (
@@ -133,7 +127,7 @@ export default function CalendarView({
                 cols={7}
                 spacing={1}
                 style={{
-                    backgroundColor: 'color-mix(in srgb, var(--primary) 20%, transparent)',
+                    backgroundColor: 'var(--surface-subtle-border)',
                 }}
             >
                 {days.map((day) => {
@@ -157,12 +151,12 @@ export default function CalendarView({
                                 justifyContent: 'space-between',
                                 cursor: 'pointer',
                                 backgroundColor: isSelected
-                                    ? 'color-mix(in srgb, var(--primary) 12%, var(--mantine-color-default))'
+                                    ? 'color-mix(in srgb, var(--mantine-color-brand-filled) 12%, var(--mantine-color-default))'
                                     : isCurrentMonth
                                         ? 'var(--mantine-color-default)'
                                         : 'var(--mantine-color-body)',
                                 opacity: isCurrentMonth ? 1 : 0.65,
-                                boxShadow: isSelected ? 'inset 0 0 0 2px var(--primary)' : undefined,
+                                boxShadow: isSelected ? 'inset 0 0 0 2px var(--mantine-color-brand-filled)' : undefined,
                             }}
                         >
                             <Group justify="space-between" align="center" wrap="nowrap">
@@ -174,8 +168,8 @@ export default function CalendarView({
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         borderRadius: '9999px',
-                                        backgroundColor: isDayToday ? 'var(--primary)' : undefined,
-                                        color: isDayToday ? '#FFFFFF' : isSelected ? 'var(--primary)' : undefined,
+                                        backgroundColor: isDayToday ? 'var(--mantine-color-brand-filled)' : undefined,
+                                        color: isDayToday ? 'var(--mantine-color-white)' : isSelected ? 'var(--mantine-color-brand-filled)' : undefined,
                                     }}
                                 >
                                     <Text size="xs" fw={isDayToday || isSelected ? 900 : 600}>
@@ -183,7 +177,7 @@ export default function CalendarView({
                                     </Text>
                                 </Box>
                                 {dayEvents.length > 0 && (
-                                    <Text size="10px" fw={700} c="dimmed" visibleFrom="sm">
+                                    <Text size="xs" fw={700} c="dimmed" visibleFrom="sm">
                                         {dayEvents.length} act.
                                     </Text>
                                 )}
@@ -204,20 +198,19 @@ export default function CalendarView({
                                         <Paper
                                             px={6}
                                             py={3}
-                                            radius="sm"
                                             withBorder
                                             style={{
-                                                backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)',
-                                                borderColor: 'color-mix(in srgb, var(--primary) 25%, transparent)',
+                                                backgroundColor: 'var(--surface-subtle)',
+                                                borderColor: 'var(--surface-subtle-border)',
                                             }}
                                         >
                                             <Group gap={4} wrap="nowrap">
                                                 {event.event_time && (
-                                                    <Text size="10px" fw={900} c="brand" style={{ flexShrink: 0, opacity: 0.75 }}>
+                                                    <Text size="xs" fw={900} c="brand" style={{ flexShrink: 0, opacity: 0.75 }}>
                                                         {event.event_time.split(':').slice(0, 2).join(':')}
                                                     </Text>
                                                 )}
-                                                <Text size="11px" fw={700} c="brand" truncate>
+                                                <Text size="xs" fw={700} c="brand" truncate>
                                                     {event.name}
                                                 </Text>
                                             </Group>
@@ -226,7 +219,7 @@ export default function CalendarView({
                                 ))}
 
                                 {overflowCount > 0 && (
-                                    <Text size="10px" fw={700} c="brand" ta="center">
+                                    <Text size="xs" fw={700} c="brand" ta="center">
                                         +{overflowCount} meer
                                     </Text>
                                 )}

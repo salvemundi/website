@@ -47,7 +47,6 @@ export default function ActiviteitGridCard({
         <Card
             onClick={onShowDetails}
             padding={0}
-            radius="xl"
             withBorder
             shadow="sm"
             h="100%"
@@ -81,7 +80,7 @@ export default function ActiviteitGridCard({
                     </Box>
                 </AspectRatio>
                 <Stack pos="absolute" top={16} right={16} align="flex-end" gap="xs" style={{ zIndex: 20 }}>
-                    <Badge color="brand" size="sm">
+                    <Badge size="sm">
                         {committeeLabel}
                     </Badge>
                     {onlyMembers && (
@@ -111,7 +110,7 @@ export default function ActiviteitGridCard({
                     </Stack>
 
                     {short_description ? (
-                        <Text size="sm" c="dimmed" lineClamp={5} component="div">
+                        <Text size="sm" c="dimmed" lineClamp={5}>
                             <SafeMarkdown content={short_description} />
                         </Text>
                     ) : description ? (
@@ -149,8 +148,6 @@ export default function ActiviteitGridCard({
                                     e.stopPropagation();
                                     onShowDetails?.();
                                 }}
-                                variant="light"
-                                color="brand"
                                 size="lg"
                                 title="Meer info"
                                 aria-label="Meer info"

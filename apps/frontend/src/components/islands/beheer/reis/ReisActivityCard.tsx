@@ -61,7 +61,6 @@ export default function ReisActivityCard({
                             top={12}
                             right={12}
                             size="sm"
-                            variant="filled"
                             color={activity.is_active ? 'success' : 'error'}
                         >
                             {activity.is_active ? 'Actief' : 'Inactief'}
@@ -104,7 +103,6 @@ export default function ReisActivityCard({
                                     Capaciteit
                                 </Text>
                                 <Badge
-                                    variant="default"
                                     size="md"
                                     leftSection={<Users size={12} />}
                                 >
@@ -122,7 +120,7 @@ export default function ReisActivityCard({
                             </Text>
                             <Group gap={6} wrap="wrap">
                                 {options.slice(0, 2).map((o, i) => (
-                                    <Badge key={i} size="xs" variant="default">
+                                    <Badge key={i} size="xs">
                                         {o.name || 'Naamloos'}
                                     </Badge>
                                 ))}
@@ -139,7 +137,6 @@ export default function ReisActivityCard({
                         <Group gap="xs" wrap="nowrap">
                             <Button
                                 type="button"
-                                variant="default"
                                 size="xs"
                                 flex={1}
                                 onClick={() => onEdit(activity)}
@@ -149,7 +146,6 @@ export default function ReisActivityCard({
                             </Button>
                             <ActionIcon
                                 type="button"
-                                variant="light"
                                 color="error"
                                 size="lg"
                                 onClick={() => onDelete(activity.id as number)}
@@ -160,7 +156,6 @@ export default function ReisActivityCard({
                         </Group>
                         <Button
                             type="button"
-                            variant="light"
                             size="xs"
                             fullWidth
                             onClick={() => onViewSignups(activity.id as number)}

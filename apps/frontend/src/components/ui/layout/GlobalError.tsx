@@ -24,7 +24,7 @@ export default function GlobalError({
         <Container size="sm">
             <Center mih="60vh">
                 <Stack align="center" gap="lg" ta="center">
-                    <ThemeIcon size={80} radius="lg" variant="light" color="error">
+                    <ThemeIcon size="xl" color="error">
                         <AlertTriangle size={40} />
                     </ThemeIcon>
 
@@ -49,7 +49,6 @@ export default function GlobalError({
                         <Button
                             component={Link}
                             href="/"
-                            variant="default"
                             size="md"
                             leftSection={<Home size={16} />}
                         >

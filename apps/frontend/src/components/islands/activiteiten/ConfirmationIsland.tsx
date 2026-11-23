@@ -105,7 +105,7 @@ export default function ConfirmationIsland({
             try {
                 const dataUrl = await toPng(element, {
                     quality: 0.95,
-                    backgroundColor: '#1E1221',
+                    backgroundColor: 'var(--mantine-color-darkBase-filled)',
                     style: { borderRadius: '0' }
                 });
 

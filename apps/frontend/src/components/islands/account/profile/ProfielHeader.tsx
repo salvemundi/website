@@ -80,7 +80,7 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                                 style={{
                                     borderRadius: '9999px',
                                     overflow: 'hidden',
-                                    border: '4px solid color-mix(in srgb, var(--primary) 25%, transparent)',
+                                    border: '4px solid var(--surface-subtle-border)',
                                     backgroundColor: 'var(--mantine-color-default)',
                                     boxShadow: 'var(--mantine-shadow-md)',
                                 }}
@@ -91,10 +91,11 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                                         alt="avatar"
                                         width={128}
                                         height={128}
-                                        className="size-full object-cover"
+                                        className="object-cover"
+                                        style={{ width: '100%', height: '100%' }}
                                     />
                                 ) : (
-                                    <Center h="100%" style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 15%, transparent)' }}>
+                                    <Center h="100%" style={{ backgroundColor: 'var(--surface-subtle)' }}>
                                         <Text size="2.25rem" fw={700} c="brand">
                                             {user.first_name?.[0] || '?'}
                                         </Text>
@@ -105,8 +106,8 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                                     pos="absolute"
                                     inset={0}
                                     style={{
-                                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                                        color: '#FFFFFF',
+                                        backgroundColor: 'var(--overlay-scrim-strong)',
+                                        color: 'var(--mantine-color-white)',
                                         opacity: avatarHovered ? 1 : 0,
                                         transition: 'opacity 150ms ease',
                                     }}
@@ -130,7 +131,6 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
 
                     <Badge
                         size="lg"
-                        radius="xl"
                         color={statusBadgeProps.color}
                         variant={statusBadgeProps.variant}
                     >
@@ -148,11 +148,8 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                                     return (
                                         <Badge
                                             key={committee.id}
-                                            variant="light"
-                                            color="brand"
                                             size="lg"
-                                            radius="xl"
-                                            leftSection={showLeaderStar ? <Star size={12} fill="currentColor" style={{ color: 'var(--accent)' }} /> : undefined}
+                                            leftSection={showLeaderStar ? <Star size={12} fill="currentColor" style={{ color: 'var(--mantine-color-accent-filled)' }} /> : undefined}
                                         >
                                             {committee.name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim()}
                                         </Badge>

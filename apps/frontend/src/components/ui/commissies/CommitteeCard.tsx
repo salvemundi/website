@@ -54,7 +54,6 @@ export const CommitteeCard = ({
             <Card
                 h="100%"
                 padding="lg"
-                radius="lg"
                 style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -75,15 +74,18 @@ export const CommitteeCard = ({
                             src={imageUrl}
                             alt=""
                             fill
-                            className="pointer-events-none object-cover opacity-25 blur-xl select-none"
+                            className="object-cover"
+                            style={{ pointerEvents: 'none', opacity: 0.25, filter: 'blur(24px)', userSelect: 'none' }}
                         />
                     )}
                     {!hasImage ? (
-                        <FallbackLogo
-                            alt={committee.name || 'Committee'}
-                            className="object-contain p-12 opacity-40"
-                            priority={index < 4}
-                        />
+                        <Box pos="relative" w="100%" h="100%" p={48} style={{ opacity: 0.4 }}>
+                            <FallbackLogo
+                                alt={committee.name || 'Committee'}
+                                className="object-contain"
+                                priority={index < 4}
+                            />
+                        </Box>
                     ) : (
                         <Image
                             src={imageUrl}
@@ -98,12 +100,12 @@ export const CommitteeCard = ({
                         inset={0}
                         style={{
                             pointerEvents: 'none',
-                            background: 'linear-gradient(to top, rgba(0, 0, 0, 0.2), transparent)',
+                            background: 'linear-gradient(to top, var(--overlay-scrim-subtle), transparent)',
                         }}
                     />
 
                     {isBestuur && (
-                        <Badge pos="absolute" top={16} right={16} variant="filled" color="brand" size="md">
+                        <Badge pos="absolute" top={16} right={16} size="md">
                             Huidig Bestuur
                         </Badge>
                     )}
@@ -166,7 +168,6 @@ export const CommitteeCard = ({
                         <Group justify="space-between" align="center">
                             <Button
                                 component="div"
-                                variant="light"
                                 size="sm"
                                 rightSection={<ChevronRight size={14} />}
                             >
@@ -174,7 +175,7 @@ export const CommitteeCard = ({
                             </Button>
 
                             {hasHistory && !isBestuur && (
-                                <ThemeIcon size="lg" radius="md" variant="default" title="Historie">
+                                <ThemeIcon size="lg" title="Historie">
                                     <History size={18} />
                                 </ThemeIcon>
                             )}
