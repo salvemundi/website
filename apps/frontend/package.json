@@ -27,7 +27,6 @@
     "@salvemundi/db": "workspace:*",
     "@salvemundi/validations": "workspace:*",
     "better-auth": "1.7.7",
-    "clsx": "^2.1.1",
     "dayjs": "^1.11.23",
     "drizzle-orm": "catalog:",
     "html-to-image": "^1.11.13",
@@ -51,7 +50,6 @@
     "server-only": "^0.0.1",
     "sharp": "0.35.5",
     "signature_pad": "^5.1.4",
-    "tailwind-merge": "^3.6.0",
     "zod": "catalog:"
   },
   "devDependencies": {

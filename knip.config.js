@@ -1,6 +1,6 @@
 const config = {
   exclude: ["exports", "types"],
-  ignore: ["apps/frontend/public/**", "apps/wieisdemol/app/static/**"],
+  ignore: ["apps/frontend/public/**"],
   workspaces: {
     ".": {
       entry: ["tests/*.test.mjs", "apps/mobile/tests/*.test.mjs"]

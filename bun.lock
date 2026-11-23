@@ -27,7 +27,6 @@
         "@salvemundi/db": "workspace:*",
         "@salvemundi/validations": "workspace:*",
         "better-auth": "1.7.7",
-        "clsx": "^2.1.1",
         "dayjs": "^1.11.23",
         "drizzle-orm": "catalog:",
         "html-to-image": "^1.11.13",
@@ -51,7 +50,6 @@
         "server-only": "^0.0.1",
         "sharp": "0.35.5",
         "signature_pad": "^5.1.4",
-        "tailwind-merge": "^3.6.0",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -2148,8 +2146,6 @@
     "tagged-tag": ["tagged-tag@1.0.0", "", {}, "sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng=="],
 
     "tailwind-api-utils": ["tailwind-api-utils@1.0.3", "", { "dependencies": { "enhanced-resolve": "^5.18.1", "jiti": "^2.4.2", "local-pkg": "^1.1.1" }, "peerDependencies": { "tailwindcss": "^3.3.0 || ^4.0.0 || ^4.0.0-beta" } }, "sha512-KpzUHkH1ug1sq4394SLJX38ZtpeTiqQ1RVyFTTSY2XuHsNSTWUkRo108KmyyrMWdDbQrLYkSHaNKj/a3bmA4sQ=="],
-
-    "tailwind-merge": ["tailwind-merge@3.7.1", "", {}, "sha512-v7y4BV4FUlO8exj/4M5UXKeoowDiuugVUg3tkMNIyOUCOHy5xp8+5aWQeXCtZ2491sUV1YPsVeM9EveZ6/xuZQ=="],
 
     "tailwindcss": ["tailwindcss@4.3.5", "", {}, "sha512-FcQk9BuffmEHJP2G0XmB2SplU1aLTI7j07Kunk+U74Ny+XiWOtzXz9aujFZ/avntw1e2cOv/3PkgzflQ7gX2vQ=="],
 
