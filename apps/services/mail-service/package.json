@@ -4,8 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun --conditions=development --watch src/server.ts",
-    "build": "tsc && node -e \"const fs=require('fs'); fs.cpSync('src/templates', 'dist/templates', {recursive: true}); fs.cpSync('src/assets', 'dist/assets', {recursive: true})\"",
+    "dev": "bun --watch src/server.ts",
     "type-check": "bun check",
     "lint": "eslint src"
   },

@@ -1,6 +1,5 @@
-FROM node:26-alpine AS base
+FROM oven/bun:1.4.5-alpine AS base
 ENV BUN_INSTALL_CACHE_DIR="/bun-cache"
-RUN npm install -g bun@1.4.5
 WORKDIR /app
 
 FROM base AS builder
@@ -16,31 +15,24 @@ COPY apps/services/monitoring-service/package.json ./apps/services/monitoring-se
 COPY packages/validations/package.json ./packages/validations/
 COPY packages/db/package.json ./packages/db/
 
-RUN --mount=type=cache,id=bun,target=/bun-cache bun install --frozen-lockfile --filter=@salvemundi/finance-service...
+# TODO: use proper bun build
+RUN --mount=type=cache,id=bun,target=/bun-cache bun install --production --frozen-lockfile --filter=@salvemundi/finance-service...
 
 COPY packages/db ./packages/db
-RUN bun run --filter=@salvemundi/db build
-
 COPY packages/validations ./packages/validations
-RUN bun run --filter=@salvemundi/validations build
-
 COPY apps/services/finance-service ./apps/services/finance-service
-RUN bun run --filter=@salvemundi/finance-service build
 
-# TODO: use proper bun build
-RUN --mount=type=cache,id=bun,target=/bun-cache find . -name node_modules -prune -exec rm -rf {} + && bun install --production --frozen-lockfile --filter=@salvemundi/finance-service...
-
-FROM node:26-alpine AS runner
+FROM oven/bun:1.4.5-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 RUN apk add --no-cache tzdata
 ENV TZ=Europe/Amsterdam
 
-COPY --from=builder --chown=node:node /app ./
+COPY --from=builder --chown=bun:bun /app ./
 WORKDIR /app/apps/services/finance-service
 
-USER node
+USER bun
 
 EXPOSE 3001
-CMD ["node", "dist/server.js"]
+CMD ["bun", "src/server.ts"]
