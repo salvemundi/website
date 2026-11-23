@@ -27,7 +27,7 @@ RUN bun run --filter=@salvemundi/validations build
 COPY apps/services/mail-service ./apps/services/mail-service
 RUN bun run --filter=@salvemundi/mail-service build
 
-# Reinstall with production dependencies only (bun has no `pnpm deploy`)
+# TODO: use proper bun build
 RUN --mount=type=cache,id=bun,target=/bun-cache find . -name node_modules -prune -exec rm -rf {} + && bun install --production --frozen-lockfile --filter=@salvemundi/mail-service...
 
 FROM node:26-alpine AS runner

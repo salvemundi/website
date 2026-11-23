@@ -21,7 +21,7 @@ RUN --mount=type=cache,id=bun,target=/bun-cache bun install --frozen-lockfile --
 COPY apps/services/mcp-service ./apps/services/mcp-service
 RUN bun run --filter=@salvemundi/mcp-service build
 
-# Reinstall with production dependencies only (bun has no `pnpm deploy`)
+# TODO: use proper bun build
 RUN --mount=type=cache,id=bun,target=/bun-cache find . -name node_modules -prune -exec rm -rf {} + && bun install --production --frozen-lockfile --filter=@salvemundi/mcp-service...
 
 FROM node:26-alpine AS runner
