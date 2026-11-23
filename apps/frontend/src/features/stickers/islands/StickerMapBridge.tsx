@@ -16,12 +16,12 @@ const StickerMapIsland = dynamic(
                 w="100%"
                 bg="var(--mantine-color-default)"
                 style={{
-                    borderRadius: 'var(--mantine-radius-lg)',
-                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--mantine-radius-md)',
+                    border: '1px solid var(--mantine-color-default-border)',
                 }}
             >
                 <Stack align="center" gap="sm">
-                    <Loader color="brand" size="md" />
+                    <Loader size="md" />
                     <Text size="sm" fw={600} c="dimmed" tt="uppercase">
                         Kaart aan het laden...
                     </Text>

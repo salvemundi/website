@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from 'react';
 import {
+    Box,
     Button,
     Divider,
     Group,
@@ -123,7 +124,7 @@ export default function CoboEventModal({
             size="lg"
             centered
         >
-            <form onSubmit={handleSubmit} aria-busy={isPending}>
+            <Box component="form" onSubmit={handleSubmit} aria-busy={isPending}>
                 <Stack gap="md">
                     <TextInput
                         id="cobo-title"
@@ -191,7 +192,6 @@ export default function CoboEventModal({
                     <Group justify="flex-end" gap="sm">
                         <Button
                             type="button"
-                            variant="default"
                             onClick={onClose}
                             disabled={isPending}
                         >
@@ -205,7 +205,7 @@ export default function CoboEventModal({
                         </Button>
                     </Group>
                 </Stack>
-            </form>
+            </Box>
         </Modal>
     );
 }

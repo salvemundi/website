@@ -40,7 +40,7 @@ export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({
                         <Button component={Link} href="/lidmaatschap" size="lg">
                             {buttonText}
                         </Button>
-                        <Button component={Link} href="/contact" variant="default" size="lg">
+                        <Button component={Link} href="/contact" size="lg">
                             Neem contact op
                         </Button>
                     </Group>

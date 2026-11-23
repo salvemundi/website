@@ -104,8 +104,6 @@ function HandoutForm({ request, showToast }: { request: CameraAdminRequest; show
         return (
             <Button
                 type="button"
-                variant="light"
-                color="brand"
                 size="xs"
                 onClick={() => setOpen(true)}
                 leftSection={<HandHelping size={14} />}
@@ -116,7 +114,7 @@ function HandoutForm({ request, showToast }: { request: CameraAdminRequest; show
     }
 
     return (
-        <Paper withBorder p="md" radius="md" w="100%">
+        <Paper withBorder p="md" w="100%">
             <Stack gap="sm">
                 <Text size="xs" fw={700}>Controleer samen met de lener of alles compleet is:</Text>
                 <Group gap="md" wrap="wrap">
@@ -153,7 +151,6 @@ function HandoutForm({ request, showToast }: { request: CameraAdminRequest; show
                     <Button
                         type="button"
                         size="xs"
-                        variant="default"
                         onClick={() => setOpen(false)}
                     >
                         Annuleren
@@ -199,7 +196,6 @@ function RequesterEditor({ request, showToast }: { request: CameraAdminRequest; 
         return (
             <Button
                 type="button"
-                variant="subtle"
                 size="xs"
                 px={4}
                 onClick={() => setEditing(true)}
@@ -211,7 +207,7 @@ function RequesterEditor({ request, showToast }: { request: CameraAdminRequest; 
     }
 
     return (
-        <Paper withBorder p="sm" radius="md" w="100%">
+        <Paper withBorder p="sm" w="100%">
             <Stack gap="xs">
                 <TextInput
                     size="xs"
@@ -226,7 +222,6 @@ function RequesterEditor({ request, showToast }: { request: CameraAdminRequest; 
                             <Button
                                 key={r.id}
                                 type="button"
-                                variant="default"
                                 size="xs"
                                 justify="flex-start"
                                 fullWidth
@@ -241,7 +236,6 @@ function RequesterEditor({ request, showToast }: { request: CameraAdminRequest; 
                 <Group>
                     <Button
                         type="button"
-                        variant="subtle"
                         size="xs"
                         onClick={() => {
                             setEditing(false);
@@ -299,7 +293,7 @@ function RequestCard({
     const statusBadge = getStatusBadgeProps(request.status);
 
     return (
-        <Card withBorder padding="lg" radius="lg">
+        <Card withBorder padding="lg">
             <Stack gap="sm">
                 <Group gap="xs" wrap="wrap">
                     <Text size="sm" fw={700}>{request.event_name}</Text>
@@ -308,7 +302,7 @@ function RequestCard({
                     </Badge>
                     {request.overlap && (
                         <Tooltip label={`Overlapt met:\n${request.overlaps_with.join('\n')}`} multiline>
-                            <Badge color="error" variant="light" leftSection={<AlertTriangle size={12} />}>
+                            <Badge color="error" leftSection={<AlertTriangle size={12} />}>
                                 Overlap
                             </Badge>
                         </Tooltip>
@@ -389,7 +383,6 @@ function RequestCard({
                     {request.status === 'approved' && (
                         <Button
                             type="button"
-                            color="brand"
                             size="xs"
                             loading={isPending}
                             onClick={() => save('approved', 'Opgeslagen')}
@@ -402,7 +395,6 @@ function RequestCard({
                         <Button
                             type="button"
                             color="error"
-                            variant="outline"
                             size="xs"
                             loading={isPending}
                             onClick={() => save('rejected', 'Aanvraag afgewezen')}
@@ -414,7 +406,6 @@ function RequestCard({
                     {request.status === 'approved' && (
                         <Button
                             type="button"
-                            variant="default"
                             size="xs"
                             loading={isPending}
                             onClick={() => save('cancelled', 'Aanvraag geannuleerd')}
@@ -424,14 +415,13 @@ function RequestCard({
                     )}
                     {request.status === 'approved' && !loan && <HandoutForm request={request} showToast={showToast} />}
                     {loan && (
-                        <Badge color={loan.returned_on ? 'success' : 'accent'} variant="light">
+                        <Badge color={loan.returned_on ? 'success' : 'accent'}>
                             {loan.returned_on ? 'Teruggebracht' : 'Meegegeven'}
                         </Badge>
                     )}
                     {(request.status === 'rejected' || request.status === 'cancelled') && (
                         <Button
                             type="button"
-                            variant="default"
                             size="xs"
                             loading={isPending}
                             onClick={() => save('requested', 'Teruggezet naar aangevraagd')}
@@ -496,7 +486,6 @@ function PhotographerRow({
             <Card
                 withBorder
                 padding="md"
-                radius="lg"
                 style={{ gridColumn: '1 / -1', borderColor: 'var(--mantine-color-brand-filled)' }}
             >
                 <Stack gap="sm">
@@ -541,7 +530,6 @@ function PhotographerRow({
                         <Button
                             type="button"
                             size="xs"
-                            variant="default"
                             onClick={cancel}
                         >
                             Annuleren
@@ -553,13 +541,13 @@ function PhotographerRow({
     }
 
     return (
-        <Card withBorder padding="md" radius="lg">
+        <Card withBorder padding="md">
             <Group justify="space-between" align="center" wrap="nowrap" gap="sm">
                 <Stack gap={2} style={{ minWidth: 0 }}>
                     <Group gap="xs" wrap="wrap">
                         <Text size="sm" fw={700} truncate>{p.name}</Text>
                         {p.experienced && (
-                            <Badge color="brand" variant="light" size="xs">
+                            <Badge size="xs">
                                 Ervaren
                             </Badge>
                         )}
@@ -573,7 +561,6 @@ function PhotographerRow({
                 <Group gap={4} wrap="nowrap">
                     <ActionIcon
                         type="button"
-                        variant="subtle"
                         onClick={() => setEditing(true)}
                         aria-label={`${p.name} bewerken`}
                     >
@@ -581,7 +568,6 @@ function PhotographerRow({
                     </ActionIcon>
                     <ActionIcon
                         type="button"
-                        variant="subtle"
                         color="error"
                         onClick={() => onRemove(p)}
                         disabled={disabled}
@@ -657,7 +643,7 @@ function PhotographersPanel({
 
     return (
         <Stack gap="lg">
-            <Card withBorder padding="lg" radius="lg">
+            <Card withBorder padding="lg">
                 <Stack gap="md">
                     <Title order={3} size="h5">Fotograaf toelaten</Title>
                     <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
@@ -674,7 +660,6 @@ function PhotographersPanel({
                                     <Button
                                         key={r.id}
                                         type="button"
-                                        variant="default"
                                         size="xs"
                                         justify="flex-start"
                                         fullWidth
@@ -761,7 +746,6 @@ export default function BeheerCameraIsland({ requests, photographers, loans }: P
         <Stack gap="lg">
             <Alert
                 color={openLoan ? (openLoan.days_late > 0 ? 'error' : 'brand') : 'success'}
-                variant="light"
                 icon={<Camera size={16} />}
             >
                 <Text size="xs" fw={700}>
@@ -776,7 +760,6 @@ export default function BeheerCameraIsland({ requests, photographers, loans }: P
                 onChange={(val) => {
                     if (val) setTab(val as Tab);
                 }}
-                variant="pills"
             >
                 <Tabs.List>
                     <Tabs.Tab value="pending" leftSection={<CalendarClock size={14} />}>

@@ -3,17 +3,14 @@
 import React from 'react';
 import Link, { type LinkProps } from 'next/link';
 import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils/cn';
 import { isPathActive } from '@/lib/utils/link-utils';
 
 type Props = Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & LinkProps & {
     exact?: boolean;
-    className?: string;
-    activeClassName?: string;
     children: React.ReactNode;
 };
 
-export default function ActiveLink({ href, exact, className, activeClassName, children, ...rest }: Props) {
+export default function ActiveLink({ href, exact, children, ...rest }: Props) {
     const pathname = usePathname() || '/';
     const asHref = typeof href === 'string' ? href : href.pathname || '/';
     const active = isPathActive(pathname, asHref, !!exact);
@@ -21,7 +18,7 @@ export default function ActiveLink({ href, exact, className, activeClassName, ch
     return (
         <Link
             href={href}
-            className={cn(className, active && activeClassName)}
+            data-active={active || undefined}
             aria-current={active ? 'page' : undefined}
             {...rest}
         >

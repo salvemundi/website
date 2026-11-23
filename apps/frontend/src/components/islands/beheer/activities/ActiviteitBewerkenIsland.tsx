@@ -141,7 +141,6 @@ export default function ActiviteitBewerkenIsland({
 
             <Button
                 type="button"
-                variant="default"
                 size="md"
                 fullWidth
                 onClick={() => router.back()}
@@ -154,7 +153,6 @@ export default function ActiviteitBewerkenIsland({
 
             <Button
                 type="button"
-                variant="light"
                 color="error"
                 size="md"
                 fullWidth
@@ -175,7 +173,6 @@ export default function ActiviteitBewerkenIsland({
                     <ActionIcon
                         component={Link}
                         href="/beheer/activiteiten"
-                        variant="default"
                         size="lg"
                         aria-label="Terug"
                     >
@@ -191,7 +188,7 @@ export default function ActiviteitBewerkenIsland({
                     </Stack>
                 </Group>
 
-                <form action={formAction}>
+                <Box component="form" action={formAction}>
                     <Stack gap="lg">
                         <Grid gap="lg" align="flex-start">
                             <Grid.Col span={{ base: 12, lg: 8 }}>
@@ -235,7 +232,7 @@ export default function ActiviteitBewerkenIsland({
                             {actionButtons}
                         </Box>
                     </Stack>
-                </form>
+                </Box>
             </Stack>
         </Container>
     );

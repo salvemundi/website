@@ -193,7 +193,6 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                         <Button
                             component={Link}
                             href="/beheer/leden"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

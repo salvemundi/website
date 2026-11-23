@@ -6,7 +6,7 @@ import { ActionIcon, Group, Stack, Text, ThemeIcon } from '@mantine/core';
 export default function ToastHeader({ onDismiss }: { onDismiss: () => void }) {
     return (
         <Group align="center" gap="md" p="md" wrap="nowrap">
-            <ThemeIcon size={44} radius="md" color="brand" variant="filled">
+            <ThemeIcon size="lg">
                 <Smartphone size={20} />
             </ThemeIcon>
 
@@ -22,7 +22,6 @@ export default function ToastHeader({ onDismiss }: { onDismiss: () => void }) {
             <ActionIcon
                 id="pwa-dismiss-btn"
                 type="button"
-                variant="subtle"
                 size="md"
                 onClick={onDismiss}
                 aria-label="Melding een week verbergen"

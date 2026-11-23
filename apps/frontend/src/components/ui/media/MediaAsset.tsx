@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import { getImageUrl } from '@/lib/utils/image-utils';
 
@@ -7,6 +8,7 @@ interface MediaAssetProps {
     asset?: string | { id: string; type?: string | null } | null;
     alt?: string | null;
     className?: string;
+    style?: CSSProperties;
     fill?: boolean;
     width?: number;
     height?: number;
@@ -21,6 +23,7 @@ export default function MediaAsset({
     asset,
     alt,
     className = '',
+    style,
     fill = false,
     width,
     height,
@@ -45,6 +48,7 @@ export default function MediaAsset({
 
     const shouldOptimize = !unoptimized && !isLocalPreview && !isApiAsset;
     const finalAlt = alt || 'Media asset';
+    const mergedStyle: CSSProperties | undefined = fill || style ? { ...(fill ? { objectFit } : undefined), ...style } : undefined;
 
     if (isVideo) {
         return (
@@ -56,7 +60,7 @@ export default function MediaAsset({
                 muted
                 playsInline
                 aria-label={finalAlt}
-                style={fill ? { objectFit } : undefined}
+                style={mergedStyle}
             />
         );
     }
@@ -73,7 +77,7 @@ export default function MediaAsset({
             priority={priority}
             loading={loading}
             unoptimized={!shouldOptimize}
-            style={fill ? { objectFit } : undefined}
+            style={mergedStyle}
         />
     );
 }

@@ -48,10 +48,10 @@ export default function CouponForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} autoComplete="off">
+        <Box component="form" onSubmit={handleSubmit} autoComplete="off">
             <Stack gap="lg">
                 {error && (
-                    <Alert color="error" variant="light" icon={<AlertCircle size={16} />}>
+                    <Alert color="error" icon={<AlertCircle size={16} />}>
                         {error}
                     </Alert>
                 )}
@@ -122,7 +122,7 @@ export default function CouponForm({
                     />
 
                     <Box>
-                        <input type="hidden" name="valid_from" value={validFrom ?? ''} />
+                        <TextInput display="none" name="valid_from" value={validFrom ?? ''} readOnly />
                         <DateInput
                             label="Geldig Vanaf"
                             placeholder="Kies een datum"
@@ -134,7 +134,7 @@ export default function CouponForm({
                     </Box>
 
                     <Box>
-                        <input type="hidden" name="valid_until" value={validUntil ?? ''} />
+                        <TextInput display="none" name="valid_until" value={validUntil ?? ''} readOnly />
                         <DateInput
                             label="Geldig Tot"
                             placeholder="Kies een datum"
@@ -152,7 +152,6 @@ export default function CouponForm({
                     name="is_active"
                     defaultChecked
                     label="Direct actief stellen"
-                    color="accent"
                 />
 
                 <Divider />
@@ -160,14 +159,12 @@ export default function CouponForm({
                 <Group justify="flex-end" gap="sm">
                     <Button
                         type="button"
-                        variant="default"
                         onClick={onCancel}
                     >
                         Annuleren
                     </Button>
                     <Button
                         type="submit"
-                        color="accent"
                         loading={isPending}
                         leftSection={<Save size={16} />}
                     >
@@ -175,6 +172,6 @@ export default function CouponForm({
                     </Button>
                 </Group>
             </Stack>
-        </form>
+        </Box>
     );
 }

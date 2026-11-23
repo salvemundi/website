@@ -89,8 +89,7 @@ export default function StickerMapIsland({
         window.history.replaceState({}, '', url);
     }, [searchParams, handlePlaceSticker]);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+    const handleImageChange = (file: File | null) => {
         if (!file) return;
 
         void (async () => {
@@ -200,7 +199,6 @@ export default function StickerMapIsland({
                         <Button
                             type="button"
                             flex={1}
-                            variant="default"
                             size="sm"
                             leftSection={<Filter size={14} />}
                             onClick={() => {
@@ -213,7 +211,6 @@ export default function StickerMapIsland({
                         <Button
                             type="button"
                             flex={1}
-                            variant="default"
                             size="sm"
                             leftSection={<BarChart3 size={14} />}
                             onClick={() => {

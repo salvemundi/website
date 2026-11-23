@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import {
     ActionIcon,
+    Box,
     Button,
     Card,
     Container,
@@ -24,6 +25,7 @@ import {
     SimpleGrid,
     Stack,
     Text,
+    TextInput,
     ThemeIcon,
     Title,
 } from '@mantine/core';
@@ -174,14 +176,13 @@ export default function ReisParticipantDetailIsland({
 
     return (
         <>
-            <Paper radius={0} shadow="xs" py="md">
+            <Paper shadow="xs" py="md">
                 <Container size="xl" py={0}>
                     <Group justify="space-between" wrap="wrap" gap="md">
                         <Group gap="md">
                             <Button
                                 component={Link}
                                 href="/beheer/reis"
-                                variant="default"
                                 size="sm"
                                 leftSection={<ChevronLeft size={16} />}
                             >
@@ -201,7 +202,6 @@ export default function ReisParticipantDetailIsland({
                         <Button
                             type="button"
                             color="error"
-                            variant="light"
                             loading={isPending}
                             leftSection={<Trash size={16} />}
                             onClick={() => {
@@ -220,7 +220,7 @@ export default function ReisParticipantDetailIsland({
                         {adminStats.map((stat) => (
                             <Card key={stat.label} p="md" shadow="xs">
                                 <Group gap="xs">
-                                    <ThemeIcon size="sm" variant="light" color="brand">
+                                    <ThemeIcon size="sm">
                                         <stat.icon size={14} />
                                     </ThemeIcon>
                                     <Text size="xs" fw={600} c="dimmed">
@@ -234,8 +234,8 @@ export default function ReisParticipantDetailIsland({
                         ))}
                     </SimpleGrid>
 
-                    <form action={formAction}>
-                        <input type="hidden" name="id" value={initialSignup.id} />
+                    <Box component="form" action={formAction}>
+                        <TextInput display="none" name="id" value={String(initialSignup.id)} readOnly />
                         <Grid gap="xl">
                             <Grid.Col span={{ base: 12, lg: 8 }}>
                                 <ReisSignupForm
@@ -298,7 +298,6 @@ export default function ReisParticipantDetailIsland({
                                         <Group gap="sm" wrap="nowrap">
                                             <Button
                                                 type="button"
-                                                variant="default"
                                                 flex={1}
                                                 size="md"
                                                 onClick={() => router.push('/beheer/reis')}
@@ -308,7 +307,6 @@ export default function ReisParticipantDetailIsland({
                                             </Button>
                                             <ActionIcon
                                                 type="button"
-                                                variant="light"
                                                 color="error"
                                                 size="xl"
                                                 loading={isPending}
@@ -324,7 +322,7 @@ export default function ReisParticipantDetailIsland({
                                 </Stack>
                             </Grid.Col>
                         </Grid>
-                    </form>
+                    </Box>
                 </Stack>
             </Container>
         </>

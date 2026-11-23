@@ -167,7 +167,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
 
     return (
         <Box maw={896} mx="auto">
-            <form onSubmit={handleSubmit}>
+            <Box component="form" onSubmit={handleSubmit}>
                 <Stack gap="lg">
                     <Card p="xl" shadow="sm">
                         <Stack gap="lg">
@@ -253,7 +253,6 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                             {formData.image ? (
                                                 <Paper
                                                     withBorder
-                                                    radius="md"
                                                     pos="relative"
                                                     h="100%"
                                                     style={{ overflow: 'hidden' }}
@@ -267,7 +266,6 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                     <ActionIcon
                                                         type="button"
                                                         color="error"
-                                                        variant="filled"
                                                         size="md"
                                                         pos="absolute"
                                                         top={8}
@@ -293,7 +291,6 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                         <Button
                                                             {...props}
                                                             type="button"
-                                                            variant="default"
                                                             w="100%"
                                                             h="100%"
                                                             style={{ borderStyle: 'dashed' }}
@@ -304,7 +301,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                                 ) : (
                                                                     <>
                                                                         <ImagePlus size={24} />
-                                                                        <Text size="xs" c="dimmed">
+                                                                        <Text size="xs" fw={600}>
                                                                             Upload Image
                                                                         </Text>
                                                                     </>
@@ -348,7 +345,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
 
                                 <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
                                     {formData.groups.map((group, index) => (
-                                        <Paper key={index} p="sm" withBorder radius="md">
+                                        <Paper key={index} p="sm" withBorder>
                                             <Stack gap="xs">
                                                 <Group gap="xs" wrap="nowrap">
                                                     <TextInput
@@ -375,7 +372,6 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                     />
                                                     <ActionIcon
                                                         type="button"
-                                                        variant="subtle"
                                                         color="error"
                                                         size="sm"
                                                         onClick={() => {
@@ -398,7 +394,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                     <Stack gap={4}>
                                                         <Text
                                                             size="xs"
-                                                            fw={700}
+                                                            fw={600}
                                                             c="dimmed"
                                                             tt="uppercase"
                                                         >
@@ -409,12 +405,10 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                                 <Badge
                                                                     key={lIdx}
                                                                     size="sm"
-                                                                    variant="default"
                                                                     rightSection={
                                                                         <ActionIcon
                                                                             type="button"
                                                                             size="xs"
-                                                                            variant="transparent"
                                                                             color="error"
                                                                             onClick={() => {
                                                                                 setFormData({
@@ -464,7 +458,6 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
 
                                     <Button
                                         type="button"
-                                        variant="default"
                                         style={{ borderStyle: 'dashed' }}
                                         leftSection={<Plus size={16} />}
                                         onClick={() => {
@@ -491,7 +484,6 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                         <Button
                             component={Link}
                             href="/beheer/kroegentocht"
-                            variant="default"
                             size="md"
                             leftSection={<ArrowLeft size={16} />}
                         >
@@ -508,7 +500,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                         </Button>
                     </Group>
                 </Stack>
-            </form>
+            </Box>
         </Box>
     );
 }

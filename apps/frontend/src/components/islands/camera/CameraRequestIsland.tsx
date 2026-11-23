@@ -239,7 +239,7 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
     return (
         <Stack gap="xl">
             <Tile title="Camera aanvragen" icon={<Camera size={22} />}>
-                <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
+                <Box component="form" onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
                     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
                         {events.length > 0 && (
                             <Box style={{ gridColumn: '1 / -1' }}>
@@ -330,18 +330,18 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
                         {availability && (
                             <Box style={{ gridColumn: '1 / -1' }} role="status">
                                 {blocked ? (
-                                    <Alert color="error" variant="light" icon={<AlertTriangle size={16} />}>
+                                    <Alert color="error" icon={<AlertTriangle size={16} />}>
                                         De camera is in deze periode al gereserveerd
                                         {availability.approved.length > 0 &&
                                             ` (${availability.approved.map((a) => a.event_name).join(', ')})`}
                                         . Kies een andere periode.
                                     </Alert>
                                 ) : availability.requested > 0 ? (
-                                    <Alert color="accent" variant="light" icon={<AlertTriangle size={16} />}>
+                                    <Alert color="accent" icon={<AlertTriangle size={16} />}>
                                         Voor deze periode is al een andere aanvraag ingediend die nog niet is beoordeeld. Je kunt wel aanvragen.
                                     </Alert>
                                 ) : (
-                                    <Alert color="success" variant="light" icon={<CheckCircle2 size={16} />}>
+                                    <Alert color="success" icon={<CheckCircle2 size={16} />}>
                                         De camera is in deze periode beschikbaar.
                                     </Alert>
                                 )}
@@ -389,12 +389,12 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
                             </Button>
                         </Box>
                     </SimpleGrid>
-                </form>
+                </Box>
             </Tile>
 
             <Tile title="Mijn aanvragen" icon={<CalendarClock size={22} />}>
                 {mine.length === 0 ? (
-                    <Paper p="xl" radius="lg" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
+                    <Paper p="xl" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
                         <Text size="sm" fw={700} c="dimmed">
                             Je hebt nog geen aanvragen gedaan.
                         </Text>
@@ -437,7 +437,6 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
                                                 <Button
                                                     type="button"
                                                     size="compact-xs"
-                                                    variant="subtle"
                                                     color="error"
                                                     onClick={() => onCancel(r.id)}
                                                     disabled={isPending}

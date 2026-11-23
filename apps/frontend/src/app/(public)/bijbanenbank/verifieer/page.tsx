@@ -24,8 +24,6 @@ export default async function VerifyVacancyPage({ searchParams }: VerifyPageProp
                     <Group gap="sm">
                         <ThemeIcon
                             size="lg"
-                            radius="md"
-                            variant="light"
                             color={result.success ? 'success' : 'error'}
                         >
                             {result.success ? <CheckCircle2 size={20} /> : <XCircle size={20} />}

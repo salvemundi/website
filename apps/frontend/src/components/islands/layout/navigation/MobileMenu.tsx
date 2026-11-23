@@ -78,13 +78,11 @@ export default function MobileMenu({
                                     src={user.avatar ? getImageUrl(user.avatar) : (user.image || undefined)}
                                     alt={user.name || 'Profiel'}
                                     size={40}
-                                    radius="xl"
                                     color="brand"
                                 />
                             ) : (
                                 <Avatar
                                     size={40}
-                                    radius="xl"
                                     bg="var(--mantine-color-default)"
                                     style={{ boxShadow: 'var(--mantine-shadow-xs)' }}
                                 >
@@ -112,7 +110,6 @@ export default function MobileMenu({
 
                     <ActionIcon
                         type="button"
-                        variant="subtle"
                         size="lg"
                         onClick={onClose}
                         aria-label="Sluit menu"
@@ -191,7 +188,6 @@ export default function MobileMenu({
                             <Button
                                 type="button"
                                 color="error"
-                                variant="light"
                                 fullWidth
                                 leftSection={<LogOut size={18} />}
                                 onClick={onLogout}

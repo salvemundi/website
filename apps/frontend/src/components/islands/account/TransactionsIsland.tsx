@@ -44,7 +44,6 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
             {paidTransactions.length === 0 ? (
                 <Paper
                     p="xl"
-                    radius="lg"
                     withBorder
                     ta="center"
                     style={{ borderStyle: 'dashed' }}
@@ -106,7 +105,7 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
                                         </Stack>
                                     </Table.Td>
                                     <Table.Td style={{ whiteSpace: 'nowrap' }}>
-                                        <Badge variant="light" color="brand" size="sm">
+                                        <Badge size="sm">
                                             {getInferredTransactionType(transaction)}
                                         </Badge>
                                     </Table.Td>

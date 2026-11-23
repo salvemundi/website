@@ -25,7 +25,7 @@ export default function IntroGroupsAppButtons({ groups }: IntroGroupsAppButtonsP
                     rel="noopener noreferrer"
                     underline="never"
                 >
-                    <Card bg="var(--mantine-color-brand-filled)" c="white" padding="md" radius="md">
+                    <Card bg="var(--mantine-color-brand-filled)" c="white" padding="md">
                         <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
                             <Group align="flex-start" gap="sm" wrap="nowrap" miw={0}>
                                 <Box mt={2} style={{ flexShrink: 0 }}>

@@ -126,7 +126,7 @@ export default function SignupTableView({
                                             </Stack>
                                         </Table.Td>
                                         <Table.Td ta="center">
-                                            <Badge size="sm" variant="light" color="brand">
+                                            <Badge size="sm">
                                                 {signup.amount_tickets}
                                             </Badge>
                                         </Table.Td>
@@ -159,8 +159,6 @@ export default function SignupTableView({
                                                         component="a"
                                                         href={`/api/kroegentocht/tickets/${signup.id}`}
                                                         download
-                                                        variant="subtle"
-                                                        color="brand"
                                                         size="sm"
                                                         title="Tickets downloaden (PDF met QR-codes)"
                                                         aria-label="Tickets downloaden (PDF met QR-codes)"
@@ -198,8 +196,6 @@ export default function SignupTableView({
                                                     />
                                                     <ActionIcon
                                                         type="button"
-                                                        variant="subtle"
-                                                        color="brand"
                                                         onClick={() => signup.id && onEdit(signup.id)}
                                                         title="Inschrijving bewerken"
                                                         aria-label="Inschrijving bewerken"
@@ -208,7 +204,6 @@ export default function SignupTableView({
                                                     </ActionIcon>
                                                     <ActionIcon
                                                         type="button"
-                                                        variant="subtle"
                                                         color="error"
                                                         onClick={() =>
                                                             signup.id && onDelete(signup.id)

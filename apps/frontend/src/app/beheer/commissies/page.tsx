@@ -4,6 +4,8 @@ import { ChevronLeft } from 'lucide-react';
 import { Button, Container, Divider, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import CommitteeManagementIsland from '@/components/islands/beheer/commissies/CommitteeManagementIsland';
 import { getCommittees, getCommitteeMembers, countUniqueCommitteeMembers } from '@/server/queries/commissies/beheer-commissies.queries';
+import { isCommitteeGroup, isTeamGroup } from '@/shared/lib/permissions';
+import { COMMITTEES } from '@/shared/lib/permissions-config';
 
 export const metadata: Metadata = {
     title: 'Commissies Beheer | SV Salve Mundi'
@@ -15,7 +17,15 @@ export default async function CommissiesBeheerPage() {
         countUniqueCommitteeMembers().catch(() => 0),
     ]);
 
-    const firstCommittee = committees[0] as typeof committees[0] | undefined;
+    const committeeGroups = committees.filter(isCommitteeGroup);
+    const teamGroups = committees.filter(isTeamGroup);
+
+    const firstCommittee =
+        committeeGroups.find(
+            (c) => c.azure_group_id === COMMITTEES.BESTUUR || c.name.toLowerCase().includes('bestuur')
+        ) ??
+        committeeGroups.at(0) ??
+        teamGroups.at(0);
     const initialMembers = firstCommittee ? await getCommitteeMembers(firstCommittee.id.toString()).catch(() => []) : [];
 
     return (
@@ -26,26 +36,30 @@ export default async function CommissiesBeheerPage() {
                         <Button
                             component={Link}
                             href="/beheer"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
                             Terug
                         </Button>
                         <Title order={1} size="h2" c="brand">
-                            Commissies
+                            Commissies &amp; Teams
                         </Title>
                     </Group>
 
-                    <Paper withBorder px="md" py="xs" radius="lg" visibleFrom="md">
+                    <Paper withBorder px="md" py="xs" visibleFrom="md">
                         <Group gap="md" wrap="nowrap">
                             <Stack gap={2} align="center" px={4}>
-                                <Text size="xs" c="dimmed" fw={600} lh={1}>Groepen</Text>
-                                <Text size="sm" fw={700} lh={1}>{committees.length}</Text>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Commissies</Text>
+                                <Text size="sm" fw={700} lh={1}>{committeeGroups.length}</Text>
                             </Stack>
                             <Divider orientation="vertical" />
                             <Stack gap={2} align="center" px={4}>
-                                <Text size="xs" c="dimmed" fw={600} lh={1}>Totaal Leden</Text>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Teams</Text>
+                                <Text size="sm" fw={700} lh={1}>{teamGroups.length}</Text>
+                            </Stack>
+                            <Divider orientation="vertical" />
+                            <Stack gap={2} align="center" px={4}>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Commissieleden</Text>
                                 <Text size="sm" fw={700} lh={1}>{totalUniqueMembers}</Text>
                             </Stack>
                         </Group>
@@ -55,6 +69,7 @@ export default async function CommissiesBeheerPage() {
                 <CommitteeManagementIsland
                     initialCommittees={committees}
                     initialMembers={initialMembers}
+                    initialSelectedId={firstCommittee?.id ?? null}
                 />
             </Stack>
         </Container>

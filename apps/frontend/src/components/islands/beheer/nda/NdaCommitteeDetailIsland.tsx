@@ -177,8 +177,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                     </Title>
                     <Group align="flex-start" gap="lg" wrap="wrap">
                         <ThemeIcon
-                            size={64}
-                            radius="md"
+                            size="xl"
                             variant={template?.document ? 'light' : 'default'}
                             color={template?.document ? 'brand' : undefined}
                         >
@@ -195,7 +194,6 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                                     {(props) => (
                                         <Button
                                             {...props}
-                                            variant="light"
                                             leftSection={<Upload size={16} />}
                                             loading={uploading}
                                         >
@@ -216,7 +214,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                                 </Anchor>
                             )}
                             {uploadError && (
-                                <Alert color="error" variant="light" py="xs">
+                                <Alert color="error" py="xs">
                                     {uploadError}
                                 </Alert>
                             )}
@@ -240,7 +238,6 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                             {template.signatureLayout && !editingLayout && (
                                 <Button
                                     type="button"
-                                    variant="subtle"
                                     size="xs"
                                     onClick={() => setEditingLayout(true)}
                                 >
@@ -281,7 +278,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                                     Controleer of het geüploade document de handtekeningen van de secretaris en de voorzitter bevat, en bevestig dan dat de NDA klaar is om naar de leden verstuurd te worden.
                                 </Text>
                                 {confirmError && (
-                                    <Alert color="error" variant="light" py="xs">
+                                    <Alert color="error" py="xs">
                                         {confirmError}
                                     </Alert>
                                 )}
@@ -332,7 +329,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                 </Text>
             )}
             {reminderError && (
-                <Alert color="error" variant="light">
+                <Alert color="error">
                     {reminderError}
                 </Alert>
             )}
@@ -394,8 +391,6 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                                                 {member.status === 'pending' && member.signatureId && (
                                                     <ActionIcon
                                                         type="button"
-                                                        variant="light"
-                                                        color="brand"
                                                         size="lg"
                                                         onClick={() => {
                                                             void handleResend(member.signatureId as number);
@@ -427,9 +422,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                                                 {member.status === 'expired' && member.signatureId && (
                                                     <Button
                                                         type="button"
-                                                        variant="subtle"
                                                         size="xs"
-                                                        px={0}
                                                         onClick={() => {
                                                             void handleSendReminder(member.signatureId as number);
                                                         }}
@@ -456,7 +449,6 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                                                         />
                                                         <Button
                                                             type="button"
-                                                            variant="subtle"
                                                             size="xs"
                                                             disabled={!historicalDates.get(member.userId)}
                                                             loading={savingHistoricalFor === member.userId}

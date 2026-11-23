@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import {
     Alert,
+    Box,
     Button,
     Grid,
     Group,
@@ -89,7 +90,8 @@ export default function AddParticipantModal({
                 </Group>
             }
         >
-            <form
+            <Box
+                component="form"
                 onSubmit={(e) => {
                     void handleSubmit(e);
                 }}
@@ -100,7 +102,7 @@ export default function AddParticipantModal({
                     </Text>
 
                     {errorMessage && (
-                        <Alert color="error" variant="light">
+                        <Alert color="error">
                             {errorMessage}
                         </Alert>
                     )}
@@ -161,7 +163,6 @@ export default function AddParticipantModal({
                     <Group justify="flex-end" gap="sm" pt="xs">
                         <Button
                             type="button"
-                            variant="default"
                             onClick={onClose}
                             disabled={isSubmitting}
                         >
@@ -172,7 +173,7 @@ export default function AddParticipantModal({
                         </Button>
                     </Group>
                 </Stack>
-            </form>
+            </Box>
         </Modal>
     );
 }

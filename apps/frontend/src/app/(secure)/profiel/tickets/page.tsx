@@ -20,7 +20,6 @@ export default async function TicketsPage() {
                     <Button
                         component={Link}
                         href="/profiel"
-                        variant="default"
                         size="sm"
                         leftSection={<ChevronLeft size={16} />}
                     >

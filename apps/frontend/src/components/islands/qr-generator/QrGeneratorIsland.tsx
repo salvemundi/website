@@ -259,7 +259,6 @@ export default function QrGeneratorIsland() {
                                 <Text size="sm" fw={700}>Huisstijlkleuren</Text>
                                 <Button
                                     type="button"
-                                    variant="default"
                                     size="xs"
                                     onClick={resetToDefaults}
                                     leftSection={<RotateCcw size={14} />}
@@ -300,7 +299,7 @@ export default function QrGeneratorIsland() {
                                 label="Achtergrondkleur"
                                 value={bgColor}
                                 onChange={setBgColor}
-                                swatches={[BRAND.witPaars, BRAND.donker, BRAND.donkerPaars, '#FFFFFF']}
+                                swatches={[BRAND.witPaars, BRAND.donker, BRAND.donkerPaars, BRAND_COLORS.lightSurface]}
                             />
                         </SimpleGrid>
 
@@ -402,7 +401,6 @@ export default function QrGeneratorIsland() {
                                     </Button>
                                     <Button
                                         type="button"
-                                        variant="default"
                                         size="sm"
                                         onClick={copyImage}
                                         leftSection={copied ? <Check size={16} /> : <Copy size={16} />}

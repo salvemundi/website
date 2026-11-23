@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Flex } from '@mantine/core';
-import { cn } from '@/lib/utils/cn';
+import { Box, Flex } from '@mantine/core';
 import { authClient } from '@/lib/auth';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -77,14 +76,11 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
     }
 
     return (
-        <header
+        <Box
+            component="header"
             ref={headerRef}
-            className={cn(
-            "fixed z-100 flex w-full flex-col justify-center transition-all duration-300",
-                (mounted && isScrolled)
-                    ? "bg-background/95 shadow-md backdrop-blur-md"
-                    : "bg-background/80 backdrop-blur-sm"
-            )}
+            data-site-header
+            data-scrolled={mounted && isScrolled ? 'true' : undefined}
             style={{
                 top: 'var(--impersonation-banner-height, 0px)',
                 minHeight: 'calc(80px + env(safe-area-inset-top, 0px))',
@@ -95,6 +91,6 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
                 {children}
             </Flex>
             {mobileMenu}
-        </header>
+        </Box>
     );
 }

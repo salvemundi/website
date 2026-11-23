@@ -38,18 +38,17 @@ export default function SignupTicketCard({
     const isEditing = editingTicketId === ticket.id;
 
     return (
-        <Paper withBorder p="md" radius="md">
+        <Paper withBorder p="md">
             <Stack gap="sm">
                 <Group justify="space-between" wrap="nowrap">
                     <Group gap="xs">
-                        <Badge variant="default" size="sm">
+                        <Badge size="sm">
                             {idx + 1}
                         </Badge>
                         {!isEditing ? (
                             <Group gap={4}>
                                 <ActionIcon
                                     type="button"
-                                    variant="subtle"
                                     size="sm"
                                     onClick={() => setEditingTicketId(Number(ticket.id))}
                                     title="Naam aanpassen"
@@ -59,7 +58,6 @@ export default function SignupTicketCard({
                                 </ActionIcon>
                                 <ActionIcon
                                     type="button"
-                                    variant="subtle"
                                     color="error"
                                     size="sm"
                                     onClick={() => handleDeleteTicket(Number(ticket.id))}
@@ -72,7 +70,6 @@ export default function SignupTicketCard({
                         ) : (
                             <ActionIcon
                                 type="button"
-                                variant="subtle"
                                 size="sm"
                                 onClick={() => setEditingTicketId(null)}
                                 title="Sluiten"
@@ -86,7 +83,6 @@ export default function SignupTicketCard({
                     <Button
                         type="button"
                         size="compact-xs"
-                        variant="light"
                         color={ticket.checked_in ? 'success' : 'error'}
                         onClick={() =>
                             handleToggleCheckIn(Number(ticket.id), !!ticket.checked_in)

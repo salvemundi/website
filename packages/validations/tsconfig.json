@@ -1,15 +1,15 @@
 {
     "compilerOptions": {
         "target": "ES2022",
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "outDir": "./dist",
+        "rootDir": "./src",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "types": ["node"],
-        "noEmit": true,
-        "allowImportingTsExtensions": true,
         "paths": {
             "drizzle-orm": ["../../node_modules/drizzle-orm"],
             "drizzle-orm/*": ["../../node_modules/drizzle-orm/*"]
@@ -19,6 +19,7 @@
         "src/**/*"
     ],
     "exclude": [
-        "node_modules"
+        "node_modules",
+        "dist"
     ]
 }

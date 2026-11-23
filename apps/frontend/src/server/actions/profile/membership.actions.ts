@@ -102,8 +102,9 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     }
 
     const { fetchUserCommitteesDb } = await import('@/server/internal/leden/leden-db.utils');
+    const { hasActiveCommitteeMembership } = await import('@/shared/lib/permissions');
     const committees = user ? await fetchUserCommitteesDb(user.id) : [];
-    const isCommitteeMember = committees.length > 0;
+    const isCommitteeMember = hasActiveCommitteeMembership(committees);
 
     const baseAmount = (isCommitteeMember && isRenewal) ? 10.00 : 20.00;
     let finalAmount = baseAmount;

@@ -33,7 +33,6 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
                                 <Button
                                     component={Link}
                                     href="/kroegentocht"
-                                    variant="default"
                                     size="sm"
                                     leftSection={<ChevronLeft size={16} />}
                                 >
@@ -63,7 +62,7 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
                     {isPaid ? (
                         <Card w="100%" padding="xl">
                             <Stack align="center" ta="center" gap="lg">
-                                <ThemeIcon size={80} radius="xl" variant="light" color="success">
+                                <ThemeIcon size="xl" color="success">
                                     <CheckCircle2 size={44} />
                                 </ThemeIcon>
                                 <Title order={2} c="brand">
@@ -75,7 +74,6 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
                                 <Button
                                     component={Link}
                                     href="/kroegentocht"
-                                    variant="default"
                                     size="md"
                                     leftSection={<ChevronLeft size={16} />}
                                 >

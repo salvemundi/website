@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { selectSafeHavensSchema } from './db.zod.ts';
+import { createSelectSchema } from 'drizzle-zod';
+import { safe_havens as safe_havensTable } from '@salvemundi/db/schema';
+
+const selectSafeHavensSchema = createSelectSchema(safe_havensTable);
 
 export const safeHavenSchema = selectSafeHavensSchema.omit({
     created_at: true,

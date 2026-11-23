@@ -31,7 +31,6 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
                             <Button
                                 component={Link}
                                 href="/beheer/reis"
-                                variant="default"
                                 size="sm"
                                 leftSection={<ChevronLeft size={16} />}
                             >
@@ -43,7 +42,7 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
                         </Group>
                     </Group>
 
-                    <Paper withBorder p="xl" radius="lg">
+                    <Paper withBorder p="xl">
                         <Center py="xl">
                             <Text fw={700} c="dimmed" fs="italic">
                                 Geen reizen gevonden.
@@ -76,7 +75,6 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
                         <Button
                             component={Link}
                             href="/beheer/reis"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -93,7 +91,7 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
                     </Group>
 
                     <Group gap="md" wrap="wrap">
-                        <Paper withBorder px="md" py="xs" radius="lg" visibleFrom="md">
+                        <Paper withBorder px="md" py="xs" visibleFrom="md">
                             <Group gap="md" wrap="nowrap">
                                 <Stack gap={2} align="center" px={4}>
                                     <Text size="xs" c="dimmed" fw={600} lh={1}>Bevestigde Reizigers</Text>
@@ -109,7 +107,6 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
                         <Button
                             component={Link}
                             href={`/beheer/reis?tripId=${activeTripId}`}
-                            variant="default"
                             size="sm"
                             leftSection={<Ticket size={14} />}
                         >

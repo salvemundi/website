@@ -55,9 +55,8 @@ async function ContactContent() {
                                 href="https://www.instagram.com/sv.salvemundi/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                variant="default"
                                 size="md"
-                                leftSection={<SiInstagram className="size-5" aria-hidden="true" />}
+                                leftSection={<SiInstagram width={20} height={20} aria-hidden="true" />}
                             >
                                 Instagram
                             </Button>
@@ -66,9 +65,8 @@ async function ContactContent() {
                                 href="https://www.facebook.com/sv.salvemundi/?locale=nl_NL"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                variant="default"
                                 size="md"
-                                leftSection={<SiFacebook className="size-5" aria-hidden="true" />}
+                                leftSection={<SiFacebook width={20} height={20} aria-hidden="true" />}
                             >
                                 Facebook
                             </Button>
@@ -77,9 +75,8 @@ async function ContactContent() {
                                 href="https://nl.linkedin.com/company/salve-mundi"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                variant="default"
                                 size="md"
-                                leftSection={<FaLinkedin className="size-5" aria-hidden="true" />}
+                                leftSection={<FaLinkedin width={20} height={20} aria-hidden="true" />}
                             >
                                 LinkedIn
                             </Button>
@@ -88,9 +85,8 @@ async function ContactContent() {
                                 href="https://www.tiktok.com/@salve.mundi"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                variant="default"
                                 size="md"
-                                leftSection={<SiTiktok className="size-5" aria-hidden="true" />}
+                                leftSection={<SiTiktok width={20} height={20} aria-hidden="true" />}
                             >
                                 TikTok
                             </Button>

@@ -92,7 +92,7 @@ export function HeroCarousel({ slideUrls }: HeroCarouselProps) {
                                 priority={index === 0}
                                 fetchPriority={index === 0 ? 'high' : undefined}
                                 sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 600px"
-                                className="object-cover object-center"
+                                className="object-cover"
                             />
                         </Box>
                     );

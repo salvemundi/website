@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { selectHeroBannersSchema, selectSponsorsSchema } from './db.zod.ts';
+import { createSelectSchema } from 'drizzle-zod';
+import { hero_banners as hero_bannersTable, sponsors as sponsorsTable } from '@salvemundi/db/schema';
+
+const selectHeroBannersSchema = createSelectSchema(hero_bannersTable);
+const selectSponsorsSchema = createSelectSchema(sponsorsTable);
 
 export const heroBannerSchema = selectHeroBannersSchema.omit({
     date_created: true,

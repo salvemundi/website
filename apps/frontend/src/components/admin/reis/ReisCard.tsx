@@ -33,7 +33,6 @@ export default function ReisCard({ trip, onEdit, onDelete, isDeleting }: ReisCar
     return (
         <Card
             withBorder
-            radius="lg"
             padding={0}
             h="100%"
             style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
@@ -54,7 +53,6 @@ export default function ReisCard({ trip, onEdit, onDelete, isDeleting }: ReisCar
                     top={12}
                     left={12}
                     color={isOpen ? 'success' : 'error'}
-                    variant="filled"
                     size="sm"
                     style={{ zIndex: 10 }}
                 >
@@ -66,8 +64,6 @@ export default function ReisCard({ trip, onEdit, onDelete, isDeleting }: ReisCar
                         pos="absolute"
                         top={12}
                         right={12}
-                        color="brand"
-                        variant="filled"
                         size="sm"
                         style={{ zIndex: 10 }}
                     >
@@ -123,7 +119,6 @@ export default function ReisCard({ trip, onEdit, onDelete, isDeleting }: ReisCar
                 <SimpleGrid cols={2} spacing="sm">
                     <Button
                         type="button"
-                        variant="default"
                         size="xs"
                         onClick={onEdit}
                         leftSection={<Pen size={14} />}
@@ -132,7 +127,6 @@ export default function ReisCard({ trip, onEdit, onDelete, isDeleting }: ReisCar
                     </Button>
                     <Button
                         type="button"
-                        variant="light"
                         color="error"
                         size="xs"
                         onClick={onDelete}

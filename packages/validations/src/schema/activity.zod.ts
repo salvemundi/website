@@ -1,9 +1,13 @@
 import { z } from 'zod';
-import { selectEventsSchema, insertEventsSchema, selectEventSignupsSchema } from './db.zod.ts';
-import { phoneNumberSchema } from './shared.zod.ts';
-import { userBasicSchema } from './members.zod.ts';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { events as eventsTable, event_signups as event_signupsTable } from '@salvemundi/db/schema';
+import { phoneNumberSchema } from './shared.zod';
+import { userBasicSchema } from './members.zod';
 
-export type EventSignup = z.infer<typeof selectEventSignupsSchema>;
+const selectEventsSchema = createSelectSchema(eventsTable);
+const insertEventsSchema = createInsertSchema(eventsTable);
+
+export type EventSignup = typeof event_signupsTable.$inferSelect;
 
 const phoneRegex = /(?:\+31|0)[1-9][0-9\s-]{7,12}/;
 const noPhoneMessage = "Om privacyredenen (AVG) mogen er geen telefoonnummers in de tekst staan.";
