@@ -17,7 +17,6 @@ export default function SafeHavenPage() {
                         <Button
                             component={Link}
                             href="/profiel"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

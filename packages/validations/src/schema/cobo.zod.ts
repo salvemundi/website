@@ -1,12 +1,13 @@
 import { z } from 'zod';
-import {
-    selectCoboSchema,
-    insertCoboSchema,
-    selectCoboBoardPreferencesSchema,
-    insertCoboBoardPreferencesSchema,
-    selectCoboGuestBoardsSchema,
-    insertCoboGuestBoardsSchema
-} from './db.zod.js';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { cobo as coboTable, cobo_board_preferences as cobo_board_preferencesTable, cobo_guest_boards as cobo_guest_boardsTable } from '@salvemundi/db/schema';
+
+const selectCoboSchema = createSelectSchema(coboTable);
+const insertCoboSchema = createInsertSchema(coboTable);
+const selectCoboBoardPreferencesSchema = createSelectSchema(cobo_board_preferencesTable);
+const insertCoboBoardPreferencesSchema = createInsertSchema(cobo_board_preferencesTable);
+const selectCoboGuestBoardsSchema = createSelectSchema(cobo_guest_boardsTable);
+const insertCoboGuestBoardsSchema = createInsertSchema(cobo_guest_boardsTable);
 
 export const coboEventSchema = selectCoboSchema;
 export type CoboEvent = z.infer<typeof coboEventSchema>;

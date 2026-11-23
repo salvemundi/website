@@ -113,7 +113,6 @@ export default function StatsToolbar({
                                     (val as 'table' | 'groups' | 'associations' | null) ?? 'groups'
                                 )
                             }
-                            variant="pills"
                         >
                             <Tabs.List>
                                 <Tabs.Tab value="groups" leftSection={<Grid size={16} />}>
@@ -173,7 +172,6 @@ export default function StatsToolbar({
                             <Button
                                 type="button"
                                 size="xs"
-                                variant="default"
                                 onClick={onAutoDistribute}
                                 disabled={isPending || !hasSignups}
                             >
@@ -184,7 +182,6 @@ export default function StatsToolbar({
                         <Button
                             type="button"
                             size="xs"
-                            variant="default"
                             onClick={onExportCsv}
                             loading={isExporting}
                             title="Groepsindeling downloaden als CSV (zelfde indeling als de Google Sheet)"
@@ -220,7 +217,6 @@ export default function StatsToolbar({
                                     href={syncState.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    variant="default"
                                     size="md"
                                     title="Open Google Sheet"
                                     aria-label="Open Google Sheet"
@@ -233,7 +229,7 @@ export default function StatsToolbar({
                 </Group>
 
                 {syncState.status === 'error' && syncState.message && (
-                    <Alert color="error" variant="light" py="xs">
+                    <Alert color="error" py="xs">
                         <Text size="xs" fw={600}>
                             Google Sheet: {syncState.message}
                         </Text>
@@ -263,15 +259,10 @@ export default function StatsToolbar({
                             <Popover.Target>
                                 <Button
                                     type="button"
-                                    variant="default"
                                     w={{ base: '100%', md: 256 }}
                                     justify="space-between"
                                     onClick={() => setIsDropdownOpen((prev) => !prev)}
-                                    leftSection={
-                                        <Text span c="brand" lh={1}>
-                                            <Users size={16} />
-                                        </Text>
-                                    }
+                                    leftSection={<Users size={16} />}
                                     rightSection={<ChevronDown size={16} />}
                                 >
                                     <Text size="xs" fw={600} truncate>

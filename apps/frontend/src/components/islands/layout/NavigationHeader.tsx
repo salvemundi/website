@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Box, Group, Text } from '@mantine/core';
-import { cn } from '@/lib/utils/cn';
 import { isPathActive } from '@/lib/utils/link-utils';
 import Image from 'next/image';
 import { ThemeToggle } from '@/components/islands/layout/ThemeToggle';
@@ -105,7 +104,7 @@ const NavigationHeader = ({
                 style={{ zIndex: 10 }}
             >
                 <Box style={{ flexShrink: 0 }}>
-                    <Link href="/" className="group hover:scale-1.03 flex items-center gap-3 transition-transform duration-300 active:scale-95">
+                    <Link href="/" data-header-logo>
                         <Box pos="relative" w={48} h={48}>
                             <Image
                                 src={BRAND_CONFIG.logoLightMode}
@@ -123,7 +122,7 @@ const NavigationHeader = ({
                             />
                         </Box>
                         <Box visibleFrom="md" style={{ whiteSpace: 'nowrap' }}>
-                            <Text fz={13} lh={1} fw={600} c="brand">
+                            <Text fz="xs" lh={1} fw={600} c="brand">
                                 Salve Mundi
                             </Text>
                             <Text fz="xs" fw={600} mt={2}>
@@ -163,8 +162,8 @@ const NavigationHeader = ({
                         }}
                     >
                         {navItems.map((link) => (
-                            <Box
-                                component="span"
+                            <Text
+                                span
                                 key={link.href}
                                 data-href={link.href}
                                 fz="clamp(13px, 1vw, 15px)"
@@ -177,7 +176,7 @@ const NavigationHeader = ({
                                 }}
                             >
                                 {link.name}
-                            </Box>
+                            </Text>
                         ))}
                     </Group>
 
@@ -190,24 +189,19 @@ const NavigationHeader = ({
                                         key={link.href}
                                         href={link.href}
                                         aria-current={active ? 'page' : undefined}
-                                        className={cn(
-                                            'group relative inline-flex shrink-0 items-center gap-2 text-sm font-semibold whitespace-nowrap transition-all duration-200',
-                                            active ? 'text-primary' : 'text-foreground',
-                                            !active && 'hover:text-primary'
-                                        )}
+                                        data-header-nav-link
                                     >
-                                        <Text component="span" inherit fz="clamp(13px, 1vw, 15px)" fw={600}>
+                                        <Text span inherit fz="clamp(13px, 1vw, 15px)" fw={600}>
                                             {link.name}
                                         </Text>
                                         <Box
-                                            component="span"
                                             mod={{ 'nav-underline': true }}
                                             pos="absolute"
                                             bottom={-8}
                                             left={0}
                                             h={2}
                                             w="100%"
-                                            bg="var(--primary)"
+                                            bg="var(--mantine-color-brand-filled)"
                                             style={{
                                                 transformOrigin: 'left',
                                                 borderRadius: '9999px',

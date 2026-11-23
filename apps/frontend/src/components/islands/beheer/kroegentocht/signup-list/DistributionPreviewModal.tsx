@@ -72,7 +72,7 @@ export default function DistributionPreviewModal({
                                         <Text size="xs" fw={700}>
                                             {groupName}
                                         </Text>
-                                        <Badge size="xs" variant="light" color="brand">
+                                        <Badge size="xs">
                                             {ticketCount} {ticketCount === 1 ? 'persoon' : 'personen'}
                                         </Badge>
                                     </Group>
@@ -92,7 +92,6 @@ export default function DistributionPreviewModal({
                                                             withBorder
                                                             px="xs"
                                                             py={6}
-                                                            radius="sm"
                                                         >
                                                             <Group
                                                                 justify="space-between"
@@ -149,7 +148,7 @@ export default function DistributionPreviewModal({
                         </Text>
                     </Text>
                     <Group gap="sm">
-                        <Button type="button" variant="default" onClick={onClose}>
+                        <Button type="button" onClick={onClose}>
                             Annuleren
                         </Button>
                         <Button

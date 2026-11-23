@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { selectNdaTemplatesSchema, selectNdaSignaturesSchema, selectNdaSettingsSchema } from './db.zod.js';
+import { createSelectSchema } from 'drizzle-zod';
+import { nda_templates as nda_templatesTable, nda_signatures as nda_signaturesTable, nda_settings as nda_settingsTable } from '@salvemundi/db/schema';
+
+const selectNdaTemplatesSchema = createSelectSchema(nda_templatesTable);
+const selectNdaSignaturesSchema = createSelectSchema(nda_signaturesTable);
+const selectNdaSettingsSchema = createSelectSchema(nda_settingsTable);
 
 export const ndaTemplateStatusEnum = z.enum(['draft', 'signed', 'archived']);
 export type NdaTemplateStatus = z.infer<typeof ndaTemplateStatusEnum>;

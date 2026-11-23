@@ -120,7 +120,7 @@ export default function ActivitiesProviderIsland({
     return (
         <Stack gap="lg" w="100%">
             <Group justify="space-between" align="center" wrap="wrap" gap="md">
-                <Paper p={4} radius="lg" withBorder w={{ base: '100%', sm: 'auto' }}>
+                <Paper p={4} withBorder w={{ base: '100%', sm: 'auto' }}>
                     <Group gap={4} role="tablist" aria-label="Weergavemodus" grow>
                         <Button
                             type="button"

@@ -93,7 +93,6 @@ export default function BorrelBarClaimCard({ initialStatus }: BorrelBarClaimCard
                             ) : (
                                 <Badge
                                     color="success"
-                                    variant="light"
                                     size="lg"
                                     leftSection={<CheckCircle2 size={14} />}
                                 >
@@ -116,7 +115,7 @@ export default function BorrelBarClaimCard({ initialStatus }: BorrelBarClaimCard
             </Paper>
 
             {error && (
-                <Alert color="error" icon={<AlertCircle size={16} />} variant="light">
+                <Alert color="error" icon={<AlertCircle size={16} />}>
                     {error}
                 </Alert>
             )}

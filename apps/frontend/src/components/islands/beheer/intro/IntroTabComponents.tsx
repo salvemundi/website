@@ -39,9 +39,9 @@ export function ActionButton({
 
 export function EmptyState({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
     return (
-        <Paper withBorder p="xl" ta="center" radius="lg" style={{ borderStyle: 'dashed' }}>
+        <Paper withBorder p="xl" ta="center" style={{ borderStyle: 'dashed' }}>
             <Stack align="center" gap="md" py="xl">
-                <ThemeIcon size={64} radius="xl" variant="light" color="accent">
+                <ThemeIcon size="xl" color="accent">
                     <Icon size={32} />
                 </ThemeIcon>
                 <Text size="sm" fw={600} c="dimmed">{text}</Text>

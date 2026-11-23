@@ -63,7 +63,7 @@ export const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                             </Text>
                         </Group>
 
-                        <ThemeIcon size="sm" radius="xl" variant="light">
+                        <ThemeIcon size="sm">
                             <ChevronRight size={14} />
                         </ThemeIcon>
                     </Group>

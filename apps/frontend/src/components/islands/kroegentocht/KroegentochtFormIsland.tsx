@@ -100,11 +100,11 @@ export default function KroegentochtFormIsland({
     };
 
     return (
-        <Card padding="xl" radius="xl" shadow="xl" withBorder>
+        <Card padding="xl" shadow="xl" withBorder>
             <Stack gap="lg">
                 <Stack gap="xs">
                     <Group gap="sm">
-                        <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                        <ThemeIcon size="lg">
                             <Ticket size={20} />
                         </ThemeIcon>
                         <Title order={2} size="h2" c="brand">
@@ -116,7 +116,7 @@ export default function KroegentochtFormIsland({
                     </Text>
                 </Stack>
 
-                <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
+                <Box component="form" onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
                     <Stack gap="md">
                         <TextInput
                             id="field-email"
@@ -153,11 +153,10 @@ export default function KroegentochtFormIsland({
                             <Text size="sm" fw={700}>
                                 Aantal Personen
                             </Text>
-                            <Paper p={4} radius="md" withBorder>
+                            <Paper p={4} withBorder>
                                 <Group gap="sm" wrap="nowrap">
                                     <ActionIcon
                                         type="button"
-                                        variant="subtle"
                                         size="md"
                                         disabled={amount <= 1}
                                         aria-label="Verminder aantal"
@@ -175,7 +174,6 @@ export default function KroegentochtFormIsland({
                                     </Text>
                                     <ActionIcon
                                         type="button"
-                                        variant="subtle"
                                         size="md"
                                         disabled={amount >= 10}
                                         aria-label="Verhoog aantal"
@@ -195,10 +193,10 @@ export default function KroegentochtFormIsland({
                         <ScrollArea.Autosize mah={400}>
                             <Stack gap="sm">
                                 {fields.map((field, index) => (
-                                    <Paper key={field.id} p="md" radius="md" withBorder>
+                                    <Paper key={field.id} p="md" withBorder>
                                         <Stack gap="xs">
                                             <Group gap="xs">
-                                                <Badge size="sm" circle color="brand">
+                                                <Badge size="sm" circle>
                                                     {index + 1}
                                                 </Badge>
                                                 <Text size="xs" fw={700} tt="uppercase" c="dimmed">
@@ -268,11 +266,10 @@ export default function KroegentochtFormIsland({
                                 pointerEvents: 'none',
                             }}
                         >
-                            <label htmlFor="website">Website</label>
-                            <input {...register('website')} id="website" tabIndex={-1} autoComplete="off" style={{ display: 'none' }} suppressHydrationWarning />
+                            <TextInput {...register('website')} id="website" label="Website" tabIndex={-1} autoComplete="off" display="none" suppressHydrationWarning />
                         </Box>
                     </Stack>
-                </form>
+                </Box>
             </Stack>
         </Card>
     );

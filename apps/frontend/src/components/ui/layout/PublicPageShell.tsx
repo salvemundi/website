@@ -40,7 +40,7 @@ export default function PublicPageShell({
                     style={{
                         zIndex: -10,
                         pointerEvents: 'none',
-                        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                        backgroundColor: 'var(--overlay-scrim)',
                     }}
                 />
                 <Box pos="relative" style={{ zIndex: 10, flexGrow: 1 }}>

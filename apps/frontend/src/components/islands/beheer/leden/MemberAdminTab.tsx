@@ -109,10 +109,10 @@ export default function MemberAdminTab({
     return (
         <Stack gap="lg">
             {!member.entra_id && (
-                <Card p="xl" shadow="sm" style={{ borderLeft: '6px solid var(--accent)' }}>
+                <Card p="xl" shadow="sm" style={{ borderLeft: '6px solid var(--mantine-color-accent-filled)' }}>
                     <Stack gap="lg">
                         <Group gap="md">
-                            <ThemeIcon size={48} radius="md" variant="light" color="accent">
+                            <ThemeIcon size="lg" color="accent">
                                 <ShieldAlert size={22} />
                             </ThemeIcon>
                             <Box>
@@ -125,13 +125,12 @@ export default function MemberAdminTab({
                             </Box>
                         </Group>
 
-                        <Alert color="accent" variant="light">
+                        <Alert color="accent">
                             Door een account aan te maken krijgt het lid een salvemundi.nl e-mailadres en toegang tot Office 365. Het tijdelijke wachtwoord wordt direct naar hun persoonlijke e-mailadres gestuurd.
                         </Alert>
 
                         <Button
                             type="button"
-                            color="accent"
                             w={{ base: '100%', sm: 'fit-content' }}
                             loading={provisioningLoading}
                             leftSection={<Plus size={16} />}
@@ -156,7 +155,7 @@ export default function MemberAdminTab({
                                 Lidmaatschappen direct in Azure AD aanpassen
                             </Text>
                         </Box>
-                        <ThemeIcon size={48} radius="md" variant="light" color="brand">
+                        <ThemeIcon size="lg">
                             <Shield size={22} />
                         </ThemeIcon>
                     </Group>
@@ -180,7 +179,7 @@ export default function MemberAdminTab({
                                             m.is_leader &&
                                             m.committee_id.azure_group_id !== COMMITTEES.BESTUUR;
                                         return (
-                                            <Paper key={m.id} p="md" withBorder radius="md">
+                                            <Paper key={m.id} p="md" withBorder>
                                                 <Group justify="space-between" wrap="nowrap">
                                                     <Group gap="sm" wrap="nowrap">
                                                         <Text span c={isLeader ? 'brand' : 'dimmed'} lh={1}>
@@ -192,7 +191,6 @@ export default function MemberAdminTab({
                                                     </Group>
                                                     <ActionIcon
                                                         type="button"
-                                                        variant="subtle"
                                                         color="error"
                                                         onClick={() => {
                                                             void onMembershipChange(
@@ -223,7 +221,6 @@ export default function MemberAdminTab({
                                 <Button
                                     key={c.id}
                                     type="button"
-                                    variant="default"
                                     h="auto"
                                     py="sm"
                                     px="md"
@@ -246,7 +243,7 @@ export default function MemberAdminTab({
                                         <Text size="xs" fw={600} truncate>
                                             {cleanName(c.name)}
                                         </Text>
-                                        <Text size="xs" c="dimmed">
+                                        <Text size="xs" opacity={0.8}>
                                             Azure ID: {c.azure_group_id?.substring(0, 8)}...
                                         </Text>
                                     </Box>
@@ -260,7 +257,7 @@ export default function MemberAdminTab({
             <Card p="xl" shadow="sm">
                 <Stack gap="lg">
                     <Group gap="md">
-                        <ThemeIcon size={48} radius="md" variant="light" color="success">
+                        <ThemeIcon size="lg" color="success">
                             <CalendarPlus size={22} />
                         </ThemeIcon>
                         <Box>
@@ -318,7 +315,6 @@ export default function MemberAdminTab({
                         </Box>
                         <Button
                             type="button"
-                            variant="default"
                             w={{ base: '100%', sm: 'auto' }}
                             loading={syncLoading}
                             leftSection={<RefreshCw size={16} />}

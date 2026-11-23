@@ -154,7 +154,7 @@ export default function LogsTab({
     const hasMore = logs.length < totalCount;
 
     return (
-        <Paper withBorder radius="lg" style={{ overflow: 'hidden' }}>
+        <Paper withBorder style={{ overflow: 'hidden' }}>
             <Group justify="space-between" align="flex-end" p="lg" wrap="wrap" gap="md">
                 <Stack gap="sm">
                     <Title order={4}>{title}</Title>
@@ -203,7 +203,6 @@ export default function LogsTab({
                     <Tooltip label="Vernieuwen">
                         <ActionIcon
                             type="button"
-                            variant="default"
                             size="lg"
                             onClick={onRefresh}
                             aria-label="Vernieuwen"
@@ -250,7 +249,6 @@ export default function LogsTab({
                                                 {log.payload && typeof log.payload === 'object' && 'environment' in log.payload && (
                                                     <Badge
                                                         color={getEnvBadgeColor(String(log.payload.environment))}
-                                                        variant="light"
                                                         size="xs"
                                                     >
                                                         {String(log.payload.environment)}
@@ -373,14 +371,14 @@ export default function LogsTab({
                                                                             {String(p.processed || 0)} leden verwerkt in {p.duration_ms ? formatDuration(Number(p.duration_ms)) : 'onbekende tijd'}.
                                                                         </Text>
                                                                         <Group gap={6} wrap="wrap">
-                                                                            <Badge color="success" variant="light" size="xs">
+                                                                            <Badge color="success" size="xs">
                                                                                 +{p.moved_active || 0} actief
                                                                             </Badge>
-                                                                            <Badge color="accent" variant="light" size="xs">
+                                                                            <Badge color="accent" size="xs">
                                                                                 -{p.moved_expired || 0} verlopen
                                                                             </Badge>
                                                                             {Number(p.errors || 0) > 0 && (
-                                                                                <Badge color="error" variant="light" size="xs">
+                                                                                <Badge color="error" size="xs">
                                                                                     {p.errors} fouten
                                                                                 </Badge>
                                                                             )}
@@ -437,8 +435,6 @@ export default function LogsTab({
                                                                             {isComplex ? (
                                                                                 <Button
                                                                                     type="button"
-                                                                                    variant="light"
-                                                                                    color="brand"
                                                                                     size="compact-xs"
                                                                                     onClick={(e) => {
                                                                                         e.stopPropagation();
@@ -481,7 +477,6 @@ export default function LogsTab({
                                             >
                                                 <Badge
                                                     color={getStatusBadgeColor(String(log.status))}
-                                                    variant="light"
                                                     size="sm"
                                                 >
                                                     {log.status}
@@ -489,8 +484,6 @@ export default function LogsTab({
                                                 {log.status === 'ERROR' && !isAcknowledged && (
                                                     <Button
                                                         type="button"
-                                                        variant="subtle"
-                                                        color="brand"
                                                         size="compact-xs"
                                                         loading={acknowledging === log.id}
                                                         onClick={() => { void handleAcknowledge(log.id); }}
@@ -512,7 +505,6 @@ export default function LogsTab({
                                                 <Paper
                                                     withBorder
                                                     p="md"
-                                                    radius="md"
                                                     maw={900}
                                                     mx="auto"
                                                     onClick={(e) => e.stopPropagation()}
@@ -524,7 +516,6 @@ export default function LogsTab({
                                                             </Text>
                                                             <Button
                                                                 type="button"
-                                                                variant="default"
                                                                 size="xs"
                                                                 onClick={() => {
                                                                     void navigator.clipboard.writeText(JSON.stringify(log.payload, null, 2));
@@ -567,8 +558,6 @@ export default function LogsTab({
                     <Group justify="center" p="md">
                         <Button
                             type="button"
-                            variant="light"
-                            color="brand"
                             size="xs"
                             onClick={onLoadMore}
                         >

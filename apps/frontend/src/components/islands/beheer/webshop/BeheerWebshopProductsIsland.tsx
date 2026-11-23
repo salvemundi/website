@@ -70,7 +70,7 @@ function StockBadge({ product }: { product: AdminProduct }) {
     return (
         <Stack gap={4}>
             {total === 0 ? (
-                <Badge size="sm" variant="light" color="error">
+                <Badge size="sm" color="error">
                     Uitverkocht
                 </Badge>
             ) : total !== null ? (
@@ -88,9 +88,8 @@ function StockBadge({ product }: { product: AdminProduct }) {
                         <Badge
                             key={v.id}
                             size="xs"
-                            variant="light"
-                            color={v.stock_quantity === 0 ? 'error' : 'gray'}
-                            tt="none"
+                            variant={v.stock_quantity === 0 ? undefined : 'outline'}
+                            color={v.stock_quantity === 0 ? 'error' : undefined}
                         >
                             {variantLabel(v)}: {v.stock_quantity ?? '∞'}
                         </Badge>
@@ -126,8 +125,6 @@ function SalesCell({ product }: { product: AdminProduct }) {
                         <Badge
                             key={v.label}
                             size="xs"
-                            variant="light"
-                            tt="none"
                             title={v.pending > 0 ? `${v.pending} wacht nog op betaling` : undefined}
                         >
                             {v.label}: {v.paid}
@@ -250,7 +247,7 @@ export default function BeheerWebshopProductsIsland({
                                 <Title order={2} size="h4">
                                     Drops
                                 </Title>
-                                <Badge variant="light" color="brand">
+                                <Badge>
                                     {dropWindows.length}
                                 </Badge>
                             </Group>
@@ -320,8 +317,6 @@ export default function BeheerWebshopProductsIsland({
                                                             <Group justify="flex-end" gap="xs">
                                                                 <ActionIcon
                                                                     type="button"
-                                                                    variant="subtle"
-                                                                    color="brand"
                                                                     onClick={() =>
                                                                         setDropWindowModal({
                                                                             open: true,
@@ -334,7 +329,6 @@ export default function BeheerWebshopProductsIsland({
                                                                 </ActionIcon>
                                                                 <ActionIcon
                                                                     type="button"
-                                                                    variant="subtle"
                                                                     color="error"
                                                                     onClick={() => handleDeleteDropWindow(dw.id)}
                                                                     disabled={deletingId === dw.id}
@@ -360,7 +354,7 @@ export default function BeheerWebshopProductsIsland({
                                 <Title order={2} size="h4">
                                     Producten
                                 </Title>
-                                <Badge variant="light" color="brand">
+                                <Badge>
                                     {products.length}
                                 </Badge>
                             </Group>
@@ -437,7 +431,6 @@ export default function BeheerWebshopProductsIsland({
                                                         <Box ta="center">
                                                             <ActionIcon
                                                                 type="button"
-                                                                variant="subtle"
                                                                 color={product.is_active ? 'success' : 'brand'}
                                                                 onClick={() => handleToggleActive(product)}
                                                                 disabled={togglingId === product.id}
@@ -459,8 +452,6 @@ export default function BeheerWebshopProductsIsland({
                                                         <Group justify="flex-end" gap="xs">
                                                             <ActionIcon
                                                                 type="button"
-                                                                variant="subtle"
-                                                                color="brand"
                                                                 onClick={() =>
                                                                     setProductModal({
                                                                         open: true,
@@ -473,7 +464,6 @@ export default function BeheerWebshopProductsIsland({
                                                             </ActionIcon>
                                                             <ActionIcon
                                                                 type="button"
-                                                                variant="subtle"
                                                                 color="error"
                                                                 onClick={() => handleDeleteProduct(product.id)}
                                                                 disabled={deletingId === product.id}

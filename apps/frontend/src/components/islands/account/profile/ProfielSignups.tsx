@@ -29,7 +29,6 @@ export default function ProfielSignups({
                 <Group gap="xs" wrap="wrap">
                     <Button
                         type="button"
-                        variant="default"
                         size="xs"
                         onClick={() => setShowPastEvents((previousValue) => !previousValue)}
                     >
@@ -38,7 +37,6 @@ export default function ProfielSignups({
                     <Button
                         component={Link}
                         href="/profiel/tickets"
-                        variant="default"
                         size="xs"
                         rightSection={<ChevronRight size={14} />}
                     >
@@ -87,7 +85,7 @@ export default function ProfielSignups({
                                 >
                                     <Group justify="space-between" wrap="nowrap" gap="md">
                                         <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
-                                            <ThemeIcon size={52} radius="md" variant="light" color="brand">
+                                            <ThemeIcon size="lg">
                                                 {icon}
                                             </ThemeIcon>
                                             <Stack gap={2} style={{ minWidth: 0 }}>
@@ -116,7 +114,6 @@ export default function ProfielSignups({
             ) : (
                 <Paper
                     p="xl"
-                    radius="lg"
                     withBorder
                     ta="center"
                     style={{ borderStyle: 'dashed' }}

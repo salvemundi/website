@@ -27,7 +27,6 @@ export default async function BeheerCameraPage() {
                         <Button
                             component={Link}
                             href="/beheer"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

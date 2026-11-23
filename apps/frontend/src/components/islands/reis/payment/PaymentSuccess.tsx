@@ -11,7 +11,7 @@ interface PaymentSuccessProps {
 export function PaymentSuccess({ trip }: PaymentSuccessProps) {
     return (
         <Stack align="center" gap="xl" py="xl" ta="center">
-            <ThemeIcon size={96} radius="xl" variant="light" color="success">
+            <ThemeIcon size="xl" color="success">
                 <CheckCircle2 size={48} />
             </ThemeIcon>
 
@@ -20,7 +20,7 @@ export function PaymentSuccess({ trip }: PaymentSuccessProps) {
                     Activiteiten Opgeslagen!
                 </Title>
                 <Text c="dimmed" maw={440}>
-                    Je keuzes zijn succesvol verwerkt. Zodra de restbetaling voor <strong>{trip.name}</strong> wordt geopend, ontvang je van ons een e-mail om de betaling af te ronden.
+                    Je keuzes zijn succesvol verwerkt. Zodra de restbetaling voor <Text span fw={700}>{trip.name}</Text> wordt geopend, ontvang je van ons een e-mail om de betaling af te ronden.
                 </Text>
             </Stack>
 

@@ -3,7 +3,7 @@
 import { useState, useEffect, useTransition } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Divider, Group, InputWrapper, Paper, SimpleGrid, Stack, Text, TextInput } from '@mantine/core';
+import { Box, Button, Divider, Group, InputWrapper, Paper, SimpleGrid, Stack, Text, TextInput } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { validateCouponAction, initiateMembershipPaymentAction } from '@/server/actions/profile/membership.actions';
@@ -89,7 +89,8 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
     const total = calculateDiscountedPrice(baseAmount, couponStatus);
 
     return (
-        <form
+        <Box
+            component="form"
             onSubmit={(e) => { void handleSubmit(onSubmit)(e); }}
             autoComplete="off"
             suppressHydrationWarning
@@ -197,7 +198,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                         </Text>
                     )}
 
-                    <Paper p="lg" radius="lg" withBorder mt="md">
+                    <Paper p="lg" withBorder mt="md">
                         <Group justify="space-between" align="center">
                             <Text size="xl" fw={700} c="dimmed">
                                 Totaal:
@@ -213,6 +214,6 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                     {isPending ? 'Verwerken...' : `Betalen en Inschrijven (€${total.toFixed(2).replace('.', ',')})`}
                 </Button>
             </Stack>
-        </form>
+        </Box>
     );
 }

@@ -107,12 +107,16 @@ const eslintConfig = [
                     "message": "Zero-Skeleton rendering: `<Suspense>` is strictly forbidden. Await data directly at the component/page level to ensure atomic page loads without intermediate loading states."
                 },
                 {
-                    "selector": "JSXOpeningElement[name.name=/^(div|span|p|h[1-6]|button|select|textarea|details|summary|section)$/]",
-                    "message": "Raw HTML layout, typography, and interactive elements are forbidden. Use Mantine components (Box, Flex, Group, Stack, Grid, SimpleGrid, Text, Title, Button, ActionIcon, Select, Textarea, Spoiler, VisuallyHidden) instead."
+                    "selector": "JSXOpeningElement[name.name=/^(div|span|p|h[1-6]|button|select|option|textarea|details|summary|section|header|footer|nav|main|aside|article|ul|ol|li|table|thead|tbody|tfoot|tr|th|td|label|input|form|a|hr|strong|b|em|i|u|br|wbr|style|svg|path|polyline)$/]",
+                    "message": "Raw HTML layout, typography, form, table, list, style, and SVG elements are forbidden. Use Mantine components (Box, Flex, Group, Stack, Grid, SimpleGrid, Text, Title, Button, ActionIcon, Select, Textarea, Table, List, Spoiler, VisuallyHidden) or lucide-react icons instead."
                 },
                 {
-                    "selector": "JSXOpeningElement[name.name=/^(Box|Flex|Group|Stack|Grid|GridCol|SimpleGrid|Container|Center|Card|Paper|Button|ActionIcon|Text|Title|Anchor|Badge|Avatar|ThemeIcon|Alert|Modal|Drawer|Tabs|NavLink|Spoiler|Divider|TextInput|Select|NativeSelect|Textarea|Checkbox|Switch|NumberInput|ColorInput|Typography)$/] > JSXAttribute[name.name='className']",
-                    "message": "Passing className to Mantine components is forbidden. Use Mantine style props (p, px, py, gap, fz, fw, c, bg, visibleFrom, hiddenFrom, mod, style) and global theme configuration in theme.ts instead."
+                    "selector": "JSXOpeningElement[name.name=/^(Box|Flex|Group|Stack|Grid|GridCol|SimpleGrid|Container|Center|Card|Paper|Button|ActionIcon|CloseButton|UnstyledButton|Text|Title|Anchor|Badge|Pill|Avatar|ThemeIcon|Alert|Modal|Drawer|Tabs|NavLink|Spoiler|Divider|TextInput|Select|NativeSelect|Textarea|Checkbox|Switch|Radio|NumberInput|ColorInput|PasswordInput|FileInput|MultiSelect|DateInput|SegmentedControl|Table|List|Menu|Popover|Tooltip|Loader|Progress|ScrollArea|Typography|Link|ActiveLink|InstagramIcon|FacebookIcon|TiktokIcon|LinkedinIcon|DiscordIcon|SiInstagram|SiFacebook|SiTiktok|FaLinkedin|QRCodeSVG)$/] > JSXAttribute[name.name='className']",
+                    "message": "Passing className to Mantine components, Link, or icons is forbidden. Use Mantine style props (p, px, py, gap, fz, fw, c, bg, visibleFrom, hiddenFrom, mod, style) and global theme configuration in theme.ts instead."
+                },
+                {
+                    "selector": "JSXOpeningElement[name.name=/^(Button|ActionIcon|CloseButton|UnstyledButton|Card|Paper|Container|Alert|Badge|Pill|ThemeIcon|Modal|Drawer|Switch|Checkbox|Radio|Progress|TextInput|Select|NativeSelect|Textarea|NumberInput|PasswordInput|FileInput|MultiSelect|DateInput|ColorInput|SegmentedControl|Tabs|ScrollArea)$/] > JSXAttribute[name.name='radius']",
+                    "message": "Passing a manual radius prop to Mantine components is forbidden. Radius is managed centrally via the dynamic scale in theme/radius.ts."
                 }
             ],
 
@@ -144,7 +148,7 @@ const eslintConfig = [
         }
     },
     {
-        files: ["src/app/**/opengraph-image.tsx", "src/app/**/twitter-image.tsx", "src/lib/utils/og-utils.tsx"],
+        files: ["src/app/**/opengraph-image.tsx", "src/app/**/twitter-image.tsx", "src/lib/utils/og-utils.tsx", "src/shared/icons/social.tsx"],
         rules: {
             "@next/next/no-img-element": "off",
             "no-restricted-syntax": "off"

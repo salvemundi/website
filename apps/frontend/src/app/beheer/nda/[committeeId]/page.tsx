@@ -36,7 +36,6 @@ export default async function BeheerNdaCommitteePage({ params }: { params: Promi
                         <Button
                             component={Link}
                             href="/beheer/nda"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

@@ -20,11 +20,10 @@ export default function ToastWrapper({ children, visible }: { children: React.Re
             }}
         >
             <Paper
-                radius="xl"
                 shadow="xl"
                 bg="var(--mantine-color-default)"
                 style={{
-                    border: '1px solid var(--border)',
+                    border: '1px solid var(--mantine-color-default-border)',
                     overflow: 'hidden',
                 }}
             >

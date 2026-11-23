@@ -42,7 +42,6 @@ function FilterTab({ active, label, count, onClick, color = 'brand' }: FilterTab
             rightSection={
                 <Badge
                     size="xs"
-                    radius="xl"
                     variant={active ? 'white' : 'light'}
                     color={color}
                 >
@@ -73,7 +72,7 @@ export default function SyncMonitorIsland() {
         <Card p="lg" shadow="sm">
             <Stack gap="lg">
                 <Group gap="md">
-                    <ThemeIcon size="lg" variant="light" color="brand" radius="md">
+                    <ThemeIcon size="lg">
                         <Activity size={20} />
                     </ThemeIcon>
                     <Box>
@@ -91,7 +90,6 @@ export default function SyncMonitorIsland() {
                 {status?.error && (
                     <Alert
                         color="error"
-                        variant="light"
                         icon={<AlertCircle size={18} />}
                         title="Verbindingsfout met Sync Service"
                     >
@@ -102,7 +100,6 @@ export default function SyncMonitorIsland() {
                 {status?.fatalError && (
                     <Alert
                         color="error"
-                        variant="light"
                         icon={<AlertCircle size={18} />}
                         title="Kritieke Fout Gedetecteerd"
                     >
@@ -112,11 +109,9 @@ export default function SyncMonitorIsland() {
                                 <>
                                     <Button
                                         type="button"
-                                        variant="subtle"
                                         color="error"
                                         size="xs"
                                         w="fit-content"
-                                        px={0}
                                         onClick={() => setShowStack(!showStack)}
                                     >
                                         {showStack ? 'Verberg details' : 'Bekijk technische details (Stack Trace)'}
@@ -137,7 +132,7 @@ export default function SyncMonitorIsland() {
                             {Math.round(progress)}%
                         </Text>
                     </Group>
-                    <Progress value={progress} color="brand" size="md" radius="xl" />
+                    <Progress value={progress} size="md" />
                 </Stack>
 
                 <SimpleGrid cols={{ base: 2, sm: 3, md: 4, xl: 7 }} spacing="xs">

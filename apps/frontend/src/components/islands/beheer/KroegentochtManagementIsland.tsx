@@ -161,7 +161,6 @@ export default function KroegentochtManagementIsland({
                         <ActionIcon
                             component={Link}
                             href="/beheer"
-                            variant="default"
                             size="lg"
                             aria-label="Terug"
                         >
@@ -188,7 +187,6 @@ export default function KroegentochtManagementIsland({
                             <Button
                                 component={Link}
                                 href={`/beheer/kroegentocht/bewerk/${selectedEvent.id}`}
-                                variant="default"
                                 leftSection={<Settings size={16} />}
                                 title="Event Details"
                             >
@@ -198,14 +196,13 @@ export default function KroegentochtManagementIsland({
 
                         <ActionIcon
                             type="button"
-                            variant="default"
                             size="lg"
                             onClick={handleRefresh}
                             disabled={isPending}
                             aria-label="Vernieuwen"
                             title="Vernieuwen"
                         >
-                            <RefreshCw size={16} className={isPending ? 'animate-spin' : undefined} />
+                            <RefreshCw size={16} style={{ animation: isPending ? 'spin 1s linear infinite' : undefined }} />
                         </ActionIcon>
 
                         <BeheerVisibilityToggle
@@ -217,7 +214,6 @@ export default function KroegentochtManagementIsland({
                         <Button
                             component={Link}
                             href="/beheer/kroegentocht/nieuw"
-                            color="accent"
                             leftSection={<Plus size={16} />}
                         >
                             Nieuw Event
@@ -231,7 +227,6 @@ export default function KroegentochtManagementIsland({
                             <Text size="sm" fw={600}>{error}</Text>
                             <Button
                                 type="button"
-                                variant="subtle"
                                 color="error"
                                 size="xs"
                                 onClick={handleRefresh}

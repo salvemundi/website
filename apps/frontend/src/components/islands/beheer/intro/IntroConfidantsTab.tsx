@@ -112,7 +112,6 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                 <Group>
                     <Button
                         type="button"
-                        color="accent"
                         onClick={() => startEditing(emptyConfidant(confidants.length))}
                         leftSection={<Plus size={16} />}
                     >
@@ -122,13 +121,13 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
             )}
 
             {editing !== null && (
-                <Card withBorder padding="xl" radius="lg">
+                <Card withBorder padding="xl">
                     <Stack gap="lg">
                         <Group justify="space-between" align="center">
-                            <Title order={3} size="xs" c="dimmed" fw={700} tt="uppercase">
+                            <Title order={3} size="xs" c="dimmed" tt="uppercase">
                                 {editing.id ? 'Vertrouwenspersoon Bewerken' : 'Nieuwe Vertrouwenspersoon'}
                             </Title>
-                            <ActionIcon type="button" variant="subtle" onClick={stopEditing} aria-label="Sluiten">
+                            <ActionIcon type="button" onClick={stopEditing} aria-label="Sluiten">
                                 <X size={18} />
                             </ActionIcon>
                         </Group>
@@ -165,8 +164,8 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                                 <Group gap="lg" align="center">
                                     <Paper
                                         withBorder
-                                        radius="50%"
                                         style={{
+                                            borderRadius: '50%',
                                             width: 96,
                                             height: 96,
                                             position: 'relative',
@@ -190,10 +189,10 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                                    backgroundColor: 'var(--overlay-scrim-strong)',
                                                 }}
                                             >
-                                                <Loader size="sm" color="white" />
+                                                <Loader size="sm" />
                                             </Box>
                                         )}
                                     </Paper>
@@ -204,8 +203,6 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                                                 <Button
                                                     {...props}
                                                     type="button"
-                                                    variant="light"
-                                                    color="accent"
                                                     size="xs"
                                                     leftSection={<Camera size={14} />}
                                                 >
@@ -216,7 +213,6 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                                         {imagePreview && (
                                             <Button
                                                 type="button"
-                                                variant="subtle"
                                                 color="error"
                                                 size="xs"
                                                 onClick={handleRemoveImage}
@@ -262,7 +258,6 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                         <Group gap="sm">
                             <Button
                                 type="button"
-                                color="accent"
                                 onClick={() => { void handleSave(); }}
                                 loading={saving || uploading}
                                 disabled={!editing.name}
@@ -272,7 +267,6 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                             </Button>
                             <Button
                                 type="button"
-                                variant="subtle"
                                 onClick={stopEditing}
                                 leftSection={<X size={16} />}
                             >
@@ -287,14 +281,14 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                 {confidants.map(item => {
                     const imageUrl = item.image ? getImageUrl(item.image, { width: 100, height: 100, fit: 'cover' }) : null;
                     return (
-                        <Card key={item.id} withBorder padding="lg" radius="lg">
+                        <Card key={item.id} withBorder padding="lg">
                             <Stack justify="space-between" h="100%" gap="md">
                                 <Stack gap="sm">
                                     <Group gap="md" align="flex-start" wrap="nowrap">
                                         <Paper
                                             withBorder
-                                            radius="50%"
                                             style={{
+                                                borderRadius: '50%',
                                                 width: 48,
                                                 height: 48,
                                                 overflow: 'hidden',
@@ -314,7 +308,7 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                                             <Group gap="xs" wrap="nowrap">
                                                 <Title order={4} size="md" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</Title>
                                                 {!item.is_active && (
-                                                    <Badge variant="default" size="xs">Verborgen</Badge>
+                                                    <Badge size="xs">Verborgen</Badge>
                                                 )}
                                             </Group>
                                             {item.email && <Text size="xs" c="dimmed" truncate>{item.email}</Text>}

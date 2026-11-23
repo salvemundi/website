@@ -114,7 +114,7 @@ export function DashboardHub({
                     </Stack>
                 ))
             ) : (
-                <Paper withBorder p="lg" radius="lg" ta="center" maw={440} mx="auto" my="md">
+                <Paper withBorder p="lg" ta="center" maw={440} mx="auto" my="md">
                     <Text size="sm" fw={500} c="dimmed">
                         Er zijn nog geen beheerpagina&apos;s voor de commissies waar je in zit.
                     </Text>

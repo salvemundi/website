@@ -40,7 +40,7 @@ export default async function ActivitiesPage() {
                         <ActivitiesBannerIsland events={events} serverTime={serverTime} />
                     </Center>
 
-                    <Box component="main">
+                    <Box>
                         <ActivitiesProviderIsland
                             events={events}
                             serverTime={serverTime}

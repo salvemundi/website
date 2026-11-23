@@ -41,15 +41,15 @@ interface ResultRowProps {
 function getTypeIcon(type: ResultRowProps['type']): React.ReactNode {
     switch (type) {
         case 'success':
-            return <ThemeIcon variant="light" color="success" radius="xl" size="md"><CheckCircle size={16} /></ThemeIcon>;
+            return <ThemeIcon color="success" size="md"><CheckCircle size={16} /></ThemeIcon>;
         case 'warning':
-            return <ThemeIcon variant="light" color="accent" radius="xl" size="md"><AlertTriangle size={16} /></ThemeIcon>;
+            return <ThemeIcon color="accent" size="md"><AlertTriangle size={16} /></ThemeIcon>;
         case 'error':
-            return <ThemeIcon variant="light" color="error" radius="xl" size="md"><X size={16} /></ThemeIcon>;
+            return <ThemeIcon color="error" size="md"><X size={16} /></ThemeIcon>;
         case 'info':
-            return <ThemeIcon variant="light" color="brand" radius="xl" size="md"><Info size={16} /></ThemeIcon>;
+            return <ThemeIcon size="md"><Info size={16} /></ThemeIcon>;
         case 'excluded':
-            return <ThemeIcon variant="default" radius="xl" size="md"><Users size={16} /></ThemeIcon>;
+            return <ThemeIcon size="md"><Users size={16} /></ThemeIcon>;
     }
 }
 
@@ -123,7 +123,7 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
             {hasDetails && (
                 <Collapse expanded={isExpanded}>
                     <Box px="lg" pb="md">
-                        <Paper withBorder radius="md" p="md">
+                        <Paper withBorder p="md">
                             <Stack gap="sm">
                                 {timestamp && (
                                     <Group gap="xs">
@@ -144,7 +144,7 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
                                         <Text size="xs" fw={600} c="dimmed">Wijzigingen:</Text>
                                         <Stack gap="xs">
                                             {changes.map((change, idx) => (
-                                                <Paper key={idx} withBorder radius="sm" p="xs">
+                                                <Paper key={idx} withBorder p="xs">
                                                     <Text size="xs" fw={700}>{change.field}</Text>
                                                     <Group gap="xs" wrap="wrap">
                                                         <Text size="xs" c="dimmed" style={{ wordBreak: 'break-all' }}>
@@ -274,7 +274,7 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
     const paginatedItems = items.slice(startIndex, startIndex + itemsPerPage);
 
     return (
-        <Paper withBorder radius="lg" style={{ overflow: 'hidden' }}>
+        <Paper withBorder style={{ overflow: 'hidden' }}>
             <ScrollArea.Autosize mah={480}>
                 {paginatedItems.length === 0 ? (
                     <Center py={64}>
@@ -300,7 +300,6 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
                         <Group gap="xs">
                             <Button
                                 type="button"
-                                variant="default"
                                 size="xs"
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -312,7 +311,6 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
                             </Text>
                             <Button
                                 type="button"
-                                variant="default"
                                 size="xs"
                                 disabled={currentPage === totalPages}
                                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}

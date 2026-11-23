@@ -30,14 +30,13 @@ export default async function BestuurPage() {
                             component={Link}
                             href="/commissies"
                             title="Terug naar overzicht"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
                             Terug
                         </Button>
                     </Group>
-                    <Box component="main">
+                    <Box>
                         <CommitteeDetail committee={committee} />
                     </Box>
                 </Stack>

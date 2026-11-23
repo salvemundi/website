@@ -167,7 +167,7 @@ export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps
 
     return (
         <Box maw={768} mx="auto">
-            <form onSubmit={handleSubmit} autoComplete="off">
+            <Box component="form" onSubmit={handleSubmit} autoComplete="off">
                 <Stack gap="lg">
                     <Card p={0} shadow="sm" style={{ overflow: 'hidden' }}>
                         <SignupHeader />
@@ -199,7 +199,7 @@ export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps
                         onDelete={handleDeleteSignupSync}
                     />
                 </Stack>
-            </form>
+            </Box>
         </Box>
     );
 }

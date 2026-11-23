@@ -47,7 +47,7 @@ function getStatusColor(status: string): string {
 function RoundList({ rounds, empty }: { rounds: PizzaRoundSummary[]; empty: string }) {
     if (rounds.length === 0) {
         return (
-            <Paper p="xl" radius="lg" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
+            <Paper p="xl" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
                 <Text size="sm" fw={700} c="dimmed">
                     {empty}
                 </Text>
@@ -65,7 +65,7 @@ function RoundList({ rounds, empty }: { rounds: PizzaRoundSummary[]; empty: stri
                                     <Text size="sm" fw={900} truncate>
                                         {r.title}
                                     </Text>
-                                    <Badge size="xs" variant="light" color={getStatusColor(r.status)}>
+                                    <Badge size="xs" color={getStatusColor(r.status)}>
                                         {STATUS_LABEL[r.status]}
                                     </Badge>
                                 </Group>
@@ -151,7 +151,7 @@ export function PizzaOverviewIsland({ open, mine }: Props) {
             </Tile>
 
             <Tile title="Nieuwe ronde" icon={<Plus size={22} />}>
-                <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
+                <Box component="form" onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
                     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
                         <TextInput
                             label="Titel"
@@ -211,7 +211,7 @@ export function PizzaOverviewIsland({ open, mine }: Props) {
                             </Button>
                         </Box>
                     </SimpleGrid>
-                </form>
+                </Box>
             </Tile>
         </Stack>
     );

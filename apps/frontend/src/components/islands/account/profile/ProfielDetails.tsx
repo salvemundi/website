@@ -54,7 +54,6 @@ export default function ProfielDetails({
     const logoutButton = (
         <Button
             type="button"
-            variant="light"
             color="error"
             size="xs"
             leftSection={<LogOut size={14} />}
@@ -115,7 +114,6 @@ export default function ProfielDetails({
                         {!isEditingPhoneNumber && (
                             <ActionIcon
                                 type="button"
-                                variant="subtle"
                                 size="sm"
                                 onClick={() => setIsEditingPhoneNumber(true)}
                                 aria-label="Telefoonnummer bewerken"
@@ -130,7 +128,8 @@ export default function ProfielDetails({
                                 <Phone size={20} />
                             </Text>
                             {isEditingPhoneNumber ? (
-                                <form
+                                <Box
+                                    component="form"
                                     onSubmit={(e) => {
                                         void handleSubmitPhone(onSavePhone)(e);
                                     }}
@@ -143,7 +142,6 @@ export default function ProfielDetails({
                                         </Box>
                                         <ActionIcon
                                             type="submit"
-                                            variant="filled"
                                             size="lg"
                                             loading={isPending}
                                             aria-label="Telefoonnummer opslaan"
@@ -151,7 +149,7 @@ export default function ProfielDetails({
                                             <Save size={16} />
                                         </ActionIcon>
                                     </Group>
-                                </form>
+                                </Box>
                             ) : (
                                 <Text size="sm" fw={700}>
                                     {formatPhoneNumber(user.phone_number) || 'Niet ingesteld'}
