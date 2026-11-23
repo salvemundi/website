@@ -71,7 +71,7 @@ test('login completion requires the flow nonce from the initiating browser', () 
 
 test('complete native auth flow against camelCase and snake_case session schemas', () => {
     const testFile = fileURLToPath(new URL('./mobile-auth-flow.test.mjs', import.meta.url));
-    const result = spawnSync(process.execPath, ['--experimental-vm-modules', '--test', testFile], {
+    const result = spawnSync(process.execPath, ['test', testFile], {
         encoding: 'utf8', timeout: 60000, maxBuffer: 2 * 1024 * 1024
     });
     assert.equal(result.status, 0, `${result.error?.message || ''}\n${result.stdout}\n${result.stderr}`);

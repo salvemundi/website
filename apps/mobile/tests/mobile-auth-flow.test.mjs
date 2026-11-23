@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import * as crypto from 'node:crypto';
-import { stripTypeScriptTypes } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
 import { SourceTextModule, SyntheticModule, createContext } from 'node:vm';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+
+const tsTranspiler = new Bun.Transpiler({ loader: 'ts' });
 
 // Run the actual route/service sources, including SQL, against an isolated real
 // relational database. Only Microsoft/browser authentication and Redis I/O are
@@ -118,7 +119,7 @@ async function harness(t, layout, { sessionOwner = userID, sessionUser = userID,
     const sourceFiles = ['auth', 'session', 'session-columns', 'security', 'http', 'policy'];
     for (const name of sourceFiles) {
         const identifier = resolve(sourceRoot, `server/mobile/${name}.ts`);
-        const source = stripTypeScriptTypes(readFileSync(identifier, 'utf8'), { mode: 'strip', sourceUrl: pathToFileURL(identifier).href });
+        const source = tsTranspiler.transformSync(readFileSync(identifier, 'utf8'));
         modules.set(identifier, new SourceTextModule(source, { context, identifier, importModuleDynamically: async specifier => {
             const imported = modules.get(resolve(dirname(identifier), `${specifier}.ts`));
             assert.ok(imported, `unregistered dynamic dependency ${specifier}`);
