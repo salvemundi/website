@@ -6,6 +6,7 @@
   "description": "Administrative gateway for Azure AD writes (Provisioning)",
   "scripts": {
     "dev": "bun --watch src/server.ts",
+    "build": "bun build src/server.ts --target=bun --outdir dist",
     "type-check": "bun check",
     "lint": "eslint src"
   },
