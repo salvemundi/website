@@ -92,7 +92,7 @@ jobs:
             ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
       - name: Verify mobile activity administration and widget permissions
-        run: node --import ./apps/mobile/tests/resolve-ts.mjs --experimental-vm-modules --test apps/mobile/tests/mobile-admin*.test.mjs apps/mobile/tests/mobile-notification-preferences.test.mjs
+        run: bun test apps/mobile/tests/mobile-admin*.test.mjs apps/mobile/tests/mobile-notification-preferences.test.mjs
       - run: bun run type-check
       - run: bun run lint
       - run: bun run knip
