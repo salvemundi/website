@@ -44,7 +44,6 @@ export default function IntroFilters({
                 {(activeTab === 'signups' || activeTab === 'parents') && (
                     <Button
                         type="button"
-                        variant="default"
                         size="sm"
                         onClick={onExport}
                         leftSection={<Download size={16} />}
@@ -76,8 +75,6 @@ export default function IntroFilters({
                     onChange={(val) => {
                         if (val) onTabChange(val as TabType);
                     }}
-                    variant="pills"
-                    color="accent"
                 >
                     <Tabs.List>
                         {tabs.map((tab) => (

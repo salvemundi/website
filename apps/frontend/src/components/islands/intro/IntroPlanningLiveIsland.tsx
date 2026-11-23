@@ -66,13 +66,13 @@ const INLINE_FORMAT_PATTERN = /(\*\*.+?\*\*|__.+?__|\*.+?\*)/g;
 function renderInlineFormatting(line: string): React.ReactNode[] {
     return line.split(INLINE_FORMAT_PATTERN).filter(part => part !== '').map((part, idx) => {
         if (part.startsWith('**') && part.endsWith('**')) {
-            return <strong key={idx}>{part.slice(2, -2)}</strong>;
+            return <Text span inherit fw={700} key={idx}>{part.slice(2, -2)}</Text>;
         }
         if (part.startsWith('__') && part.endsWith('__')) {
-            return <u key={idx}>{part.slice(2, -2)}</u>;
+            return <Text span inherit td="underline" key={idx}>{part.slice(2, -2)}</Text>;
         }
         if (part.startsWith('*') && part.endsWith('*')) {
-            return <em key={idx}>{part.slice(1, -1)}</em>;
+            return <Text span inherit fs="italic" key={idx}>{part.slice(1, -1)}</Text>;
         }
         return part;
     });
@@ -81,14 +81,14 @@ function renderInlineFormatting(line: string): React.ReactNode[] {
 function FormattedText({ text }: { text: string }) {
     const lines = text.split('\n');
     return (
-        <>
+        <Text span inherit style={{ whiteSpace: 'pre-line' }}>
             {lines.map((line, idx) => (
                 <Fragment key={idx}>
-                    {idx > 0 && <br />}
+                    {idx > 0 && '\n'}
                     {renderInlineFormatting(line)}
                 </Fragment>
             ))}
-        </>
+        </Text>
     );
 }
 
@@ -159,10 +159,9 @@ function ActivityCard({
     return (
         <Card
             padding="lg"
-            radius="lg"
             withBorder={!isLive}
             shadow="lg"
-            style={isLive ? { backgroundColor: 'var(--primary)', color: '#FFFFFF' } : undefined}
+            style={isLive ? { backgroundColor: 'var(--mantine-color-brand-filled)', color: 'var(--mantine-color-white)' } : undefined}
         >
             <Stack gap="sm">
                 <Group gap="xs">
@@ -170,7 +169,7 @@ function ActivityCard({
                         <Box
                             w={8}
                             h={8}
-                            style={{ borderRadius: '9999px', backgroundColor: '#FFFFFF' }}
+                            style={{ borderRadius: '9999px', backgroundColor: 'var(--mantine-color-white)' }}
                         />
                     )}
                     <Text
@@ -341,10 +340,10 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
             </SimpleGrid>
 
             {showTomorrowOverview && tomorrowItems.length > 0 && (
-                <Card padding="lg" radius="lg" withBorder shadow="lg">
+                <Card padding="lg" withBorder shadow="lg">
                     <Stack gap="md">
                         <Group gap="sm">
-                            <ThemeIcon size={40} radius="md" color="brand">
+                            <ThemeIcon size="lg">
                                 <Sunrise size={20} />
                             </ThemeIcon>
                             <Stack gap={2}>
@@ -364,11 +363,10 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                     <Paper
                                         key={item.id}
                                         p="md"
-                                        radius="md"
                                         withBorder
                                         style={isCurrentOrNext ? {
-                                            backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
-                                            borderColor: 'color-mix(in srgb, var(--primary) 35%, transparent)',
+                                            backgroundColor: 'var(--surface-subtle)',
+                                            borderColor: 'color-mix(in srgb, var(--mantine-color-brand-filled) 35%, transparent)',
                                         } : undefined}
                                     >
                                         <Stack gap={4}>
@@ -399,7 +397,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                 </Card>
             )}
 
-            <Card padding="lg" radius="lg" withBorder shadow="lg">
+            <Card padding="lg" withBorder shadow="lg">
                 <Stack gap="lg">
                     <Group justify="space-between" align="center" wrap="wrap" gap="md">
                         <Title order={2} size="h3" c="brand">
@@ -454,13 +452,12 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    backgroundColor: imageHovered ? 'rgba(0, 0, 0, 0.35)' : 'transparent',
+                                    backgroundColor: imageHovered ? 'var(--overlay-scrim)' : 'transparent',
                                     transition: 'background-color 150ms ease',
                                 }}
                             >
                                 <Badge
                                     size="lg"
-                                    radius="md"
                                     color="darkBase"
                                     leftSection={<ZoomIn size={16} />}
                                     style={{
@@ -473,7 +470,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                             </Box>
                         </UnstyledButton>
                     ) : (
-                        <Paper p="xl" radius="md" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
+                        <Paper p="xl" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
                             <Stack align="center" gap="sm">
                                 <Text span c="brand" lh={1}>
                                     <ImageOff size={32} />
@@ -493,7 +490,6 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                 title="Volledige planning"
                 size="90%"
                 centered
-                radius="lg"
                 styles={{ body: { padding: 0 } }}
             >
                 <Box hiddenFrom="sm">
@@ -535,11 +531,10 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                         <Paper
                                             key={item.id}
                                             p="sm"
-                                            radius="md"
                                             withBorder
                                             style={isCurrentOrNext ? {
-                                                backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
-                                                borderColor: 'color-mix(in srgb, var(--primary) 35%, transparent)',
+                                                backgroundColor: 'var(--surface-subtle)',
+                                                borderColor: 'color-mix(in srgb, var(--mantine-color-brand-filled) 35%, transparent)',
                                             } : undefined}
                                         >
                                             <UnstyledButton
@@ -622,7 +617,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                 ta="center"
                                                 style={{
                                                     flex: 1,
-                                                    borderLeft: '1px solid color-mix(in srgb, var(--primary) 15%, transparent)',
+                                                    borderLeft: '1px solid var(--surface-subtle)',
                                                 }}
                                             >
                                                 <Text size="xs" fw={900} tt="uppercase" c={isToday ? 'brand' : 'dimmed'}>
@@ -667,7 +662,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                 px={4}
                                                 style={{
                                                     flex: 1,
-                                                    borderLeft: '1px solid color-mix(in srgb, var(--primary) 15%, transparent)',
+                                                    borderLeft: '1px solid var(--surface-subtle)',
                                                 }}
                                             >
                                                 {hours.map(hour => (
@@ -678,7 +673,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                         right={0}
                                                         style={{
                                                             top: (hour - startHour) * HOUR_HEIGHT,
-                                                            borderTop: '1px solid color-mix(in srgb, var(--primary) 10%, transparent)',
+                                                            borderTop: '1px solid var(--surface-subtle)',
                                                         }}
                                                     />
                                                 ))}
@@ -702,17 +697,17 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                                 padding: '4px 6px',
                                                                 textAlign: 'left',
                                                                 zIndex: isSelected ? 10 : 1,
-                                                                backgroundColor: isCurrentOrNext ? 'var(--primary)' : 'var(--mantine-color-default)',
-                                                                color: isCurrentOrNext ? '#FFFFFF' : 'var(--mantine-color-text)',
-                                                                border: '1px solid color-mix(in srgb, var(--primary) 25%, transparent)',
-                                                                borderLeft: `4px solid ${isCurrentOrNext ? '#FFFFFF' : 'var(--primary)'}`,
-                                                                boxShadow: isSelected ? '0 0 0 2px var(--accent)' : 'var(--mantine-shadow-xs)',
+                                                                backgroundColor: isCurrentOrNext ? 'var(--mantine-color-brand-filled)' : 'var(--mantine-color-default)',
+                                                                color: isCurrentOrNext ? 'var(--mantine-color-white)' : 'var(--mantine-color-text)',
+                                                                border: '1px solid var(--surface-subtle-border)',
+                                                                borderLeft: `4px solid ${isCurrentOrNext ? 'var(--mantine-color-white)' : 'var(--mantine-color-brand-filled)'}`,
+                                                                boxShadow: isSelected ? '0 0 0 2px var(--mantine-color-accent-filled)' : 'var(--mantine-shadow-xs)',
                                                             }}
                                                         >
-                                                            <Text size="10px" fw={900} lh={1.2} c={isCurrentOrNext ? 'white' : 'brand'}>
+                                                            <Text size="xs" fw={900} lh={1.2} c={isCurrentOrNext ? 'white' : 'brand'}>
                                                                 {item.time_start.slice(0, 5)}
                                                             </Text>
-                                                            <Text size="11px" fw={700} lh={1.25} lineClamp={2}>
+                                                            <Text size="xs" fw={700} lh={1.25} lineClamp={2}>
                                                                 {item.title}
                                                             </Text>
                                                         </UnstyledButton>
@@ -758,7 +753,6 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                 </Stack>
                                 <ActionIcon
                                     type="button"
-                                    variant="default"
                                     size="md"
                                     onClick={() => setSelectedGridItemId(null)}
                                     aria-label="Sluiten"
@@ -776,7 +770,6 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                 onClose={() => setLightboxOpen(false)}
                 size="90%"
                 centered
-                radius="lg"
                 padding="xs"
                 aria-label="Planning introweek fullscreen"
             >

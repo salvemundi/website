@@ -22,7 +22,7 @@ export default function CoboCurrentBoardCard({
 }: Props) {
     if (!currentBoard) {
         return (
-            <Card withBorder padding="lg" radius="lg" ta="center">
+            <Card withBorder padding="lg" ta="center">
                 <Stack align="center" gap="sm">
                     <Stack gap={2}>
                         <Text size="md" fw={600}>Geen bestuur actief</Text>
@@ -45,7 +45,7 @@ export default function CoboCurrentBoardCard({
     }
 
     return (
-        <Card withBorder padding="lg" radius="lg" ta="center">
+        <Card withBorder padding="lg" ta="center">
             <Stack align="center" gap="md">
                 <Stack align="center" gap="xs" maw={576}>
                     <Title order={2} size="h2">
@@ -62,7 +62,6 @@ export default function CoboCurrentBoardCard({
                 <SimpleGrid cols={{ base: 2, sm: waitingCount > 0 ? 4 : 3 }} spacing="xs" w="100%" maw={576}>
                     <Button
                         type="button"
-                        color="brand"
                         onClick={() => onStatusChange(currentBoard.id, 'completed', currentBoard.board_name || 'Bestuur')}
                         leftSection={<CheckCircle2 size={16} />}
                     >
@@ -83,7 +82,6 @@ export default function CoboCurrentBoardCard({
 
                     <Button
                         type="button"
-                        variant="default"
                         onClick={() => onStatusChange(currentBoard.id, 'waiting', currentBoard.board_name || 'Bestuur')}
                         title="Terugzetten in de wachtrij"
                         leftSection={<RotateCcw size={16} />}
@@ -93,8 +91,6 @@ export default function CoboCurrentBoardCard({
 
                     <Button
                         type="button"
-                        variant="light"
-                        color="accent"
                         onClick={() => onStatusChange(currentBoard.id, 'late', currentBoard.board_name || 'Bestuur')}
                         title="Markeren als niet op tijd"
                         leftSection={<Clock size={16} />}

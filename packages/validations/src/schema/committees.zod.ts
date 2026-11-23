@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { selectCommitteesSchema, selectCommitteeMembersSchema, selectDirectusUsersSchema } from './db.zod.js';
+import { createSelectSchema } from 'drizzle-zod';
+import { committees as committeesTable, committee_members as committee_membersTable, directus_users as directus_usersTable } from '@salvemundi/db/schema';
+
+const selectCommitteesSchema = createSelectSchema(committeesTable);
+const selectCommitteeMembersSchema = createSelectSchema(committee_membersTable);
+const selectDirectusUsersSchema = createSelectSchema(directus_usersTable);
 
 export const committeeMemberUserSchema = selectDirectusUsersSchema.pick({
     id: true,

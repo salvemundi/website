@@ -292,7 +292,6 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                             handleTabChange(val);
                         }
                     }}
-                    variant="pills"
                 >
                     <Tabs.List>
                         <Tabs.Tab value="pending" leftSection={<Clock size={14} />}>Wachtrij</Tabs.Tab>
@@ -302,7 +301,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                     </Tabs.List>
                 </Tabs>
 
-                <Paper withBorder px="md" py="xs" radius="md">
+                <Paper withBorder px="md" py="xs">
                     <Group gap="md" wrap="nowrap">
                         <Group gap="xs" wrap="nowrap">
                             <Text span c={manualApproval ? 'accent' : 'success'} lh={1}>
@@ -364,7 +363,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                     title="Systeem Events"
                     idNameLookup={idNameLookup}
                     actions={
-                        <Button component={Link} href="/beheer/sync" variant="light" color="accent" size="xs">
+                        <Button component={Link} href="/beheer/sync" size="xs">
                             Sync Beheren
                         </Button>
                     }

@@ -66,20 +66,20 @@ export default function CoboPublicQueueIsland({
 
         if (type === 'shotjes') {
             return (
-                <Badge size={size} color="accent" variant="light">
+                <Badge size={size} color="accent">
                     Shotjes
                 </Badge>
             );
         }
         if (type === 'watervallen') {
             return (
-                <Badge size={size} color="lightPurple" variant="light">
+                <Badge size={size} color="lightPurple">
                     Watervallen
                 </Badge>
             );
         }
         return (
-            <Badge size={size} color="brand" variant="light">
+            <Badge size={size}>
                 {custom || 'Activiteit'}
             </Badge>
         );
@@ -90,9 +90,9 @@ export default function CoboPublicQueueIsland({
     return (
         <Stack gap="lg">
             {!hasAnyActive && (
-                <Card padding="xl" radius="xl" withBorder ta="center">
+                <Card padding="xl" withBorder ta="center">
                     <Stack align="center" gap="sm">
-                        <ThemeIcon size={56} radius="lg" variant="light" color="brand">
+                        <ThemeIcon size="xl">
                             <UserCheck size={28} />
                         </ThemeIcon>
                         <Title order={3} size="h4">
@@ -108,14 +108,13 @@ export default function CoboPublicQueueIsland({
             {currentBoard && (
                 <Card
                     padding="xl"
-                    radius="xl"
                     withBorder
                     ta="center"
-                    style={{ borderWidth: 2, borderColor: 'color-mix(in srgb, var(--primary) 35%, transparent)' }}
+                    style={{ borderWidth: 2, borderColor: 'color-mix(in srgb, var(--mantine-color-brand-filled) 35%, transparent)' }}
                 >
                     <Stack align="center" gap="md">
                         <Group justify="center" gap="sm" wrap="wrap">
-                            <Badge size="lg" color="brand" variant="light">
+                            <Badge size="lg">
                                 Nu aan de beurt
                             </Badge>
                             {renderActivityBadge(currentBoard.activity_type, currentBoard.activity_custom, true)}
@@ -128,7 +127,7 @@ export default function CoboPublicQueueIsland({
             )}
 
             {displayedQueue.length > 0 && (
-                <Card padding="lg" radius="xl" withBorder>
+                <Card padding="lg" withBorder>
                     <Stack gap="md">
                         <Group gap="xs">
                             <Text span c="brand" lh={1}>
@@ -150,19 +149,16 @@ export default function CoboPublicQueueIsland({
                                     <Paper
                                         key={board.id}
                                         p="sm"
-                                        radius="md"
                                         withBorder={isLate}
                                         style={isLate ? {
-                                            backgroundColor: 'color-mix(in srgb, var(--destructive) 8%, transparent)',
-                                            borderColor: 'color-mix(in srgb, var(--destructive) 25%, transparent)',
+                                            backgroundColor: 'color-mix(in srgb, var(--mantine-color-error-filled) 8%, transparent)',
+                                            borderColor: 'color-mix(in srgb, var(--mantine-color-error-filled) 25%, transparent)',
                                         } : undefined}
                                     >
                                         <Group justify="space-between" wrap="nowrap" gap="md">
                                             <Group gap="sm" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
                                                 <ThemeIcon
-                                                    size={32}
-                                                    radius="md"
-                                                    variant="light"
+                                                    size="md"
                                                     color={isLate ? 'error' : 'brand'}
                                                 >
                                                     <Text size="xs" fw={900}>
@@ -178,7 +174,6 @@ export default function CoboPublicQueueIsland({
                                                         <Badge
                                                             size="xs"
                                                             color="error"
-                                                            variant="light"
                                                             leftSection={<AlertTriangle size={12} />}
                                                         >
                                                             Niet op tijd
@@ -200,8 +195,6 @@ export default function CoboPublicQueueIsland({
                                 <Button
                                     component={Link}
                                     href="/cobo/wachtlijst"
-                                    variant="light"
-                                    color="brand"
                                     fullWidth
                                     rightSection={<ArrowRight size={16} />}
                                 >

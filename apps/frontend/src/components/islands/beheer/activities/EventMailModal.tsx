@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Mail, Send, XCircle, CheckCircle, Users } from 'lucide-react';
 import {
     Alert,
+    Box,
     Button,
     Checkbox,
     Divider,
@@ -104,7 +105,7 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
             onClose={onClose}
             title={
                 <Group gap="sm">
-                    <ThemeIcon color="accent" radius="md" size="lg">
+                    <ThemeIcon color="accent" size="lg">
                         <Mail size={18} />
                     </ThemeIcon>
                     <Text fw={700} size="lg">Mail naar Deelnemers</Text>
@@ -115,17 +116,17 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
         >
             <Stack gap="md">
                 {error && (
-                    <Alert color="error" variant="light" icon={<XCircle size={18} />}>
+                    <Alert color="error" icon={<XCircle size={18} />}>
                         <Text size="xs" fw={600}>{error}</Text>
                     </Alert>
                 )}
                 {successMessage && (
-                    <Alert color="success" variant="light" icon={<CheckCircle size={18} />}>
+                    <Alert color="success" icon={<CheckCircle size={18} />}>
                         <Text size="xs" fw={600}>{successMessage}</Text>
                     </Alert>
                 )}
 
-                <form onSubmit={(e) => { void handleSubmit(e); }} autoComplete="off">
+                <Box component="form" onSubmit={(e) => { void handleSubmit(e); }} autoComplete="off">
                     <Stack gap="md">
                         <TextInput
                             label="Onderwerp"
@@ -146,10 +147,9 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
                             label="Alleen betaalde aanmeldingen"
                             checked={paidOnly}
                             onChange={(e) => setPaidOnly(e.currentTarget.checked)}
-                            color="accent"
                         />
 
-                        <Alert color="accent" variant="light" icon={<Users size={16} />}>
+                        <Alert color="accent" icon={<Users size={16} />}>
                             <Group justify="space-between" wrap="wrap" gap="xs">
                                 <Text size="xs" fw={600}>
                                     {recipients.length} ontvanger{recipients.length === 1 ? '' : 's'} geselecteerd
@@ -165,7 +165,6 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
                         <Group justify="flex-end" gap="sm">
                             <Button
                                 type="button"
-                                variant="default"
                                 onClick={onClose}
                                 disabled={isLoading}
                             >
@@ -173,7 +172,6 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
                             </Button>
                             <Button
                                 type="submit"
-                                color="accent"
                                 loading={isLoading}
                                 disabled={isLoading || recipients.length === 0 || !subject.trim() || !message.trim()}
                                 rightSection={<Send size={16} />}
@@ -182,7 +180,7 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
                             </Button>
                         </Group>
                     </Stack>
-                </form>
+                </Box>
             </Stack>
         </Modal>
     );

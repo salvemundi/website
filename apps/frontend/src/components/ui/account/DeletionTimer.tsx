@@ -50,7 +50,7 @@ export default function DeletionTimer({ expiryDateStr }: DeletionTimerProps) {
     if (!timeLeft || (timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0)) return null;
 
     return (
-        <Alert color="brand" variant="light" radius="lg" mb="lg">
+        <Alert mb="lg">
             <Stack align="center" gap="xs" ta="center">
                 <Group gap="xs" justify="center">
                     <AlertTriangle size={16} />

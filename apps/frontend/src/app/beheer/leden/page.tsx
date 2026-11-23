@@ -47,7 +47,6 @@ export default async function LedenBeheerPage() {
                         <Button
                             component={Link}
                             href="/beheer"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >
@@ -58,7 +57,7 @@ export default async function LedenBeheerPage() {
                         </Title>
                     </Group>
 
-                    <Paper withBorder px="md" py="xs" radius="lg" visibleFrom="md">
+                    <Paper withBorder px="md" py="xs" visibleFrom="md">
                         <Group gap="md" wrap="nowrap">
                             <Stack gap={2} align="center" px={4}>
                                 <Text size="xs" c="dimmed" fw={600} lh={1}>Totaal</Text>

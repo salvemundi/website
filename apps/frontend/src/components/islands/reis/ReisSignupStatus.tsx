@@ -30,22 +30,21 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
     return (
         <Card
             padding="lg"
-            radius="lg"
             withBorder
             style={{
-                backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
-                borderColor: 'color-mix(in srgb, var(--primary) 25%, transparent)',
+                backgroundColor: 'var(--surface-subtle)',
+                borderColor: 'var(--surface-subtle-border)',
             }}
         >
             <Stack gap="lg">
                 {error && (
-                    <Alert color="error" variant="light">
+                    <Alert color="error">
                         {error}
                     </Alert>
                 )}
 
                 <Group gap="md">
-                    <ThemeIcon size={56} radius="xl" variant="light" color="brand">
+                    <ThemeIcon size="xl">
                         <CheckCircle2 size={30} />
                     </ThemeIcon>
                     <Title order={3} size="h4" c="brand">
@@ -53,7 +52,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                     </Title>
                 </Group>
 
-                <Paper p="lg" radius="lg" withBorder>
+                <Paper p="lg" withBorder>
                     <Stack gap={4}>
                         <Title order={4} fz={{ base: '1.5rem', sm: '1.875rem' }} c="brand" style={{ wordBreak: 'break-word' }}>
                             {getSignupStatusDisplay(userSignup)}

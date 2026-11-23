@@ -1,72 +1,51 @@
 'use client';
 
-import {
-    Users,
-    Search,
-    Mail,
-    ChevronRight
-} from 'lucide-react';
+import { ChevronRight, Users } from 'lucide-react';
 import {
     Card,
     Divider,
-    Group,
     NavLink,
     ScrollArea,
     SegmentedControl,
     Stack,
     Text,
-    TextInput,
-    Title,
 } from '@mantine/core';
 import type { Committee } from '@/server/queries/commissies/beheer-commissies.queries';
+
+export type GroupCategory = 'commissies' | 'teams';
+
+export function cleanCommitteeName(name: string): string {
+    return name
+        .replace(/\s*(\|\||\||[-–—])\s*salve\s*mundi/gi, '')
+        .replace(/\s*samu\s*(\|\||\|)\s*/gi, '')
+        .trim();
+}
 
 interface Props {
     committees: Committee[];
     selectedId: number | null;
     onSelect: (c: Committee) => void;
-    searchQuery: string;
-    onSearchChange: (q: string) => void;
-    showAll: boolean;
-    onShowAllChange: (all: boolean) => void;
+    category: GroupCategory;
+    onCategoryChange: (category: GroupCategory) => void;
 }
-
-const normalizeName = (name: string) =>
-    name.toLowerCase().replace(/\s*(\|\||\|)\s*salve mundi/gi, '').trim();
 
 export default function CommitteeSidebar({
     committees,
     selectedId,
     onSelect,
-    searchQuery,
-    onSearchChange,
-    showAll,
-    onShowAllChange
+    category,
+    onCategoryChange,
 }: Props) {
     return (
-        <Card withBorder padding={0} style={{ overflow: 'hidden' }}>
-            <Stack gap="md" p="lg">
-                <Group gap="xs">
-                    <Text span c="accent" lh={1}><Users size={16} /></Text>
-                    <Title order={2} size="xs" c="dimmed" fw={700} tt="uppercase">
-                        Groepen &amp; commissies
-                    </Title>
-                </Group>
-
-                <TextInput
-                    placeholder="Zoek commissie..."
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange(e.currentTarget.value)}
-                    leftSection={<Search size={16} />}
-                />
-
+        <Card padding={0} style={{ overflow: 'hidden' }}>
+            <Stack gap="md" p="md">
                 <SegmentedControl
                     fullWidth
-                    value={showAll ? 'all' : 'core'}
-                    onChange={(val) => onShowAllChange(val === 'all')}
-                    color="accent"
+                    value={category}
+                    onChange={(val) => onCategoryChange(val === 'teams' ? 'teams' : 'commissies')}
                     data={[
-                        { value: 'core', label: 'Kern' },
-                        { value: 'all', label: 'Alles' },
+                        { value: 'commissies', label: 'Commissies' },
+                        { value: 'teams', label: 'Teams' },
                     ]}
                 />
             </Stack>
@@ -76,8 +55,10 @@ export default function CommitteeSidebar({
             <ScrollArea.Autosize mah={540} p="xs">
                 {committees.length === 0 ? (
                     <Stack align="center" gap="xs" py="xl">
-                        <Search size={36} opacity={0.15} />
-                        <Text size="sm" fw={600} c="dimmed" fs="italic">Geen resultaten</Text>
+                        <Users size={36} opacity={0.2} />
+                        <Text size="sm" fw={600} c="dimmed" fs="italic">
+                            {category === 'commissies' ? 'Geen commissies gevonden' : 'Geen teams gevonden'}
+                        </Text>
                     </Stack>
                 ) : (
                     <Stack gap={4}>
@@ -89,24 +70,16 @@ export default function CommitteeSidebar({
                                     component="button"
                                     type="button"
                                     active={isSelected}
-                                    variant="filled"
-                                    color="accent"
+                                    variant="light"
+                                    color="brand"
                                     onClick={() => onSelect(c)}
-                                    label={
-                                        <Text size="sm" fw={600} truncate>
-                                            {normalizeName(c.name)}
-                                        </Text>
-                                    }
-                                    description={
-                                        c.email ? (
-                                            <Group gap={4} wrap="nowrap">
-                                                <Mail size={12} />
-                                                <Text size="xs" truncate>{c.email}</Text>
-                                            </Group>
-                                        ) : undefined
-                                    }
+                                    label={cleanCommitteeName(c.name)}
+                                    description={c.email || undefined}
                                     rightSection={<ChevronRight size={16} />}
-                                    style={{ borderRadius: 'var(--mantine-radius-md)' }}
+                                    styles={{
+                                        root: { borderRadius: 'var(--mantine-radius-md)' },
+                                        label: { fontWeight: 600 },
+                                    }}
                                 />
                             );
                         })}

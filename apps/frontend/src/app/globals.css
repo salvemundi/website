@@ -7,105 +7,39 @@
 
 @custom-variant dark (&:where([data-mantine-color-scheme="dark"], [data-mantine-color-scheme="dark"] *, .dark, .dark *));
 
-@font-face {
-  font-family: "Poppins";
-  src: url("/fonts/poppins/Poppins-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: fallback;
-}
-
-@font-face {
-  font-family: "Poppins";
-  src: url("/fonts/poppins/Poppins-Medium.ttf") format("truetype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: fallback;
-}
-
-@font-face {
-  font-family: "Poppins";
-  src: url("/fonts/poppins/Poppins-SemiBold.ttf") format("truetype");
-  font-weight: 600;
-  font-style: normal;
-  font-display: fallback;
-}
-
-@font-face {
-  font-family: "Poppins";
-  src: url("/fonts/poppins/Poppins-Bold.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: fallback;
-}
-
-@font-face {
-  font-family: "Poppins";
-  src: url("/fonts/poppins/Poppins-Black.ttf") format("truetype");
-  font-weight: 900;
-  font-style: normal;
-  font-display: fallback;
-}
-
 :root {
-  --background: var(--mantine-color-body);
-  --foreground: var(--mantine-color-text);
-  --card: var(--mantine-color-default);
-  --card-foreground: var(--mantine-color-text);
-  --primary: var(--mantine-color-lightPurple-filled);
-  --primary-foreground: #FFFFFF;
-  --secondary: var(--mantine-color-purple-filled);
-  --secondary-foreground: #FFFFFF;
-  --muted: var(--mantine-color-darkSurface-filled);
-  --muted-foreground: var(--mantine-color-dimmed);
-  --accent: var(--mantine-color-accent-filled);
-  --accent-foreground: var(--mantine-color-darkBase-filled);
-  --success: var(--mantine-color-success-filled);
-  --destructive: var(--mantine-color-error-filled);
-  --border: var(--mantine-color-purple-filled);
-
   --header-height: 80px;
   --impersonation-banner-height: 0px;
   --header-total-height: calc(var(--impersonation-banner-height, 0px) + var(--header-height, 80px));
   --max-w-app: 80rem;
 }
 
-:root[data-mantine-color-scheme="light"] {
-  --primary: var(--mantine-color-purple-filled);
-  --secondary: var(--mantine-color-lightPurple-filled);
-  --border: var(--mantine-color-lightPurple-filled);
+:root:has([data-impersonation-banner]) {
+  --impersonation-banner-height: 40px;
 }
 
 @theme {
-  --font-sans: var(--font-poppins), Poppins, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--mantine-font-family);
 
   --color-*: initial;
-  --color-white: #FFFFFF;
+  --color-white: var(--mantine-color-white);
   --color-transparent: transparent;
   --color-current: currentColor;
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-success: var(--success);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-}
-
-@utility pt-header-total {
-  padding-top: calc(var(--header-total-height, 80px) + env(safe-area-inset-top, 0px));
-}
-
-@utility pb-safe-4 {
-  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  --color-background: var(--mantine-color-body);
+  --color-foreground: var(--mantine-color-text);
+  --color-card: var(--mantine-color-default);
+  --color-card-foreground: var(--mantine-color-text);
+  --color-primary: var(--mantine-color-brand-filled);
+  --color-primary-foreground: var(--mantine-color-white);
+  --color-secondary: var(--mantine-color-purple-filled);
+  --color-secondary-foreground: var(--mantine-color-white);
+  --color-muted: var(--mantine-color-darkSurface-filled);
+  --color-muted-foreground: var(--mantine-color-dimmed);
+  --color-accent: var(--mantine-color-accent-filled);
+  --color-accent-foreground: var(--mantine-color-darkBase-filled);
+  --color-success: var(--mantine-color-success-filled);
+  --color-destructive: var(--mantine-color-error-filled);
+  --color-border: var(--mantine-color-default-border);
 }
 
 @keyframes scroll-sponsors {
@@ -156,7 +90,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.75rem;
+  border-radius: var(--mantine-radius-md);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 }
@@ -166,7 +100,8 @@
   transform: translateY(-4px);
 }
 
-.sponsor-logo {
+.sponsor-logo,
+[data-sponsor-logo] {
   max-height: 80px;
   height: auto;
   width: auto;
@@ -177,7 +112,7 @@
 
 .sponsor-dark-bg,
 [data-sponsor-dark-bg] {
-  background: var(--card);
+  background: var(--mantine-color-default);
   padding: 1rem 1.5rem;
 }
 
@@ -191,7 +126,8 @@
     gap: 2.5rem;
     padding-right: 2.5rem;
   }
-  .sponsor-logo {
+  .sponsor-logo,
+  [data-sponsor-logo] {
     max-height: 48px;
     max-width: 120px;
   }
@@ -207,7 +143,7 @@
   overflow: hidden;
   overscroll-behavior: none;
   background: var(--mantine-color-darkBase-filled);
-  color: white;
+  color: var(--mantine-color-white);
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
 }
 
@@ -219,7 +155,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: black;
+  background: var(--mantine-color-darkBase-filled);
   touch-action: none;
   container-type: size;
 }
@@ -257,8 +193,142 @@
   overflow: hidden;
   border-width: 2px;
   border-style: solid;
-  border-radius: 0.75rem;
+  border-color: var(--surface-dark-glass-border);
+  background-color: var(--surface-dark-glass);
+  border-radius: var(--mantine-radius-md);
   padding: 0.75rem;
+}
+
+[data-site-header] {
+  position: fixed;
+  top: var(--impersonation-banner-height, 0px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(80px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  background-color: color-mix(in srgb, var(--mantine-color-body) 80%, transparent);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: background-color 300ms ease, box-shadow 300ms ease, backdrop-filter 300ms ease;
+}
+
+[data-site-header][data-scrolled="true"] {
+  background-color: color-mix(in srgb, var(--mantine-color-body) 95%, transparent);
+  box-shadow: var(--mantine-shadow-md);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+[data-header-logo] {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  text-decoration: none;
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-header-logo]:hover {
+  transform: scale(1.03);
+}
+
+[data-header-logo]:active {
+  transform: scale(0.95);
+}
+
+[data-header-nav-link] {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--mantine-color-text);
+  transition: color 200ms ease;
+}
+
+[data-header-nav-link]:hover,
+[data-header-nav-link][aria-current="page"] {
+  color: var(--mantine-color-brand-text);
+}
+
+@keyframes slideDownIn {
+  0% { transform: translateY(-100%); opacity: 0; }
+  100% { transform: translateY(0%); opacity: 1; }
+}
+
+@keyframes slideDownOut {
+  0% { transform: translateY(0%); opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+[data-spin="true"] {
+  animation: spin 1s linear infinite;
+}
+
+[data-qr-reader] {
+  color: var(--mantine-color-text);
+}
+
+[data-qr-reader] :is(p, span, label, small, h1, h2, h3, h4, h5, h6) {
+  color: var(--mantine-color-text) !important;
+}
+
+[data-qr-reader] :is(button, select, input) {
+  color: var(--mantine-color-text) !important;
+  background: var(--mantine-color-default) !important;
+  border-color: var(--mantine-color-default-border) !important;
+}
+
+[data-qr-reader] button:hover,
+[data-qr-reader] button:focus-visible {
+  background: var(--mantine-color-default-hover) !important;
+}
+
+[data-qr-reader] #reader__dashboard,
+[data-qr-reader] #reader__dashboard_section,
+[data-qr-reader] #reader__dashboard_section_csr,
+[data-qr-reader] #reader__dashboard_section_swaplink,
+[data-qr-reader] #reader__status_span {
+  color: var(--mantine-color-text) !important;
+}
+
+[data-qr-reader] #reader__dashboard_section_csr select,
+[data-qr-reader] #reader__dashboard_section_csr button,
+[data-qr-reader] #reader__dashboard_section_swaplink {
+  background: var(--mantine-color-default) !important;
+  color: var(--mantine-color-text) !important;
+  border: 1px solid var(--mantine-color-default-border) !important;
+}
+
+[data-qr-reader] #reader__scan_region {
+  border-color: var(--mantine-color-default-border) !important;
+}
+
+[data-sticker-map] .maplibregl-popup-close-button {
+  display: none !important;
+}
+
+[data-sticker-map] .maplibregl-popup-content {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+[data-sticker-map] .maplibregl-popup-tip {
+  display: none !important;
 }
 
 [data-footer-link] {
@@ -275,12 +345,12 @@
 
 [data-footer-link]:hover,
 [data-footer-link][aria-current="page"] {
-  background-color: color-mix(in srgb, var(--primary) 20%, transparent);
+  background-color: var(--surface-subtle-border);
   color: var(--mantine-color-text);
 }
 
 [data-footer-doc] {
-  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+  background-color: var(--surface-subtle);
 }
 
 [data-nav-underline] {
@@ -308,22 +378,50 @@ a:hover [data-nav-underline],
   }
 }
 
+.mantine-Tabs-root {
+  --tab-hover-color: var(--mantine-color-brand-light-hover);
+  --tab-border-color: var(--surface-subtle-border);
+}
+
 .mantine-Button-root,
 .mantine-ActionIcon-root,
 .mantine-Tabs-tab,
+.mantine-CloseButton-root,
+.mantine-NavLink-root,
+.mantine-SegmentedControl-label,
 .mantine-UnstyledButton-root {
   transition: var(--interactive-transition);
 }
 
 .mantine-Button-root:hover:not(:disabled, [data-disabled]),
-.mantine-ActionIcon-root:hover:not(:disabled, [data-disabled]) {
+.mantine-ActionIcon-root:hover:not(:disabled, [data-disabled]),
+.mantine-Tabs-tab:hover:not(:disabled, [data-disabled]) {
   transform: var(--button-hover-transform);
   box-shadow: var(--mantine-shadow-md);
 }
 
+.mantine-Tabs-tab[data-active]:hover:not(:disabled, [data-disabled]) {
+  --tab-bg: var(--mantine-primary-color-filled-hover);
+}
+
 .mantine-Button-root:active:not(:disabled, [data-disabled]),
-.mantine-ActionIcon-root:active:not(:disabled, [data-disabled]) {
+.mantine-ActionIcon-root:active:not(:disabled, [data-disabled]),
+.mantine-Tabs-tab:active:not(:disabled, [data-disabled]) {
   transform: var(--button-active-transform);
+}
+
+.mantine-CloseButton-root:hover:not(:disabled, [data-disabled]),
+.mantine-NavLink-root:hover:not(:disabled, [data-disabled], [data-active], [aria-current="page"]),
+.mantine-Combobox-option:hover:not([data-combobox-selected], [data-combobox-disabled]) {
+  background-color: var(--mantine-color-brand-light-hover);
+}
+
+.mantine-Menu-item {
+  --menu-item-hover: var(--mantine-color-brand-light-hover);
+}
+
+.mantine-SegmentedControl-label:hover:not([data-active], [data-disabled], [data-read-only]) {
+  background-color: var(--mantine-color-brand-light);
 }
 
 .mantine-Button-label:empty {
@@ -396,8 +494,8 @@ button:hover .mantine-Paper-root,
 .mantine-Card-root[style*="cursor: pointer"]:hover {
   transform: var(--card-hover-transform);
   box-shadow: var(--mantine-shadow-lg);
-  background-color: color-mix(in srgb, var(--primary) 14%, var(--mantine-color-default)) !important;
-  border-color: var(--primary);
+  background-color: color-mix(in srgb, var(--mantine-color-brand-filled) 14%, var(--mantine-color-default)) !important;
+  border-color: var(--mantine-color-brand-filled);
 }
 
 a:active .mantine-Card-root,
@@ -426,5 +524,16 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 
 .mantine-ScrollArea-scrollbar:hover .mantine-ScrollArea-thumb,
 .mantine-ScrollArea-thumb:hover {
-  background-color: var(--primary);
+  background-color: var(--mantine-color-brand-filled);
+}
+
+.mantine-Switch-input:not(:checked):not(:disabled) + .mantine-Switch-track {
+  --switch-bg: var(--surface-subtle);
+  border: 1px solid var(--surface-subtle-border);
+}
+
+.mantine-AspectRatio-root {
+  position: relative;
+  aspect-ratio: var(--ar-ratio, 1);
+  width: 100%;
 }

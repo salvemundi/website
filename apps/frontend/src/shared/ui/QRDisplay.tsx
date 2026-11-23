@@ -1,7 +1,7 @@
 'use client';
 
 import { QRCodeSVG } from 'qrcode.react';
-import { Center } from '@mantine/core';
+import { Center, Paper } from '@mantine/core';
 
 interface QRDisplayProps {
     qrToken: string;
@@ -12,18 +12,16 @@ export default function QRDisplay({ qrToken, size = 200 }: QRDisplayProps) {
     if (!qrToken) return null;
 
     return (
-        <Center
-            bg="white"
-            p="xs"
-            style={{ borderRadius: 'var(--mantine-radius-lg)' }}
-        >
-            <QRCodeSVG
-                value={qrToken}
-                size={size}
-                level="H"
-                includeMargin={true}
-                className="h-auto w-full"
-            />
-        </Center>
+        <Paper bg="var(--mantine-color-white)" p="xs">
+            <Center>
+                <QRCodeSVG
+                    value={qrToken}
+                    size={size}
+                    level="H"
+                    includeMargin={true}
+                    style={{ width: '100%', height: 'auto', display: 'block' }}
+                />
+            </Center>
+        </Paper>
     );
 }

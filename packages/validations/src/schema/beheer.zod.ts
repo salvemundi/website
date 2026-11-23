@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { insertEventsSchema, selectDirectusUsersSchema, selectCommitteeMembersSchema, selectEventSignupsSchema } from './db.zod.js';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { events as eventsTable, directus_users as directus_usersTable, committee_members as committee_membersTable, event_signups as event_signupsTable } from '@salvemundi/db/schema';
+
+const insertEventsSchema = createInsertSchema(eventsTable);
+const selectDirectusUsersSchema = createSelectSchema(directus_usersTable);
+const selectCommitteeMembersSchema = createSelectSchema(committee_membersTable);
+const selectEventSignupsSchema = createSelectSchema(event_signupsTable);
 
 export const BeheerActivitySchema = insertEventsSchema.extend({
     id: z.coerce.number(),

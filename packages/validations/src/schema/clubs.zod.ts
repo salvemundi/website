@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { selectClubsSchema } from './db.zod.js';
+import { createSelectSchema } from 'drizzle-zod';
+import { clubs as clubsTable } from '@salvemundi/db/schema';
+
+const selectClubsSchema = createSelectSchema(clubsTable);
 
 export const clubSchema = selectClubsSchema;
 export const clubsSchema = z.array(clubSchema);

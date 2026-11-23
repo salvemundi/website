@@ -15,21 +15,20 @@ export default function StickerActionPanel({ user, onPlaceSticker, compact = fal
         return (
             <Card
                 bg="var(--mantine-color-accent-filled)"
-                c="#1E1221"
+                c="var(--mantine-color-darkBase-filled)"
                 p={compact ? 'xs' : 'md'}
-                radius="lg"
                 shadow="xl"
                 w={compact ? '100%' : undefined}
                 style={{ pointerEvents: 'auto' }}
             >
                 <Group align="flex-start" gap="sm" wrap="nowrap" justify={compact ? 'center' : 'flex-start'}>
                     {!compact && (
-                        <ThemeIcon variant="light" color="darkBase" radius="md" size="lg">
+                        <ThemeIcon color="darkBase" size="lg">
                             <Plus size={18} />
                         </ThemeIcon>
                     )}
                     <Box ta={compact ? 'center' : 'left'}>
-                        <Text size="xs" fw={900} tt="uppercase" lh={1.2}>
+                        <Text size="xs" fw={700} tt="uppercase" lh={1.2}>
                             Login om sticker te plakken
                         </Text>
                         {!compact && (
@@ -46,7 +45,6 @@ export default function StickerActionPanel({ user, onPlaceSticker, compact = fal
     return (
         <Card
             p={compact ? 'xs' : 'md'}
-            radius="lg"
             shadow="xl"
             w={compact ? '100%' : undefined}
             style={{ pointerEvents: 'auto' }}

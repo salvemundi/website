@@ -88,7 +88,7 @@ export default function CoboManagementIsland({
 
     return (
         <Stack gap="lg">
-            <Card withBorder padding="md" radius="lg">
+            <Card withBorder padding="md">
                 <Group justify="space-between" align="center" wrap="wrap" gap="md">
                     <Stack gap={4} style={{ minWidth: 0 }}>
                         <Title order={2} size="h4" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -121,7 +121,6 @@ export default function CoboManagementIsland({
                                 handleTabChange(val);
                             }
                         }}
-                        variant="pills"
                     >
                         <Tabs.List>
                             <Tabs.Tab value="queue" leftSection={<Users size={14} />}>

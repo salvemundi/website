@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Alert, Button, Card, Group, InputWrapper, Stack, Text, Textarea, ThemeIcon, Title } from '@mantine/core';
+import { Alert, Box, Button, Card, Group, InputWrapper, Stack, Text, Textarea, TextInput, ThemeIcon, Title } from '@mantine/core';
 import { submitIntroParentSignup } from '@/server/actions/public/intro.actions';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Heart, Lock } from 'lucide-react';
@@ -62,9 +62,9 @@ export const IntroParentIsland = ({ initialPhone, isOpen = true }: IntroParentIs
 
     if (!isOpen) {
         return (
-            <Card flex={1} padding="xl" radius="xl" shadow="xl" withBorder ta="center" mih={300}>
+            <Card flex={1} padding="xl" shadow="xl" withBorder ta="center" mih={300}>
                 <Stack align="center" justify="center" gap="md" h="100%">
-                    <ThemeIcon size={72} radius="xl" variant="light" color="brand">
+                    <ThemeIcon size="xl">
                         <Lock size={36} />
                     </ThemeIcon>
                     <Title order={3} size="h2">
@@ -80,7 +80,7 @@ export const IntroParentIsland = ({ initialPhone, isOpen = true }: IntroParentIs
 
     if (submitted) {
         return (
-            <Card flex={1} padding="xl" radius="xl" shadow="lg" withBorder ta="center">
+            <Card flex={1} padding="xl" shadow="lg" withBorder ta="center">
                 <Stack gap="sm" align="center">
                     <Title order={3} size="h3">
                         Je hebt je aangemeld als Intro Ouder
@@ -94,11 +94,11 @@ export const IntroParentIsland = ({ initialPhone, isOpen = true }: IntroParentIs
     }
 
     return (
-        <Card flex={1} padding="xl" radius="xl" shadow="xl" withBorder>
+        <Card flex={1} padding="xl" shadow="xl" withBorder>
             <Stack gap="lg" h="100%">
                 <Stack gap="xs">
                     <Group gap="sm" align="center">
-                        <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                        <ThemeIcon size="lg">
                             <Heart size={20} />
                         </ThemeIcon>
                         <Title order={2} size="h2" c="brand">
@@ -110,7 +110,8 @@ export const IntroParentIsland = ({ initialPhone, isOpen = true }: IntroParentIs
                     </Text>
                 </Stack>
 
-                <form
+                <Box
+                    component="form"
                     onSubmit={(e) => { void handleSubmit(onSubmit)(e); }}
                     style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 'var(--mantine-spacing-md)' }}
                     autoComplete="off"
@@ -138,7 +139,7 @@ export const IntroParentIsland = ({ initialPhone, isOpen = true }: IntroParentIs
                                 />
                             </InputWrapper>
                         ) : (
-                            <input type="hidden" {...register('telefoonnummer')} />
+                            <TextInput display="none" {...register('telefoonnummer')} />
                         )}
 
                         <Textarea
@@ -155,7 +156,7 @@ export const IntroParentIsland = ({ initialPhone, isOpen = true }: IntroParentIs
                     </Stack>
 
                     {error && (
-                        <Alert color="error" variant="light">
+                        <Alert color="error">
                             {error}
                         </Alert>
                     )}
@@ -163,7 +164,7 @@ export const IntroParentIsland = ({ initialPhone, isOpen = true }: IntroParentIs
                     <Button type="submit" fullWidth size="md" loading={isSubmitting} mt="xs">
                         {isSubmitting ? 'Bezig...' : 'Meld je aan als Intro Ouder'}
                     </Button>
-                </form>
+                </Box>
             </Stack>
         </Card>
     );

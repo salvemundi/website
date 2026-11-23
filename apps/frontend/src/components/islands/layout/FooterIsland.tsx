@@ -99,12 +99,12 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                 <Grid columns={12} gap="lg" align="flex-start">
                     <GridCol span={{ base: 12, sm: 6, lg: 2 }}>
                         <FooterSection title="Informatie">
-                            <Stack gap={6} align="center" component="ul">
-                                <Text component="li" size="sm" c="dimmed" ta="center">Rachelsmolen 1</Text>
-                                <Text component="li" size="sm" c="dimmed" ta="center">5612 MA Eindhoven</Text>
-                                <Text component="li" size="sm" c="dimmed" ta="center">KvK nr. 70280606</Text>
+                            <Stack gap={6} align="center">
+                                <Text size="sm" c="dimmed" ta="center">Rachelsmolen 1</Text>
+                                <Text size="sm" c="dimmed" ta="center">5612 MA Eindhoven</Text>
+                                <Text size="sm" c="dimmed" ta="center">KvK nr. 70280606</Text>
                                 {documents.map((doc) => (
-                                    <li key={doc.id}>
+                                    <Box key={doc.id}>
                                         <Anchor
                                             href={`${assetUrl}/${doc.file}`}
                                             target="_blank"
@@ -117,7 +117,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                         >
                                             {doc.title}
                                         </Anchor>
-                                    </li>
+                                    </Box>
                                 ))}
                             </Stack>
                         </FooterSection>
@@ -148,8 +148,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                     component={Link}
                                     href={ROUTES.COMMITTEES}
                                     size="xs"
-                                    variant="light"
-                                    color="brand"
                                 >
                                     Alle commissies bekijken
                                 </Button>
@@ -183,29 +181,27 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                         component={Link}
                                         href={ROUTES.SAFE_HAVENS}
                                         size="xs"
-                                        variant="light"
-                                        color="brand"
                                     >
                                         Safe Havens
                                     </Button>
                                 }
                             >
-                                <Stack gap={6} align="center" component="ul">
-                                    <li>
+                                <Stack gap={6} align="center">
+                                    <Box>
                                         <ObfuscatedEmail
                                             email="info@salvemundi.nl"
                                             footerLink
                                             showIcon={false}
                                         />
-                                    </li>
-                                    <li>
+                                    </Box>
+                                    <Box>
                                         <Anchor href="tel:+31624827777" size="sm" c="dimmed" underline="never" mod={{ 'footer-link': true }}>
                                             +31 6 24827777
                                         </Anchor>
-                                    </li>
+                                    </Box>
 
                                     {isAuthenticated && (
-                                        <li>
+                                        <Box>
                                             <Anchor
                                                 href="https://wa.me/31624827777"
                                                 target="_blank"
@@ -217,7 +213,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                             >
                                                 WhatsApp
                                             </Anchor>
-                                        </li>
+                                        </Box>
                                     )}
                                 </Stack>
                             </FooterSection>
@@ -230,11 +226,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         size="lg"
-                                        variant="light"
-                                        color="brand"
                                         aria-label="Instagram"
                                     >
-                                        <SiInstagram className="size-5" />
+                                        <SiInstagram width={20} height={20} />
                                     </ActionIcon>
                                     <ActionIcon
                                         component="a"
@@ -242,11 +236,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         size="lg"
-                                        variant="light"
-                                        color="brand"
                                         aria-label="Facebook"
                                     >
-                                        <SiFacebook className="size-5" />
+                                        <SiFacebook width={20} height={20} />
                                     </ActionIcon>
                                     <ActionIcon
                                         component="a"
@@ -254,11 +246,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         size="lg"
-                                        variant="light"
-                                        color="brand"
                                         aria-label="LinkedIn"
                                     >
-                                        <FaLinkedin className="size-5" />
+                                        <FaLinkedin width={20} height={20} />
                                     </ActionIcon>
                                     <ActionIcon
                                         component="a"
@@ -266,11 +256,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         size="lg"
-                                        variant="light"
-                                        color="brand"
                                         aria-label="TikTok"
                                     >
-                                        <SiTiktok className="size-5" />
+                                        <SiTiktok width={20} height={20} />
                                     </ActionIcon>
                                 </Group>
                             </FooterSection>

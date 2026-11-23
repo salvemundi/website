@@ -41,7 +41,7 @@ export default function ReisFilters({
     tripId
 }: ReisFiltersProps) {
     return (
-        <Paper withBorder radius="lg" p="sm">
+        <Paper withBorder p="sm">
             <Group gap="sm" wrap="wrap" align="center">
                 <TextInput
                     placeholder="Zoek deelnemers..."
@@ -77,7 +77,6 @@ export default function ReisFilters({
                     <Button
                         component={Link}
                         href={`/beheer/reis/activiteiten?tripId=${tripId}`}
-                        variant="default"
                         size="sm"
                         leftSection={<Compass size={14} />}
                     >
@@ -86,7 +85,6 @@ export default function ReisFilters({
                     <Button
                         component={Link}
                         href="/beheer/reis/mail"
-                        variant="default"
                         size="sm"
                         leftSection={<Mail size={14} />}
                     >

@@ -50,7 +50,7 @@ export default function SignupTicketList({
                             Tickets ({tickets.length})
                         </Title>
                     </Group>
-                    <Badge variant="light" color="brand" size="sm">
+                    <Badge size="sm">
                         {amountTickets} Gereserveerd
                     </Badge>
                 </Group>
@@ -73,7 +73,6 @@ export default function SignupTicketList({
                         <Paper
                             withBorder
                             p="lg"
-                            radius="md"
                             ta="center"
                             style={{ borderStyle: 'dashed', gridColumn: '1 / -1' }}
                         >

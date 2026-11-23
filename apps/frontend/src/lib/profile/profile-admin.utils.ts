@@ -1,5 +1,6 @@
 import { type ProfileEventSignup } from '@salvemundi/validations/schema/profiel.zod';
 import { type EnrichedPubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+import { isCommitteeGroup } from '@/shared/lib/permissions';
 import { type EnrichedUser } from '@/types/auth';
 
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -19,11 +20,14 @@ export function calculateMembershipStatus(user: EnrichedUser): {
     color: 'brand-light' | 'brand-filled' | 'error';
     textColor: 'brand' | 'white';
 } {
-    const isCommitteeMember = Array.isArray(user.committees) && user.committees.length > 0;
+    const committeeGroups = Array.isArray(user.committees)
+        ? user.committees.filter(isCommitteeGroup)
+        : [];
+    const isCommitteeMember = committeeGroups.length > 0;
     const isLeader = !!user.permissions?.includes('leader');
     const status = user.membership_status;
 
-    const isBestuur = !!user.committees?.some(c => c.name.toLowerCase().includes('bestuur'));
+    const isBestuur = committeeGroups.some(c => c.name.toLowerCase().includes('bestuur'));
 
     let role = 'Lid';
     if (isBestuur) role = 'Bestuur';

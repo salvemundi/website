@@ -3,6 +3,7 @@
 import React from 'react';
 import { RefreshCw, X, Info } from 'lucide-react';
 import {
+    Box,
     Button,
     Card,
     Divider,
@@ -42,7 +43,7 @@ export default function SyncControlIsland() {
             <Card p="lg" shadow="sm">
                 <Stack gap="lg">
                     <Group gap="md">
-                        <ThemeIcon size="lg" variant="light" color="brand" radius="md">
+                        <ThemeIcon size="lg">
                             <RefreshCw size={20} />
                         </ThemeIcon>
                         <Title order={3} size="h4">
@@ -78,7 +79,7 @@ export default function SyncControlIsland() {
 
                     <Stack gap="xs">
                         {toggles.map((item) => (
-                            <Paper key={item.label} p="sm" withBorder radius="md">
+                            <Paper key={item.label} p="sm" withBorder>
                                 <Switch
                                     checked={item.value}
                                     onChange={(e) => item.setValue(e.currentTarget.checked)}
@@ -113,7 +114,6 @@ export default function SyncControlIsland() {
                                     <Button
                                         type="button"
                                         fullWidth
-                                        variant="subtle"
                                         color="error"
                                         size="xs"
                                         onClick={() => { void handleResetSync(); }}
@@ -129,7 +129,6 @@ export default function SyncControlIsland() {
                             <Button
                                 type="button"
                                 fullWidth
-                                color="brand"
                                 onClick={() => { void handleFullSync(); }}
                                 disabled={isStartingSync || !!status?.error}
                                 loading={isStartingSync}
@@ -145,7 +144,7 @@ export default function SyncControlIsland() {
             <Card p="lg" shadow="sm">
                 <Stack gap="md">
                     <Group gap="md">
-                        <ThemeIcon size="lg" variant="light" color="brand" radius="md">
+                        <ThemeIcon size="lg">
                             <Info size={20} />
                         </ThemeIcon>
                         <Title order={3} size="h4">
@@ -157,7 +156,7 @@ export default function SyncControlIsland() {
                         Synchroniseer een specifieke gebruiker op basis van their Entra ID (UUID).
                     </Text>
 
-                    <form onSubmit={(e) => { void handleUserSync(e); }}>
+                    <Box component="form" onSubmit={(e) => { void handleUserSync(e); }}>
                         <Stack gap="sm">
                             <TextInput
                                 value={userId}
@@ -169,7 +168,6 @@ export default function SyncControlIsland() {
                             <Button
                                 type="submit"
                                 fullWidth
-                                variant="default"
                                 disabled={isUserSyncLoading || !userId.trim() || !!status?.error}
                                 loading={isUserSyncLoading}
                                 leftSection={<RefreshCw size={16} />}
@@ -177,7 +175,7 @@ export default function SyncControlIsland() {
                                 Sync Gebruiker
                             </Button>
                         </Stack>
-                    </form>
+                    </Box>
                 </Stack>
             </Card>
         </Stack>

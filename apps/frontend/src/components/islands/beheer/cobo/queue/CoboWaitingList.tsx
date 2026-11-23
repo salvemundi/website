@@ -55,7 +55,7 @@ export default function CoboWaitingList({
 
     if (boards.length === 0) {
         return (
-            <Paper withBorder p="xl" ta="center" radius="lg" style={{ borderStyle: 'dashed' }}>
+            <Paper withBorder p="xl" ta="center" style={{ borderStyle: 'dashed' }}>
                 <Stack align="center" gap="xs" py="md">
                     <ListOrdered size={36} opacity={0.35} />
                     <Text size="sm" fw={500} c="dimmed">De wachtrij is momenteel leeg.</Text>

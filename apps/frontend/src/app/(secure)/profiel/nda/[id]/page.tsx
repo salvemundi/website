@@ -21,7 +21,6 @@ export default async function SignNdaPage({ params }: { params: Promise<{ id: st
                         <Button
                             component={Link}
                             href="/profiel/nda"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

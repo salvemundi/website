@@ -116,13 +116,12 @@ export default function ReisActivitiesIsland({
     return (
         <>
             {!editingActivity && (
-                <Paper radius={0} shadow="xs" py="md">
+                <Paper shadow="xs" py="md">
                     <Container size="xl" py={0}>
                         <Group gap="md">
                             <Button
                                 component={Link}
                                 href="/beheer/reis"
-                                variant="default"
                                 size="sm"
                                 leftSection={<ChevronLeft size={16} />}
                             >
@@ -183,7 +182,6 @@ export default function ReisActivitiesIsland({
                         <Paper
                             withBorder
                             py={80}
-                            radius="lg"
                             style={{ borderStyle: 'dashed' }}
                             ta="center"
                         >

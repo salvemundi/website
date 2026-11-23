@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Plus, Flame, Waves, Edit3 } from 'lucide-react';
-import { Button, Card, Group, Stack, TextInput, ThemeIcon, Title } from '@mantine/core';
+import { Box, Button, Card, Group, Stack, TextInput, ThemeIcon, Title } from '@mantine/core';
 
 interface Props {
     onAddBoard: (
@@ -41,18 +41,19 @@ export default function CoboAddBoardForm({ onAddBoard, isPending = false }: Prop
     };
 
     return (
-        <Card withBorder padding="lg" radius="lg">
+        <Card withBorder padding="lg">
             <Stack gap="md">
                 <Group gap="xs">
-                    <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                    <ThemeIcon size="md">
                         <Plus size={16} />
                     </ThemeIcon>
-                    <Title order={3} size="sm" fw={700}>
+                    <Title order={3} size="sm">
                         Gasten Toevoegen
                     </Title>
                 </Group>
 
-                <form
+                <Box
+                    component="form"
                     onSubmit={(e) => {
                         void handleSubmit(e);
                     }}
@@ -119,7 +120,7 @@ export default function CoboAddBoardForm({ onAddBoard, isPending = false }: Prop
                             </Button>
                         </Group>
                     </Stack>
-                </form>
+                </Box>
             </Stack>
         </Card>
     );

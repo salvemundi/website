@@ -9,9 +9,6 @@ export const BRAND_CONFIG = {
     // Light brand logo (white for dark backgrounds)
     logoDarkMode: '/img/Logo_Light.svg',
 
-    // Alternate yellow/gold logo
-    logoYellow: '/img/Logo.png',
-
     // Default fallback logo path for light backgrounds
     logoFallbackLight: '/img/Logo.png',
 

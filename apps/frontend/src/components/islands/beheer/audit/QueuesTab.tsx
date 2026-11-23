@@ -35,10 +35,10 @@ interface QueuesTabProps {
 export default function QueuesTab({ queueData, isLoading = false, error, onRefresh }: QueuesTabProps) {
     if (isLoading && !queueData) {
         return (
-            <Paper withBorder radius="lg" p="xl">
+            <Paper withBorder p="xl">
                 <Center py="xl">
                     <Stack align="center" gap="sm" ta="center">
-                        <Loader color="brand" size="md" />
+                        <Loader size="md" />
                         <Title order={4}>Wachtrijstatus ophalen...</Title>
                         <Text size="xs" c="dimmed" maw={420}>
                             De actuele gegevens worden opgehaald van de Azure Management Service.
@@ -51,10 +51,10 @@ export default function QueuesTab({ queueData, isLoading = false, error, onRefre
 
     if (!queueData) {
         return (
-            <Paper withBorder radius="lg" p="xl">
+            <Paper withBorder p="xl">
                 <Center py="md">
                     <Stack align="center" gap="md" ta="center">
-                        <ThemeIcon size={48} radius="md" variant="light" color="accent">
+                        <ThemeIcon size="lg" color="accent">
                             <AlertCircle size={24} />
                         </ThemeIcon>
                         <Stack gap={4} align="center">
@@ -66,7 +66,6 @@ export default function QueuesTab({ queueData, isLoading = false, error, onRefre
                         {onRefresh && (
                             <Button
                                 type="button"
-                                color="brand"
                                 size="xs"
                                 leftSection={<RefreshCw size={14} />}
                                 loading={isLoading}
@@ -87,7 +86,6 @@ export default function QueuesTab({ queueData, isLoading = false, error, onRefre
                 <Group justify="flex-end">
                     <Button
                         type="button"
-                        variant="default"
                         size="xs"
                         leftSection={<RefreshCw size={14} />}
                         loading={isLoading}
@@ -102,7 +100,7 @@ export default function QueuesTab({ queueData, isLoading = false, error, onRefre
                 {(['new_users', 'sync_existing'] as const).map((qKey) => {
                     const q = qKey === 'new_users' ? queueData.new_users : queueData.sync_existing;
                     return (
-                        <Paper key={qKey} withBorder radius="lg" style={{ overflow: 'hidden' }}>
+                        <Paper key={qKey} withBorder style={{ overflow: 'hidden' }}>
                             <Group justify="space-between" align="center" p="lg">
                                 <Stack gap={2}>
                                     <Title order={4}>
@@ -112,7 +110,7 @@ export default function QueuesTab({ queueData, isLoading = false, error, onRefre
                                         Redis: {qKey === 'new_users' ? 'v7:queue:provision:new_user' : 'v7:queue:provision:sync_existing'}
                                     </Text>
                                 </Stack>
-                                <Badge color="brand" variant="light" size="lg">
+                                <Badge size="lg">
                                     {q?.count || 0}
                                 </Badge>
                             </Group>
@@ -153,7 +151,7 @@ export default function QueuesTab({ queueData, isLoading = false, error, onRefre
                                                     </Text>
                                                 </Table.Td>
                                                 <Table.Td ta="right">
-                                                    <Badge color="accent" variant="light" size="xs">
+                                                    <Badge color="accent" size="xs">
                                                         Wachtend
                                                     </Badge>
                                                 </Table.Td>

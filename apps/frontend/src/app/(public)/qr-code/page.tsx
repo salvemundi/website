@@ -59,7 +59,7 @@ export default async function QRCodePage() {
                         <Card component="section" padding="xl">
                             <Group justify="space-between" align="center" gap="lg" wrap="wrap">
                                 <Group gap="lg" wrap="nowrap" style={{ flex: 1, minWidth: 240 }}>
-                                    <ThemeIcon size={56} radius="lg" variant="light" color="brand">
+                                    <ThemeIcon size="xl">
                                         <BookOpen size={26} />
                                     </ThemeIcon>
                                     <Stack gap={4}>
@@ -79,7 +79,7 @@ export default async function QRCodePage() {
                     <Card component="section" padding="xl">
                         <Stack gap="lg">
                             <Group align="flex-start" gap="lg" wrap="nowrap">
-                                <ThemeIcon size={56} radius="lg" variant="light" color="brand">
+                                <ThemeIcon size="xl">
                                     <MessageCircle size={26} />
                                 </ThemeIcon>
                                 <Stack gap={4}>
@@ -99,7 +99,7 @@ export default async function QRCodePage() {
                     <Card component="section" padding="xl">
                         <Stack gap="lg">
                             <Group align="flex-start" gap="lg" wrap="nowrap">
-                                <ThemeIcon size={56} radius="lg" variant="light" color="brand">
+                                <ThemeIcon size="xl">
                                     <ShieldCheck size={26} />
                                 </ThemeIcon>
                                 <Stack gap={4}>
@@ -119,9 +119,9 @@ export default async function QRCodePage() {
                                     ))}
                                 </SimpleGrid>
                             ) : (
-                                <Paper p="xl" radius="lg" bg="var(--mantine-color-body)">
+                                <Paper p="xl" bg="var(--mantine-color-body)">
                                     <Stack align="center" ta="center" gap="sm">
-                                        <ThemeIcon size={48} radius="xl" variant="light" color="brand">
+                                        <ThemeIcon size="lg">
                                             <ShieldCheck size={24} />
                                         </ThemeIcon>
                                         <Text size="lg" fw={700} c="dimmed">

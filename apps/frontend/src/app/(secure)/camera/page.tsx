@@ -33,7 +33,6 @@ export default async function CameraPage() {
                         <Button
                             component={Link}
                             href="/profiel"
-                            variant="default"
                             size="sm"
                             leftSection={<ChevronLeft size={16} />}
                         >

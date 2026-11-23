@@ -100,10 +100,10 @@ function getStatusColor(status: IntroGroupAttendanceStatus): string {
 
 function getStatusAccentCssVar(status: IntroGroupAttendanceStatus): string | null {
     switch (status) {
-        case 'present': return 'var(--primary)';
-        case 'went_home': return 'var(--accent)';
-        case 'home': return 'var(--success)';
-        case 'staying_out': return 'var(--secondary)';
+        case 'present': return 'var(--mantine-color-brand-filled)';
+        case 'went_home': return 'var(--mantine-color-accent-filled)';
+        case 'home': return 'var(--mantine-color-success-filled)';
+        case 'staying_out': return 'var(--mantine-color-purple-filled)';
         default: return null;
     }
 }
@@ -407,14 +407,14 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
     return (
         <Stack gap="md">
             {isCrew && (
-                <Card padding="sm" radius="md" withBorder>
+                <Card padding="sm" withBorder>
                     <Stack gap="xs">
                         <Text size="xs" fw={600} tt="uppercase" c="dimmed">
                             Totaal alle groepjes &middot; {formatDate(selectedDate, 'd MMMM')}
                         </Text>
                         {loadingSummary && !totalSummary ? (
                             <Center py="xs">
-                                <Loader size="xs" color="brand" />
+                                <Loader size="xs" />
                             </Center>
                         ) : totalSummary && (
                             <Group gap="xs" wrap="wrap">
@@ -511,8 +511,6 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                         <Button
                             type="button"
                             size="compact-xs"
-                            variant="subtle"
-                            color="dimmed"
                             leftSection={<X size={12} />}
                             onClick={() => setStatusFilter(null)}
                         >
@@ -542,7 +540,6 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                     <ActionIcon
                         type="button"
                         size={36}
-                        variant="filled"
                         onClick={() => { void handleAddMember(); }}
                         disabled={!newName.trim() || addingMember}
                         loading={addingMember}
@@ -554,7 +551,6 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                     <ActionIcon
                         type="button"
                         size={36}
-                        variant="default"
                         onClick={() => { setShowAddInput(false); setNewName(''); }}
                         title="Annuleren"
                         aria-label="Annuleren"
@@ -577,7 +573,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
 
             {loading ? (
                 <Center py="xl">
-                    <Loader size="md" color="brand" />
+                    <Loader size="md" />
                 </Center>
             ) : members.length === 0 ? (
                 <Center py="xl">
@@ -610,12 +606,11 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                             <Paper
                                 key={member.id}
                                 p="sm"
-                                radius="md"
                                 withBorder
                                 style={{
                                     backgroundColor: accentVar ? `color-mix(in srgb, ${accentVar} 10%, transparent)` : undefined,
                                     borderColor: accentVar ? `color-mix(in srgb, ${accentVar} 35%, transparent)` : undefined,
-                                    boxShadow: justUpdatedId === member.id ? '0 0 0 2px var(--primary)' : undefined,
+                                    boxShadow: justUpdatedId === member.id ? '0 0 0 2px var(--mantine-color-brand-filled)' : undefined,
                                 }}
                             >
                                 <Stack gap="xs">
@@ -638,8 +633,6 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                         <Button
                                             type="button"
                                             size="compact-xs"
-                                            variant="subtle"
-                                            color="dimmed"
                                             onClick={() => toggleDetails(member.id)}
                                             rightSection={
                                                 <ChevronDown
@@ -673,7 +666,6 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                             <Button
                                                 type="button"
                                                 size="compact-xs"
-                                                variant="light"
                                                 color="success"
                                                 disabled={isPending}
                                                 leftSection={<Home size={12} />}
@@ -708,8 +700,6 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                                 <Button
                                                                     type="button"
                                                                     size="compact-xs"
-                                                                    variant="subtle"
-                                                                    color="dimmed"
                                                                     onClick={() => setEditingTimeMemberId(null)}
                                                                 >
                                                                     Annuleren
@@ -723,7 +713,6 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                                 <ActionIcon
                                                                     type="button"
                                                                     size="xs"
-                                                                    variant="subtle"
                                                                     onClick={() => startEditTime(member)}
                                                                     title="Tijd aanpassen"
                                                                     aria-label="Tijd aanpassen"
@@ -744,7 +733,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                     </Group>
                                                     {loadingNotesId === member.id ? (
                                                         <Center py="sm">
-                                                            <Loader size="xs" color="brand" />
+                                                            <Loader size="xs" />
                                                         </Center>
                                                     ) : (
                                                         <Stack gap="xs">
@@ -754,7 +743,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                                 </Text>
                                                             ) : (
                                                                 notes.map(note => (
-                                                                    <Paper key={note.id} p="xs" radius="sm" withBorder>
+                                                                    <Paper key={note.id} p="xs" withBorder>
                                                                         <Text size="sm" style={{ whiteSpace: 'pre-wrap' }}>
                                                                             {note.note}
                                                                         </Text>
@@ -765,7 +754,6 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                                             <Button
                                                                                 type="button"
                                                                                 size="compact-xs"
-                                                                                variant="subtle"
                                                                                 color="error"
                                                                                 onClick={() => { void handleDeleteNote(member.id, note.id); }}
                                                                             >
@@ -811,7 +799,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                         </Group>
                                                         {loadingLogId === member.id ? (
                                                             <Center py="sm">
-                                                                <Loader size="xs" color="brand" />
+                                                                <Loader size="xs" />
                                                             </Center>
                                                         ) : (() => {
                                                             const log = logByMember.get(`${member.id}:${selectedDate}`) || [];
@@ -842,7 +830,6 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                     <Button
                                                         type="button"
                                                         size="compact-xs"
-                                                        variant="subtle"
                                                         color="error"
                                                         disabled={isPending}
                                                         loading={isPending && !isEditingTime}

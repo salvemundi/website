@@ -92,7 +92,6 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
                 />
                 <Button
                     type="button"
-                    variant="default"
                     onClick={handleMailBcc}
                     leftSection={<Mail size={16} />}
                 >
@@ -103,7 +102,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
             {filtered.length === 0 ? (
                 <EmptyState icon={Users} text="Nog geen aanmeldingen binnengekomen" />
             ) : (
-                <Card withBorder padding={0} radius="lg" style={{ overflow: 'hidden' }}>
+                <Card withBorder padding={0} style={{ overflow: 'hidden' }}>
                     <Table.ScrollContainer minWidth={600}>
                         <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
                             <Table.Thead>
@@ -143,12 +142,12 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
                                                             {s.first_name} {s.last_name}
                                                         </Text>
                                                         {s.approved && (
-                                                            <Badge color="success" variant="light" size="xs">
+                                                            <Badge color="success" size="xs">
                                                                 Goedgekeurd
                                                             </Badge>
                                                         )}
                                                         {s.status === 'approved' && !s.approved && (
-                                                            <Badge color="brand" variant="light" size="xs">
+                                                            <Badge size="xs">
                                                                 Lid
                                                             </Badge>
                                                         )}
@@ -211,7 +210,6 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
                                                                                 </Button>
                                                                                 <Button
                                                                                     type="button"
-                                                                                    variant="subtle"
                                                                                     size="xs"
                                                                                     onClick={() => setEditingId(null)}
                                                                                     leftSection={<X size={14} />}
@@ -255,7 +253,6 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
                                                                             <Text size="xs" fw={600} c="accent">Extra Informatie</Text>
                                                                             <Button
                                                                                 type="button"
-                                                                                variant="subtle"
                                                                                 size="xs"
                                                                                 onClick={() => startEdit({ stopPropagation: () => { } } as MouseEvent, s)}
                                                                                 leftSection={<Edit size={14} />}
@@ -309,7 +306,6 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
                                                                     {s.favorite_gif && (
                                                                         <Button
                                                                             type="button"
-                                                                            variant="default"
                                                                             fullWidth
                                                                             leftSection={<Eye size={16} />}
                                                                             onClick={() => {
