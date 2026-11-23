@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx --conditions=development watch src/server.ts",
+    "dev": "bun --conditions=development --watch src/server.ts",
     "build": "tsc && node -e \"const fs=require('fs'); fs.cpSync('src/templates', 'dist/templates', {recursive: true}); fs.cpSync('src/assets', 'dist/assets', {recursive: true})\"",
     "type-check": "bun check",
     "lint": "eslint src"
@@ -25,7 +25,6 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "@types/qrcode": "catalog:",
-    "tsx": "catalog:",
     "typescript": "catalog:"
   }
 }

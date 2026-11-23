@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx --conditions=development watch src/server.ts",
+    "dev": "bun --conditions=development --watch src/server.ts",
     "build": "tsc",
     "type-check": "bun check",
     "lint": "eslint src"
@@ -23,7 +23,6 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "tsx": "catalog:",
     "typescript": "catalog:"
   }
 }

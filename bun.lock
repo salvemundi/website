@@ -100,7 +100,6 @@
       },
       "devDependencies": {
         "@types/node": "catalog:",
-        "tsx": "catalog:",
         "typescript": "catalog:",
       },
     },
@@ -121,7 +120,6 @@
       },
       "devDependencies": {
         "@types/node": "catalog:",
-        "tsx": "catalog:",
         "typescript": "catalog:",
       },
     },
@@ -141,7 +139,6 @@
       },
       "devDependencies": {
         "@types/node": "catalog:",
-        "tsx": "catalog:",
         "typescript": "catalog:",
       },
     },
@@ -164,7 +161,6 @@
       "devDependencies": {
         "@types/node": "catalog:",
         "@types/qrcode": "catalog:",
-        "tsx": "catalog:",
         "typescript": "catalog:",
       },
     },
@@ -185,7 +181,6 @@
       "devDependencies": {
         "@types/bun": "1.4.5",
         "@types/node": "catalog:",
-        "tsx": "catalog:",
         "typescript": "catalog:",
       },
     },
@@ -300,7 +295,6 @@
     "ioredis": "^5.11.1",
     "knip": "^6.45.1",
     "qrcode": "^1.5.4",
-    "tsx": "^4.23.15",
     "typescript": "6.0.3",
     "zod": "^4.6.6",
   },
