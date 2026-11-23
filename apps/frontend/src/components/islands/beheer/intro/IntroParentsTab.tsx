@@ -87,7 +87,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, deletingI
             {filtered.length === 0 ? (
                 <EmptyState icon={Heart} text="Nog geen ouder-aanmeldingen binnengekomen" />
             ) : (
-                <Card withBorder padding={0} radius="lg" style={{ overflow: 'hidden' }}>
+                <Card withBorder padding={0} style={{ overflow: 'hidden' }}>
                     <Table.ScrollContainer minWidth={600}>
                         <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
                             <Table.Thead>
@@ -127,7 +127,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, deletingI
                                                             {p.first_name || 'N/A'} {p.last_name || ''}
                                                         </Text>
                                                         {p.approved && (
-                                                            <Badge color="success" variant="light" size="xs">
+                                                            <Badge color="success" size="xs">
                                                                 Goedgekeurd
                                                             </Badge>
                                                         )}
@@ -187,7 +187,6 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, deletingI
                                                                                 </Button>
                                                                                 <Button
                                                                                     type="button"
-                                                                                    variant="subtle"
                                                                                     size="xs"
                                                                                     onClick={() => setEditingId(null)}
                                                                                     leftSection={<X size={14} />}
@@ -239,7 +238,6 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, deletingI
                                                                             <Text size="xs" fw={600} c="accent">Extra Informatie</Text>
                                                                             <Button
                                                                                 type="button"
-                                                                                variant="subtle"
                                                                                 size="xs"
                                                                                 onClick={() => startEdit({ stopPropagation: () => { } } as MouseEvent, p)}
                                                                                 leftSection={<Edit size={14} />}
@@ -264,7 +262,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, deletingI
                                                                         {p.motivation && (
                                                                             <Stack gap="xs">
                                                                                 <Text size="xs" fw={600} c="accent">Motivatie</Text>
-                                                                                <Paper withBorder p="md" radius="md">
+                                                                                <Paper withBorder p="md">
                                                                                     <Text size="sm" fs="italic">
                                                                                         &quot;{p.motivation}&quot;
                                                                                     </Text>

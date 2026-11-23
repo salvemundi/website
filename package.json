@@ -52,7 +52,7 @@
     "type-check": "bun run --if-present --filter '*' type-check",
     "validate": "bun run type-check && bun run lint && bun run knip && bun run build",
     "setup": "bun install && bun run validate",
-    "db:sync": "bun run --filter @salvemundi/db pull && node packages/db/scripts/normalize-schema.mjs && bun run --filter @salvemundi/db build && bun run --filter @salvemundi/validations generate:zod && bun run --filter @salvemundi/validations build"
+    "db:sync": "bun run --filter @salvemundi/db pull && node packages/db/scripts/normalize-schema.mjs && bun run --filter @salvemundi/db build && bun run --filter @salvemundi/validations build"
   },
   "trustedDependencies": [
     "sharp"

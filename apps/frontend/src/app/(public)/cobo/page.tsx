@@ -43,7 +43,7 @@ export default async function CoboPage() {
                 <Container size="sm" py="xl">
                     <Card padding="xl">
                         <Stack align="center" ta="center" gap="md">
-                            <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                            <ThemeIcon size="xl">
                                 <Wine size={32} />
                             </ThemeIcon>
                             <Title order={2} c="brand">
@@ -68,7 +68,7 @@ export default async function CoboPage() {
                 <Container size="sm" py="xl">
                     <Card padding="xl">
                         <Stack align="center" ta="center" gap="md">
-                            <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                            <ThemeIcon size="xl">
                                 <Calendar size={32} />
                             </ThemeIcon>
                             <Title order={2} c="brand">
@@ -117,7 +117,7 @@ export default async function CoboPage() {
 
                                         <Stack gap="md">
                                             <Group gap="md" wrap="nowrap">
-                                                <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                                <ThemeIcon size="lg">
                                                     <Clock size={20} />
                                                 </ThemeIcon>
                                                 <Stack gap={2}>
@@ -131,7 +131,7 @@ export default async function CoboPage() {
                                             </Group>
 
                                             <Group gap="md" wrap="nowrap">
-                                                <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                                <ThemeIcon size="lg">
                                                     <MapPin size={20} />
                                                 </ThemeIcon>
                                                 <Stack gap={2}>
@@ -145,7 +145,7 @@ export default async function CoboPage() {
                                             </Group>
 
                                             <Group gap="md" wrap="nowrap">
-                                                <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                                <ThemeIcon size="lg">
                                                     <Mail size={20} />
                                                 </ThemeIcon>
                                                 <Stack gap={2}>
@@ -164,7 +164,7 @@ export default async function CoboPage() {
                                 <Card padding="xl">
                                     <Stack gap="md">
                                         <Group gap="sm">
-                                            <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                                            <ThemeIcon size="lg">
                                                 <ScrollText size={20} />
                                             </ThemeIcon>
                                             <Title order={2} size="h3" c="brand">
@@ -172,7 +172,7 @@ export default async function CoboPage() {
                                             </Title>
                                         </Group>
                                         <Text size="sm" c="dimmed">
-                                            Kom je het bestuur feliciteren? Meld je bij binnenkomst aan bij de <strong>pedel</strong> om op de wachtlijst te worden geplaatst.
+                                            Kom je het bestuur feliciteren? Meld je bij binnenkomst aan bij de <Text span fw={700}>pedel</Text> om op de wachtlijst te worden geplaatst.
                                         </Text>
                                         <List size="xs" c="dimmed" spacing="xs">
                                             <ListItem>Zorg dat je klaarstaat wanneer je bestuur bijna aan de beurt is.</ListItem>

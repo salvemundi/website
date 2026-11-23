@@ -5,6 +5,7 @@ import type { SyntheticEvent } from 'react';
 import { User, UserPlus, XCircle, CheckCircle } from 'lucide-react';
 import {
     Alert,
+    Box,
     Button,
     Divider,
     Group,
@@ -98,7 +99,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
             onClose={onClose}
             title={
                 <Group gap="sm">
-                    <ThemeIcon color="accent" radius="md" size="lg">
+                    <ThemeIcon color="accent" size="lg">
                         <UserPlus size={18} />
                     </ThemeIcon>
                     <Text fw={700} size="lg">Handmatig Inschrijven</Text>
@@ -115,8 +116,6 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                             setActiveTab(val);
                         }
                     }}
-                    variant="pills"
-                    color="accent"
                 >
                     <Tabs.List grow>
                         <Tabs.Tab value="member" leftSection={<User size={14} />}>
@@ -129,17 +128,17 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                 </Tabs>
 
                 {error && (
-                    <Alert color="error" variant="light" icon={<XCircle size={18} />}>
+                    <Alert color="error" icon={<XCircle size={18} />}>
                         <Text size="xs" fw={600}>{error}</Text>
                     </Alert>
                 )}
                 {successMessage && (
-                    <Alert color="success" variant="light" icon={<CheckCircle size={18} />}>
+                    <Alert color="success" icon={<CheckCircle size={18} />}>
                         <Text size="xs" fw={600}>{successMessage}</Text>
                     </Alert>
                 )}
 
-                <form onSubmit={(e) => { void handleSubmit(e); }} autoComplete="off">
+                <Box component="form" onSubmit={(e) => { void handleSubmit(e); }} autoComplete="off">
                     <Stack gap="lg">
                         {activeTab === 'member' ? (
                             <MemberTab
@@ -163,7 +162,6 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                         <Group justify="flex-end" gap="sm">
                             <Button
                                 type="button"
-                                variant="default"
                                 onClick={onClose}
                                 disabled={isLoading}
                             >
@@ -171,7 +169,6 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                             </Button>
                             <Button
                                 type="submit"
-                                color="accent"
                                 loading={isLoading}
                                 disabled={isLoading || (activeTab === 'member' && !selectedMember)}
                                 rightSection={<CheckCircle size={16} />}
@@ -180,7 +177,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                             </Button>
                         </Group>
                     </Stack>
-                </form>
+                </Box>
             </Stack>
         </Modal>
     );

@@ -17,7 +17,7 @@ export function ThemeToggle() {
 
     if (!mounted) {
         return (
-            <ActionIcon variant="subtle" size="lg" aria-hidden="true">
+            <ActionIcon size="lg" aria-label="Thema wisselen" aria-hidden="true">
                 <Sun size={20} />
             </ActionIcon>
         );
@@ -25,7 +25,6 @@ export function ThemeToggle() {
 
     return (
         <ActionIcon
-            variant="subtle"
             size="lg"
             onClick={() => setColorScheme(isDark ? 'light' : 'dark')}
             aria-label={isDark ? 'Schakel naar lichte modus' : 'Schakel naar donkere modus'}

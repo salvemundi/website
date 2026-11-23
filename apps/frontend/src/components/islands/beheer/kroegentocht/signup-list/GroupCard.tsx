@@ -104,13 +104,13 @@ export default function GroupCard({
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                borderColor: isUnassigned ? 'var(--destructive)' : undefined,
+                borderColor: isUnassigned ? 'var(--mantine-color-error-filled)' : undefined,
             }}
         >
             <Stack gap="md">
                 <Group justify="space-between" align="flex-start" wrap="nowrap">
                     <Group gap="sm" wrap="nowrap" miw={0}>
-                        <ThemeIcon size={36} radius="md" variant="light" color={badgeColor}>
+                        <ThemeIcon size="md" color={badgeColor}>
                             <Users size={18} />
                         </ThemeIcon>
                         <Box miw={0}>
@@ -123,7 +123,7 @@ export default function GroupCard({
                         </Box>
                     </Group>
 
-                    <Badge size="sm" variant="light" color={badgeColor} style={{ flexShrink: 0 }}>
+                    <Badge size="sm" color={badgeColor} style={{ flexShrink: 0 }}>
                         {totalTickets} {totalTickets === 1 ? 'deelnemer' : 'deelnemers'}
                     </Badge>
                 </Group>
@@ -139,8 +139,7 @@ export default function GroupCard({
                                     withBorder
                                     px="sm"
                                     py={6}
-                                    radius="md"
-                                    style={{ borderColor: 'var(--accent)' }}
+                                    style={{ borderColor: 'var(--mantine-color-accent-filled)' }}
                                 >
                                     <Group justify="space-between" wrap="nowrap" gap="xs">
                                         <Group gap="xs" wrap="nowrap" miw={0}>
@@ -178,7 +177,6 @@ export default function GroupCard({
                                                 <Button
                                                     type="button"
                                                     size="compact-xs"
-                                                    variant="default"
                                                     onClick={() => setConfirmRemoveIdx(null)}
                                                 >
                                                     Nee
@@ -188,7 +186,6 @@ export default function GroupCard({
                                             <Button
                                                 type="button"
                                                 size="compact-xs"
-                                                variant="subtle"
                                                 color="error"
                                                 leftSection={<X size={12} />}
                                                 onClick={() => setConfirmRemoveIdx(lIdx)}
@@ -220,7 +217,6 @@ export default function GroupCard({
                                             withBorder
                                             px="sm"
                                             py={6}
-                                            radius="md"
                                         >
                                             <Group justify="space-between" align="flex-start" wrap="nowrap" gap="xs">
                                                 <Stack gap={2} miw={0} flex={1}>
@@ -270,7 +266,6 @@ export default function GroupCard({
                             {signupBlocks.length > limit && (
                                 <Button
                                     type="button"
-                                    variant="default"
                                     size="xs"
                                     fullWidth
                                     onClick={() => setIsExpanded(!isExpanded)}
@@ -329,7 +324,6 @@ export default function GroupCard({
                         ) : (
                             <Button
                                 type="button"
-                                variant="default"
                                 size="xs"
                                 fullWidth
                                 onClick={() => setShowAddLeaderForm(true)}

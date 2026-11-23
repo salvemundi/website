@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { User, Shield } from 'lucide-react';
-import { Avatar, Box, Button, Group } from '@mantine/core';
+import { Avatar, Button, Group, Text } from '@mantine/core';
 import { authClient } from '@/lib/auth';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { ROUTES } from '@/lib/config/routes';
@@ -35,9 +35,9 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                     leftSection={<Shield size={16} />}
                     aria-label="Beheer"
                 >
-                    <Box component="span" visibleFrom="lg">
+                    <Text span visibleFrom="lg">
                         Beheer
-                    </Box>
+                    </Text>
                 </Button>
             )}
 
@@ -45,14 +45,12 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                 <Button
                     component={Link}
                     href={ROUTES.ACCOUNT}
-                    variant="default"
                     size="sm"
                     leftSection={
                         <Avatar
                             src={user.avatar ? getImageUrl(user.avatar) : undefined}
                             alt={user.name || 'Profiel'}
                             size={22}
-                            radius="xl"
                             color="brand"
                         >
                             <User size={14} />
@@ -60,9 +58,9 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                     }
                     aria-label="Mijn profiel"
                 >
-                    <Box component="span" visibleFrom="lg">
+                    <Text span visibleFrom="lg">
                         Mijn profiel
-                    </Box>
+                    </Text>
                 </Button>
             ) : (
                 <Button

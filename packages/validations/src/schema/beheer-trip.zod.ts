@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { selectTripsSchema, selectTripActivitiesSchema } from './db.zod.js';
+import { createSelectSchema } from 'drizzle-zod';
+import { trips as tripsTable, trip_activities as trip_activitiesTable } from '@salvemundi/db/schema';
+
+const selectTripsSchema = createSelectSchema(tripsTable);
+const selectTripActivitiesSchema = createSelectSchema(trip_activitiesTable);
 
 export const tripSchema = selectTripsSchema.extend({
     id: z.coerce.number().int(),

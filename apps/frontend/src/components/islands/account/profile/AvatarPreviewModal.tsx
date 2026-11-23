@@ -24,7 +24,6 @@ export default function AvatarPreviewModal({
             title="Nieuwe profielfoto"
             centered
             size="sm"
-            radius="lg"
             closeOnClickOutside={!isPending}
             closeOnEscape={!isPending}
         >
@@ -36,7 +35,7 @@ export default function AvatarPreviewModal({
                     style={{
                         borderRadius: '9999px',
                         overflow: 'hidden',
-                        border: '4px solid var(--primary)',
+                        border: '4px solid var(--mantine-color-brand-filled)',
                     }}
                 >
                     <Image
@@ -66,7 +65,6 @@ export default function AvatarPreviewModal({
                         type="button"
                         fullWidth
                         size="md"
-                        variant="default"
                         onClick={onCancel}
                         disabled={isPending}
                     >

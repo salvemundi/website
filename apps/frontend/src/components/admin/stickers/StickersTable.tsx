@@ -60,7 +60,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
 
     return (
         <Stack gap="lg">
-            <Paper withBorder radius="lg" p="md">
+            <Paper withBorder p="md">
                 <TextInput
                     placeholder="Zoek op locatie, stad, land of gebruiker..."
                     value={searchQuery}
@@ -69,7 +69,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                 />
             </Paper>
 
-            <Paper withBorder radius="lg" style={{ overflow: 'hidden' }}>
+            <Paper withBorder style={{ overflow: 'hidden' }}>
                 <Table.ScrollContainer minWidth={800}>
                     <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
                         <Table.Thead>
@@ -91,11 +91,11 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                                     {sticker.location_name || 'Onbekende Locatie'}
                                                 </Text>
                                                 {sticker.status === 'published' ? (
-                                                    <Badge color="success" variant="light" size="sm">
+                                                    <Badge color="success" size="sm">
                                                         Live
                                                     </Badge>
                                                 ) : (
-                                                    <Badge color="accent" variant="light" size="sm">
+                                                    <Badge color="accent" size="sm">
                                                         Draft
                                                     </Badge>
                                                 )}
@@ -146,7 +146,6 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                             >
                                                 <Paper
                                                     withBorder
-                                                    radius="md"
                                                     w={48}
                                                     h={48}
                                                     style={{
@@ -180,7 +179,6 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                             {sticker.status !== 'published' && (
                                                 <ActionIcon
                                                     type="button"
-                                                    variant="light"
                                                     color="success"
                                                     size="lg"
                                                     onClick={() => onApprove(sticker.id)}
@@ -192,7 +190,6 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                             )}
                                             <ActionIcon
                                                 type="button"
-                                                variant="light"
                                                 color="error"
                                                 size="lg"
                                                 onClick={() => onDelete(sticker.id)}

@@ -104,7 +104,6 @@ async function ActivityContent({ params, searchParams }: PageProps) {
                         component={Link}
                         href="/activiteiten"
                         title="Terug naar activiteiten"
-                        variant="default"
                         size="sm"
                         leftSection={<ChevronLeft size={16} />}
                     >

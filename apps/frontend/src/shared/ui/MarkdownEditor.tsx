@@ -2,7 +2,7 @@
 
 import { useRef, useState, type ReactNode } from 'react';
 import { Bold, Italic, Heading2, List, Link as LinkIcon, Eye, Pencil } from 'lucide-react';
-import { ActionIcon, Box, Center, Group, Paper, SegmentedControl, Text, Textarea } from '@mantine/core';
+import { ActionIcon, Box, Group, Paper, SegmentedControl, Text, Textarea } from '@mantine/core';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 
 interface MarkdownEditorProps {
@@ -63,11 +63,10 @@ export function MarkdownEditor({ id, value, onChange, placeholder, rows = 10 }: 
 
     return (
         <Paper
-            radius="md"
+            bg="var(--mantine-color-body)"
             style={{
                 overflow: 'hidden',
-                border: '1px solid var(--border)',
-                backgroundColor: 'var(--mantine-color-body)',
+                border: '1px solid var(--mantine-color-default-border)',
             }}
         >
             <Group
@@ -76,15 +75,13 @@ export function MarkdownEditor({ id, value, onChange, placeholder, rows = 10 }: 
                 px="xs"
                 py={6}
                 bg="var(--mantine-color-default)"
-                style={{ borderBottom: '1px solid var(--border)' }}
+                style={{ borderBottom: '1px solid var(--mantine-color-default-border)' }}
             >
                 <Group gap={4}>
                     {TOOLBAR_ACTIONS.map((action) => (
                         <ActionIcon
                             key={action.label}
                             type="button"
-                            variant="subtle"
-                            color="brand"
                             size="sm"
                             onClick={() => applyAction(action)}
                             disabled={mode === 'preview'}
@@ -98,26 +95,25 @@ export function MarkdownEditor({ id, value, onChange, placeholder, rows = 10 }: 
 
                 <SegmentedControl
                     size="xs"
-                    color="brand"
                     value={mode}
                     onChange={(val) => setMode(val as 'edit' | 'preview')}
                     data={[
                         {
                             value: 'edit',
                             label: (
-                                <Center style={{ gap: 6 }}>
+                                <Group gap={6} wrap="nowrap">
                                     <Pencil size={13} />
                                     <Text span inherit>Bewerken</Text>
-                                </Center>
+                                </Group>
                             ),
                         },
                         {
                             value: 'preview',
                             label: (
-                                <Center style={{ gap: 6 }}>
+                                <Group gap={6} wrap="nowrap">
                                     <Eye size={13} />
                                     <Text span inherit>Voorbeeld</Text>
-                                </Center>
+                                </Group>
                             ),
                         },
                     ]}

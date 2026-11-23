@@ -200,15 +200,14 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
 
     return (
         <Stack gap="lg">
-            <Card withBorder padding="lg" radius="lg">
+            <Card withBorder padding="lg">
                 <Stack gap="md">
-                    <Title order={3} size="xs" c="dimmed" fw={700} tt="uppercase">
+                    <Title order={3} size="xs" c="dimmed" tt="uppercase">
                         Planning-afbeelding (bovenaan de publieke QR-code pagina)
                     </Title>
                     <Group align="flex-start" gap="lg" wrap="wrap">
                         <Paper
                             withBorder
-                            radius="md"
                             style={{
                                 width: 256,
                                 aspectRatio: '16 / 9',
@@ -233,10 +232,10 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                        backgroundColor: 'var(--overlay-scrim-strong)',
                                     }}
                                 >
-                                    <Loader size="sm" color="white" />
+                                    <Loader size="sm" />
                                 </Box>
                             )}
                         </Paper>
@@ -247,8 +246,6 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                         <Button
                                             {...props}
                                             type="button"
-                                            variant="light"
-                                            color="accent"
                                             size="xs"
                                             leftSection={<Camera size={14} />}
                                         >
@@ -259,7 +256,6 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                 {imagePreview && (
                                     <Button
                                         type="button"
-                                        variant="subtle"
                                         color="error"
                                         size="xs"
                                         onClick={() => { void handleRemovePlanningImage(); }}
@@ -282,15 +278,14 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                 </Stack>
             </Card>
 
-            <Card withBorder padding="lg" radius="lg">
+            <Card withBorder padding="lg">
                 <Stack gap="md">
-                    <Title order={3} size="xs" c="dimmed" fw={700} tt="uppercase">
+                    <Title order={3} size="xs" c="dimmed" tt="uppercase">
                         Infoboekje (PDF, downloadbaar op de publieke QR-code pagina)
                     </Title>
                     <Group align="flex-start" gap="lg" wrap="wrap">
                         <Paper
                             withBorder
-                            radius="md"
                             style={{
                                 width: 64,
                                 height: 64,
@@ -313,10 +308,10 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                        backgroundColor: 'var(--overlay-scrim-strong)',
                                     }}
                                 >
-                                    <Loader size="sm" color="white" />
+                                    <Loader size="sm" />
                                 </Box>
                             )}
                         </Paper>
@@ -327,8 +322,6 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                         <Button
                                             {...props}
                                             type="button"
-                                            variant="light"
-                                            color="accent"
                                             size="xs"
                                             leftSection={<Upload size={14} />}
                                         >
@@ -351,7 +344,6 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                     </Anchor>
                                     <Button
                                         type="button"
-                                        variant="subtle"
                                         color="error"
                                         size="xs"
                                         onClick={() => { void handleRemoveInfoBooklet(); }}
@@ -378,7 +370,6 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                 {editingPlanning === null ? (
                     <Button
                         type="button"
-                        color="accent"
                         onClick={() => setEditingPlanning({ date: '', time_start: '', title: '', description: '' })}
                         leftSection={<Plus size={16} />}
                     >
@@ -443,13 +434,13 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
             )}
 
             {editingPlanning !== null && (
-                <Card ref={editFormRef} withBorder padding="xl" radius="lg" style={{ scrollMarginTop: 96 }}>
+                <Card ref={editFormRef} withBorder padding="xl" style={{ scrollMarginTop: 96 }}>
                     <Stack gap="lg">
                         <Group justify="space-between" align="center">
-                            <Title order={3} size="xs" c="dimmed" fw={700} tt="uppercase">
+                            <Title order={3} size="xs" c="dimmed" tt="uppercase">
                                 {editingPlanning.id ? 'Planning Bewerken' : 'Nieuw Planning Item'}
                             </Title>
-                            <ActionIcon type="button" variant="subtle" onClick={() => setEditingPlanning(null)} aria-label="Sluiten">
+                            <ActionIcon type="button" onClick={() => setEditingPlanning(null)} aria-label="Sluiten">
                                 <X size={18} />
                             </ActionIcon>
                         </Group>
@@ -504,7 +495,6 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         <Group gap="sm">
                             <Button
                                 type="button"
-                                color="accent"
                                 onClick={() => { void handleSave(); }}
                                 loading={saving}
                                 disabled={!editingPlanning.date || !editingPlanning.time_start || !editingPlanning.title}
@@ -514,7 +504,6 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                             </Button>
                             <Button
                                 type="button"
-                                variant="subtle"
                                 onClick={() => setEditingPlanning(null)}
                                 leftSection={<X size={16} />}
                             >
@@ -533,14 +522,13 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                             ref={setItemRef(item.id)}
                             withBorder
                             padding="lg"
-                            radius="lg"
                             style={{ scrollMarginTop: 96 }}
                         >
                             <Group justify="space-between" align="flex-start" wrap="nowrap" gap="md">
                                 <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
                                     <Group gap="xs">
                                         {item.day && (
-                                            <Badge color="accent" variant="light" size="sm">
+                                            <Badge color="accent" size="sm">
                                                 {item.day}
                                             </Badge>
                                         )}
@@ -599,9 +587,9 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                 return (
                     <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
                         {sorted.map(day => (
-                            <Card key={day} withBorder padding="lg" radius="lg">
+                            <Card key={day} withBorder padding="lg">
                                 <Stack gap="md">
-                                    <Title order={3} size="xs" c="accent" fw={700} tt="capitalize">
+                                    <Title order={3} size="xs" c="accent" tt="capitalize">
                                         {day}
                                     </Title>
                                     <Divider />
@@ -612,7 +600,6 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                                 ref={setItemRef(item.id)}
                                                 withBorder
                                                 p="md"
-                                                radius="md"
                                                 style={{ scrollMarginTop: 96 }}
                                             >
                                                 <Group justify="space-between" align="flex-start" wrap="nowrap" gap="xs">

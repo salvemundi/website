@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { Metadata, Viewport } from 'next';
 import dynamic from 'next/dynamic';
 import { connection } from 'next/server';
-import { Poppins } from 'next/font/google';
+import localFont from 'next/font/local';
 
 import { Box, mantineHtmlProps } from '@mantine/core';
 import { MantineAppProvider } from '@/components/providers/MantineAppProvider';
@@ -40,6 +40,34 @@ export const metadata: Metadata = {
     authors: [{ name: 'Salve Mundi ICT Commissie' }],
     creator: 'Salve Mundi',
     publisher: 'Salve Mundi',
+    icons: {
+        icon: [
+            {
+                url: '/favicon-light.png',
+                type: 'image/png',
+                sizes: '64x64',
+                media: '(prefers-color-scheme: light)',
+            },
+            {
+                url: '/favicon-dark.png',
+                type: 'image/png',
+                sizes: '64x64',
+                media: '(prefers-color-scheme: dark)',
+            },
+            {
+                url: '/favicon.svg',
+                type: 'image/svg+xml',
+                sizes: 'any',
+            },
+        ],
+        apple: [
+            {
+                url: '/img/icons/apple-icon-180.png',
+                sizes: '180x180',
+                type: 'image/png',
+            },
+        ],
+    },
     appleWebApp: {
         capable: true,
         statusBarStyle: 'black-translucent',
@@ -60,10 +88,15 @@ export const metadata: Metadata = {
     }
 };
 
-const poppins = Poppins({
-    subsets: ['latin'],
-    weight: ['400', '500', '600', '700', '900'],
-    variable: '--font-poppins'
+const poppins = localFont({
+    variable: '--font-poppins',
+    display: 'swap',
+    src: [
+        { path: '../../public/fonts/poppins/Poppins-Regular.ttf', weight: '400', style: 'normal' },
+        { path: '../../public/fonts/poppins/Poppins-Medium.ttf', weight: '500', style: 'normal' },
+        { path: '../../public/fonts/poppins/Poppins-SemiBold.ttf', weight: '600', style: 'normal' },
+        { path: '../../public/fonts/poppins/Poppins-Bold.ttf', weight: '700', style: 'normal' },
+    ],
 });
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
@@ -78,10 +111,18 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 <MantineAppProvider>
                     <ImpersonationWrapper impersonation={impersonation} />
                     <HeaderWrapper initialSession={session} isAuthorized={isAuthorized} />
-                    <main className="flex grow flex-col pt-header-total">
+                    <Box
+                        component="main"
+                        style={{
+                            display: 'flex',
+                            flexGrow: 1,
+                            flexDirection: 'column',
+                            paddingTop: 'calc(var(--header-total-height, 80px) + env(safe-area-inset-top, 0px))',
+                        }}
+                    >
                         {children}
                         <FooterWrapper initialSession={session} />
-                    </main>
+                    </Box>
                 </MantineAppProvider>
             </body>
         </html>

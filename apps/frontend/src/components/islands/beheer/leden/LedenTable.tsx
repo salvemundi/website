@@ -47,7 +47,7 @@ export default function LedenTable({
                                 style={{ cursor: 'pointer' }}
                             >
                                 <Group gap="sm" wrap="nowrap">
-                                    <Avatar radius="md" color="brand">
+                                    <Avatar color="brand">
                                         {member.first_name?.[0]}
                                         {member.last_name?.[0]}
                                     </Avatar>
@@ -62,7 +62,6 @@ export default function LedenTable({
                                     <Badge
                                         suppressHydrationWarning
                                         size="xs"
-                                        variant="light"
                                         color={active ? 'success' : 'error'}
                                         style={{ flexShrink: 0 }}
                                     >
@@ -96,7 +95,7 @@ export default function LedenTable({
                                     >
                                         <Table.Td>
                                             <Group gap="md" wrap="nowrap">
-                                                <Avatar radius="md" color="brand">
+                                                <Avatar color="brand">
                                                     {member.first_name?.[0]}
                                                     {member.last_name?.[0]}
                                                 </Avatar>
@@ -129,7 +128,6 @@ export default function LedenTable({
                                             <Badge
                                                 suppressHydrationWarning
                                                 size="sm"
-                                                variant="light"
                                                 color={active ? 'success' : 'error'}
                                             >
                                                 Tot {formatDate(member.membership_expiry)}

@@ -39,7 +39,7 @@ export default function ReisTable({
     return (
         <Stack gap="sm">
             {filteredSignups.length === 0 ? (
-                <Paper withBorder radius="lg" p="xl">
+                <Paper withBorder p="xl">
                     <Center py="xl">
                         <Stack align="center" gap="sm">
                             <AlertCircle size={48} opacity={0.25} />

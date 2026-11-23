@@ -1,18 +1,51 @@
 'use client';
 
 import { FileText, CreditCard } from 'lucide-react';
-import { Group, Stack, Text, Title } from '@mantine/core';
+import { Group, NativeSelect, Stack, Text, Title } from '@mantine/core';
 import type { TripSignup } from '@salvemundi/validations';
 import { parseBoolean } from '@salvemundi/validations';
 import { toISODate, formatShortDate } from '@/lib/utils/date-utils';
 import {
     HorizontalInput,
     HorizontalDate,
-    HorizontalSelect,
     HorizontalTextarea,
     HorizontalCheckbox,
     HorizontalPhone,
 } from './ReisSignupFormFields';
+
+function HorizontalSelectData({
+    label,
+    name,
+    defaultValue,
+    data,
+}: {
+    label: string;
+    name: string;
+    defaultValue?: string;
+    data: { value: string; label: string }[];
+}) {
+    return (
+        <Group gap="sm" wrap="nowrap" py={2}>
+            <Text
+                w={112}
+                size="xs"
+                fw={600}
+                c="dimmed"
+                style={{ flexShrink: 0 }}
+            >
+                {label}
+            </Text>
+            <NativeSelect
+                name={name}
+                size="xs"
+                flex={1}
+                defaultValue={defaultValue}
+                data={data}
+                aria-label={label}
+            />
+        </Group>
+    );
+}
 
 interface CockpitSignupFormProps {
     signup: TripSignup;
@@ -91,17 +124,18 @@ export default function CockpitSignupForm({
                     <Stack gap={4}>
                         {!isBusTrip && (
                             <>
-                                <HorizontalSelect
+                                <HorizontalSelectData
                                     label="ID Type"
                                     name="id_document"
                                     defaultValue={
                                         initialData?.id_document || signup.id_document || ''
                                     }
-                                >
-                                    <option value="">Niet opgegeven</option>
-                                    <option value="passport">Paspoort</option>
-                                    <option value="id_card">ID Kaart</option>
-                                </HorizontalSelect>
+                                    data={[
+                                        { value: '', label: 'Niet opgegeven' },
+                                        { value: 'passport', label: 'Paspoort' },
+                                        { value: 'id_card', label: 'ID Kaart' },
+                                    ]}
+                                />
                                 <HorizontalInput
                                     label="ID Nummer"
                                     name="document_number"
@@ -176,24 +210,26 @@ export default function CockpitSignupForm({
                         </Title>
                     </Group>
                     <Stack gap={4}>
-                        <HorizontalSelect
+                        <HorizontalSelectData
                             label="Status"
                             name="status"
                             defaultValue={initialData?.status || signup.status}
-                        >
-                            <option value="registered">Geregistreerd</option>
-                            <option value="confirmed">Bevestigd</option>
-                            <option value="waitlist">Wachtlijst</option>
-                            <option value="cancelled">Geannuleerd</option>
-                        </HorizontalSelect>
-                        <HorizontalSelect
+                            data={[
+                                { value: 'registered', label: 'Geregistreerd' },
+                                { value: 'confirmed', label: 'Bevestigd' },
+                                { value: 'waitlist', label: 'Wachtlijst' },
+                                { value: 'cancelled', label: 'Geannuleerd' },
+                            ]}
+                        />
+                        <HorizontalSelectData
                             label="Rol"
                             name="role"
                             defaultValue={initialData?.role || signup.role}
-                        >
-                            <option value="participant">Regulier</option>
-                            <option value="crew">Crew</option>
-                        </HorizontalSelect>
+                            data={[
+                                { value: 'participant', label: 'Regulier' },
+                                { value: 'crew', label: 'Crew' },
+                            ]}
+                        />
                         <Stack gap="xs" pt="sm">
                             <Group justify="space-between">
                                 <HorizontalCheckbox

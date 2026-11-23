@@ -47,7 +47,6 @@ export default async function BijbanenbankPage() {
                     <Button
                         component={Link}
                         href={isLoggedIn ? '/profiel' : '/'}
-                        variant="default"
                         size="sm"
                         leftSection={<ChevronLeft size={16} />}
                     >

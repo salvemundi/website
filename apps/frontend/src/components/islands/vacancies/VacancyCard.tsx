@@ -31,23 +31,24 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                 tabIndex={0}
                 onKeyDown={(e) => { if (e.key === 'Enter') router.push(loginUrl); }}
                 padding={0}
-                radius="xl"
                 withBorder
                 shadow="sm"
                 style={{ cursor: 'pointer', overflow: 'hidden' }}
             >
                 <Box style={{ display: 'flex', flexDirection: isList ? 'row' : 'column', flexWrap: 'wrap' }}>
                     <Box w={{ base: '100%', sm: isList ? 160 : '100%' }} style={{ flexShrink: 0, overflow: 'hidden' }}>
-                        <AspectRatio ratio={16 / 9}>
-                            {vacancy.image ? (
-                                <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" />
-                            ) : (
-                                <Center h="100%" style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)' }}>
-                                    <Text span c="brand" opacity={0.3} lh={1}>
-                                        <Briefcase size={40} />
-                                    </Text>
-                                </Center>
-                            )}
+                        <AspectRatio ratio={16 / 9} pos="relative">
+                            <Box pos="relative" w="100%" h="100%">
+                                {vacancy.image ? (
+                                    <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" />
+                                ) : (
+                                    <Center h="100%" style={{ backgroundColor: 'var(--surface-subtle)' }}>
+                                        <Text span c="brand" opacity={0.3} lh={1}>
+                                            <Briefcase size={40} />
+                                        </Text>
+                                    </Center>
+                                )}
+                            </Box>
                         </AspectRatio>
                     </Box>
                     <Group justify="space-between" align="center" p="lg" gap="sm" style={{ flex: 1, minWidth: 0 }}>
@@ -71,7 +72,6 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/bijbanenbank/${vacancy.id}`); }}
             padding={0}
-            radius="xl"
             withBorder
             shadow="sm"
             h="100%"
@@ -80,8 +80,10 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
             <Flex direction={{ base: 'column', md: isList ? 'row' : 'column' }} flex={1}>
                 {vacancy.image && (
                     <Box w={{ base: '100%', md: isList ? 224 : '100%' }} style={{ flexShrink: 0, overflow: 'hidden' }}>
-                        <AspectRatio ratio={16 / 9} h={isList ? '100%' : undefined}>
-                            <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" />
+                        <AspectRatio ratio={16 / 9} h={isList ? '100%' : undefined} pos="relative">
+                            <Box pos="relative" w="100%" h="100%">
+                                <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" />
+                            </Box>
                         </AspectRatio>
                     </Box>
                 )}
@@ -109,9 +111,18 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                             </Badge>
                         </Group>
 
-                        <Text size="sm" c="dimmed" lineClamp={isList ? 2 : 3} component="div">
+                        <Box
+                            fz="sm"
+                            c="dimmed"
+                            style={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: isList ? 2 : 3,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                            }}
+                        >
                             <SafeMarkdown content={vacancy.description} />
-                        </Text>
+                        </Box>
 
                         <Group gap="md" wrap="wrap" c="dimmed">
                             <Group gap={4}>
@@ -141,7 +152,7 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                         {isInternship && vacancy.directions.length > 0 && (
                             <Group gap={6} wrap="wrap">
                                 {vacancy.directions.map((direction) => (
-                                    <Badge key={direction} size="xs" variant="outline" color="brand">
+                                    <Badge key={direction} size="xs">
                                         {direction}
                                     </Badge>
                                 ))}
@@ -151,7 +162,7 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                         {vacancy.skills.length > 0 && (
                             <Group gap={6} wrap="wrap">
                                 {vacancy.skills.slice(0, 6).map((skill) => (
-                                    <Badge key={skill} size="xs" variant="light" color="brand">
+                                    <Badge key={skill} size="xs">
                                         {skill}
                                     </Badge>
                                 ))}
@@ -181,8 +192,6 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         onClick={(e) => e.stopPropagation()}
-                                        variant="light"
-                                        color="brand"
                                         size="md"
                                         title="Website"
                                         aria-label="Website"
@@ -195,8 +204,6 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                                         component="a"
                                         href={`tel:${vacancy.contact_phone}`}
                                         onClick={(e) => e.stopPropagation()}
-                                        variant="light"
-                                        color="brand"
                                         size="md"
                                         title="Bellen"
                                         aria-label="Bellen"
@@ -208,8 +215,6 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                                     component="a"
                                     href={`mailto:${vacancy.contact_email}`}
                                     onClick={(e) => e.stopPropagation()}
-                                    variant="filled"
-                                    color="brand"
                                     size="md"
                                     title="E-mailen"
                                     aria-label="E-mailen"

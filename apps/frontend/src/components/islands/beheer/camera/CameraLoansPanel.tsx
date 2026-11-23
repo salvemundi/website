@@ -46,15 +46,15 @@ function LoanCard({ loan, today, showToast }: { loan: CameraAdminLoan; today: st
     };
 
     return (
-        <Card withBorder padding="lg" radius="lg">
+        <Card withBorder padding="lg">
             <Stack gap="sm">
                 <Group gap="xs" wrap="wrap">
                     <Text size="sm" fw={700}>{loan.event_name}</Text>
-                    <Badge color={open ? 'brand' : 'success'} variant="light">
+                    <Badge color={open ? 'brand' : 'success'}>
                         {open ? 'Uitgeleend' : 'Teruggebracht'}
                     </Badge>
                     {loan.days_late > 0 && (
-                        <Badge color="error" variant="light" leftSection={<AlertTriangle size={12} />}>
+                        <Badge color="error" leftSection={<AlertTriangle size={12} />}>
                             {loan.days_late} {loan.days_late === 1 ? 'dag' : 'dagen'} te laat
                         </Badge>
                     )}

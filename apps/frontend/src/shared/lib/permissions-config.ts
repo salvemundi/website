@@ -31,6 +31,11 @@ export const COMMITTEES = {
     WEBSHOP: 'acbdeb68-7547-4019-b58e-38bd3aaf63e4'
 };
 
+export const TEAM_GROUP_IDS: readonly string[] = [
+    COMMITTEES.WEBSHOP,
+    COMMITTEES.COBO,
+];
+
 export interface FeatureRegistry {
     activiteiten: readonly string[];
     camera: readonly string[];

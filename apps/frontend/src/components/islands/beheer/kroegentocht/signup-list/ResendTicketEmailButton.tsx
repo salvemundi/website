@@ -46,7 +46,6 @@ export default function ResendTicketEmailButton({
             <Button
                 type="button"
                 size="xs"
-                color="brand"
                 loading={sending}
                 disabled={sending || !paid || !email?.trim()}
                 onClick={() => {

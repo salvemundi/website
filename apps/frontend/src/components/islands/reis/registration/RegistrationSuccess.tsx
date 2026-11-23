@@ -12,16 +12,15 @@ export function RegistrationSuccess({ currentUser, email }: RegistrationSuccessP
     return (
         <Paper
             p="xl"
-            radius="lg"
             withBorder
             ta="center"
             style={{
-                backgroundColor: 'color-mix(in srgb, var(--primary) 6%, transparent)',
-                borderColor: 'color-mix(in srgb, var(--primary) 20%, transparent)',
+                backgroundColor: 'var(--surface-subtle)',
+                borderColor: 'var(--surface-subtle-border)',
             }}
         >
             <Stack align="center" gap="md" py="md">
-                <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                <ThemeIcon size="xl">
                     <Check size={32} strokeWidth={3} />
                 </ThemeIcon>
                 <Title order={2} size="h3" c="brand">

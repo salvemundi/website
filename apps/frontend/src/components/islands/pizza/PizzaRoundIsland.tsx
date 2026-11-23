@@ -220,7 +220,7 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
             >
                 <Stack gap="xs">
                     <Group gap="sm" wrap="wrap">
-                        <Badge variant="light" color={getStatusColor(round.status)}>
+                        <Badge color={getStatusColor(round.status)}>
                             {STATUS_LABEL[round.status]}
                         </Badge>
                         <Group gap={6}>
@@ -254,11 +254,10 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
                         {safeLink && myUnpaid > 0 && (
                             <Paper
                                 p="md"
-                                radius="md"
                                 withBorder
                                 style={{
-                                    backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
-                                    borderColor: 'color-mix(in srgb, var(--primary) 25%, transparent)',
+                                    backgroundColor: 'var(--surface-subtle)',
+                                    borderColor: 'var(--surface-subtle-border)',
                                 }}
                             >
                                 <Stack gap="sm" align="flex-start">
@@ -316,7 +315,6 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
                                     </Button>
                                     <Button
                                         type="button"
-                                        variant="default"
                                         onClick={() => {
                                             setEditingLink(false);
                                             setLinkDraft(round.paymentLink ?? '');
@@ -338,7 +336,6 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
                                 {round.paymentLink && (
                                     <Button
                                         type="button"
-                                        variant="default"
                                         disabled={isPending}
                                         onClick={() => saveLink(null)}
                                         leftSection={<Trash2 size={16} />}
@@ -354,7 +351,7 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
 
             {isOpen && (
                 <Tile title={editing ? 'Bestelling bewerken' : 'Mijn bestelling'} icon={<Pizza size={22} />}>
-                    <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
+                    <Box component="form" onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
                         <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
                             {showFavorites && (
                                 <Stack gap="xs" style={{ gridColumn: '1 / -1' }}>
@@ -362,7 +359,6 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
                                         <Box>
                                             <Button
                                                 type="button"
-                                                variant="default"
                                                 size="sm"
                                                 onClick={() => favorites.lastOrder && fillForm(favorites.lastOrder)}
                                                 leftSection={<History size={16} />}
@@ -380,8 +376,6 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
                                                 <Button
                                                     key={`${f.itemName}|${f.size ?? ''}|${f.note ?? ''}|${f.price}`}
                                                     type="button"
-                                                    variant="light"
-                                                    color="brand"
                                                     size="compact-xs"
                                                     onClick={() => fillForm(f)}
                                                 >
@@ -484,19 +478,19 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
                                     {editing ? 'Opslaan' : 'Bestelling plaatsen'}
                                 </Button>
                                 {editing && (
-                                    <Button type="button" variant="default" onClick={resetForm}>
+                                    <Button type="button" onClick={resetForm}>
                                         Annuleren
                                     </Button>
                                 )}
                             </Group>
                         </SimpleGrid>
-                    </form>
+                    </Box>
                 </Tile>
             )}
 
             <Tile title="Bestellingen" icon={<ClipboardList size={22} />}>
                 {orders.length === 0 ? (
-                    <Paper p="xl" radius="lg" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
+                    <Paper p="xl" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
                         <Text size="sm" fw={700} c="dimmed">
                             Nog geen bestellingen.
                         </Text>
@@ -529,7 +523,7 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
                                                     {o.userName}
                                                 </Text>
                                                 {o.isMine && (
-                                                    <Badge size="xs" variant="light" color="brand">
+                                                    <Badge size="xs">
                                                         jij
                                                     </Badge>
                                                 )}
@@ -542,11 +536,11 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
                                                         {o.itemName}{o.size ? ` (${o.size})` : ''}
                                                     </Text>
                                                     {o.addedToOrderAt && (
-                                                        <Badge size="xs" variant="light" color="success">
+                                                        <Badge size="xs" color="success">
                                                             Toegevoegd
                                                         </Badge>
                                                     )}
-                                                    <Badge size="xs" variant="light" color={o.paidAt ? 'brand' : 'accent'}>
+                                                    <Badge size="xs" color={o.paidAt ? 'brand' : 'accent'}>
                                                         {o.paidAt ? 'Betaald' : 'Nog te betalen'}
                                                     </Badge>
                                                 </Group>
@@ -567,8 +561,6 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
                                                 <Group justify="flex-end" gap="xs" wrap="nowrap">
                                                     <ActionIcon
                                                         type="button"
-                                                        variant="subtle"
-                                                        color="brand"
                                                         onClick={() => startEdit(o)}
                                                         aria-label={`Bewerk bestelling ${o.itemName}`}
                                                     >
@@ -576,7 +568,6 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
                                                     </ActionIcon>
                                                     <ActionIcon
                                                         type="button"
-                                                        variant="subtle"
                                                         color="error"
                                                         disabled={isPending}
                                                         onClick={() => confirmDelete(o)}
@@ -665,7 +656,6 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
                                                     {!o.isMine && round.status !== 'paid' && !o.paidAt && (
                                                         <ActionIcon
                                                             type="button"
-                                                            variant="subtle"
                                                             color="error"
                                                             disabled={isPending}
                                                             onClick={() => confirmDelete(o)}

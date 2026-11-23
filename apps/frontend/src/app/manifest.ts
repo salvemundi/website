@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { BRAND_COLORS } from '@/lib/config/theme';
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
@@ -7,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
         description: 'De officiële website van SV Salve Mundi, de studievereniging voor Fontys ICT Eindhoven.',
         start_url: '/',
         display: 'standalone',
-        background_color: '#ffffff',
-        theme_color: '#a4539b',
+        background_color: BRAND_COLORS.lightSurface,
+        theme_color: BRAND_COLORS.purple,
         shortcuts: [
             {
                 name: 'Sticker plakken',

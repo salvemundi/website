@@ -45,7 +45,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
             case 'loading':
                 return (
                     <Stack align="center" gap="lg" py="xl">
-                        <Loader size="xl" color="brand" />
+                        <Loader size="xl" />
                         <Title order={1} size="h2">
                             Status controleren...
                         </Title>
@@ -54,7 +54,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
             case 'paid':
                 return (
                     <Stack align="center" gap="md">
-                        <ThemeIcon size={96} radius="xl" variant="light" color="success">
+                        <ThemeIcon size="xl" color="success">
                             <CheckCircle size={56} />
                         </ThemeIcon>
                         <Title order={1} size="h1" c="brand">
@@ -70,7 +70,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
             case 'failed':
                 return (
                     <Stack align="center" gap="md">
-                        <ThemeIcon size={96} radius="xl" variant="light" color="error">
+                        <ThemeIcon size="xl" color="error">
                             <XCircle size={56} />
                         </ThemeIcon>
                         <Title order={1} size="h2" c="error">
@@ -87,7 +87,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
             default:
                 return (
                     <Stack align="center" gap="md">
-                        <ThemeIcon size={96} radius="xl" variant="light" color="accent">
+                        <ThemeIcon size="xl" color="accent">
                             <AlertTriangle size={56} />
                         </ThemeIcon>
                         <Title order={1} size="h2">
@@ -102,7 +102,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
     };
 
     return (
-        <Card padding="xl" radius="xl" shadow="xl" maw={672} w="100%" ta="center">
+        <Card padding="xl" shadow="xl" maw={672} w="100%" ta="center">
             <Stack gap="xl" align="center">
                 {renderContent()}
 
@@ -120,7 +120,6 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
                     <Button
                         type="button"
                         size="lg"
-                        variant="default"
                         leftSection={<Home size={20} />}
                         onClick={() => router.push('/')}
                     >

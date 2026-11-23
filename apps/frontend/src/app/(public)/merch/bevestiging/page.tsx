@@ -18,7 +18,7 @@ function ErrorCard({ title, message }: { title: string; message: string }) {
         <Center mih="70vh">
             <Card w="100%" maw={440} padding="xl">
                 <Stack align="center" ta="center" gap="lg">
-                    <ThemeIcon size={64} radius="xl" variant="light" color="error">
+                    <ThemeIcon size="xl" color="error">
                         <XCircle size={32} />
                     </ThemeIcon>
                     <Title order={1} size="h2" c="brand">
@@ -28,7 +28,6 @@ function ErrorCard({ title, message }: { title: string; message: string }) {
                     <Button
                         component={Link}
                         href="/merch"
-                        variant="default"
                         size="sm"
                         leftSection={<ChevronLeft size={16} />}
                     >
@@ -118,9 +117,7 @@ export default async function WebshopBevestigingPage({ searchParams }: PageProps
                     <Stack gap="xl">
                         <Stack align="center" ta="center" gap="sm">
                             <ThemeIcon
-                                size={64}
-                                radius="xl"
-                                variant="light"
+                                size="xl"
                                 color={isCancelled ? 'error' : isCompleted ? 'success' : 'brand'}
                             >
                                 {isCancelled ? (
@@ -176,7 +173,6 @@ export default async function WebshopBevestigingPage({ searchParams }: PageProps
                             <Button
                                 component={Link}
                                 href="/merch"
-                                variant="default"
                                 size="sm"
                                 leftSection={<ChevronLeft size={16} />}
                             >

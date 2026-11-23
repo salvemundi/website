@@ -173,7 +173,6 @@ export default function ActiviteitAanmeldingenIsland({
                     </Button>
                     <Button
                         type="button"
-                        variant="default"
                         onClick={() => exportSignupsToCSV(filteredSignups, event.name)}
                         disabled={filteredSignups.length === 0}
                         leftSection={<Download size={15} />}
@@ -183,7 +182,6 @@ export default function ActiviteitAanmeldingenIsland({
                     {canAccessEdit && (
                         <Button
                             type="button"
-                            color="accent"
                             onClick={() => setIsManualModalOpen(true)}
                             leftSection={<UserPlus size={15} />}
                         >
@@ -193,7 +191,6 @@ export default function ActiviteitAanmeldingenIsland({
                     {canAccessEdit && (
                         <Button
                             type="button"
-                            variant="default"
                             onClick={() => setIsMailModalOpen(true)}
                             disabled={optimisticSignups.length === 0}
                             leftSection={<Mail size={15} />}
@@ -254,10 +251,10 @@ export default function ActiviteitAanmeldingenIsland({
                 signups={optimisticSignups}
             />
 
-            <Card withBorder padding={0} radius="lg" style={{ overflow: 'hidden' }}>
+            <Card withBorder padding={0} style={{ overflow: 'hidden' }}>
                 {filteredSignups.length === 0 ? (
                     <Stack align="center" gap="sm" p="xl" py={64} ta="center">
-                        <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                        <ThemeIcon size="xl">
                             <Search size={28} />
                         </ThemeIcon>
                         <Title order={3} size="h4">Geen resultaten</Title>

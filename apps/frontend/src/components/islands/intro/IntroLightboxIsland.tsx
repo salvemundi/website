@@ -47,12 +47,14 @@ export const IntroLightboxIsland = () => {
                                 style={{
                                     borderRadius: 'var(--mantine-radius-md)',
                                     overflow: 'hidden',
-                                    border: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)',
-                                    backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
+                                    border: '1px solid var(--surface-subtle-border)',
+                                    backgroundColor: 'var(--surface-subtle)',
                                 }}
                             >
                                 {isFailed ? (
-                                    <FallbackLogo className="object-contain p-6" />
+                                    <Box pos="relative" w="100%" h="100%" p="lg">
+                                        <FallbackLogo className="object-contain" />
+                                    </Box>
                                 ) : (
                                     <Image
                                         src={img.src}
@@ -74,14 +76,15 @@ export const IntroLightboxIsland = () => {
                 onClose={closeLightbox}
                 size="xl"
                 centered
-                radius="lg"
                 padding="xs"
                 aria-label="Foto voorbeeld"
             >
                 {lightboxSrc && (
                     <Box pos="relative" h="75vh" w="100%" style={{ borderRadius: 'var(--mantine-radius-md)', overflow: 'hidden' }}>
                         {failedImages.has(lightboxSrc) ? (
-                            <FallbackLogo className="object-contain p-12" />
+                            <Box pos="relative" w="100%" h="100%" p={48}>
+                                <FallbackLogo className="object-contain" />
+                            </Box>
                         ) : (
                             <Image
                                 src={lightboxSrc}

@@ -146,7 +146,7 @@ export default function ActiviteitSignupIsland({
 
     if (isMembersOnly && !isMember) {
         return (
-            <Card padding="lg" radius="lg" withBorder ta="center">
+            <Card padding="lg" withBorder ta="center">
                 <Stack align="center" gap="sm">
                     <Title order={3} size="h4">
                         Exclusief voor leden

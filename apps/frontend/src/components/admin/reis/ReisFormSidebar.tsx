@@ -11,6 +11,7 @@ import {
     Card,
     Checkbox,
     Divider,
+    FileButton,
     Group,
     Paper,
     Stack,
@@ -60,9 +61,9 @@ export default function ReisFormSidebar({
 
     return (
         <Stack gap="lg" pos={{ lg: 'sticky' }} top={{ lg: 32 }}>
-            <Card withBorder radius="lg" padding="lg">
+            <Card withBorder padding="lg">
                 <Group gap="sm" mb="md">
-                    <ThemeIcon size="md" radius="md" variant="light" color="accent">
+                    <ThemeIcon size="md" color="accent">
                         <Upload size={16} />
                     </ThemeIcon>
                     <Title order={2} size="h5">Banner</Title>
@@ -71,7 +72,6 @@ export default function ReisFormSidebar({
                 {!imagePreview ? (
                     <Paper
                         withBorder
-                        radius="md"
                         p="xl"
                         onClick={() => fileInputRef.current?.click()}
                         style={{
@@ -88,14 +88,15 @@ export default function ReisFormSidebar({
                         <Text size="xs" fw={600} c="dimmed" mt="xs" ta="center">
                             Upload banner (afbeelding of video)
                         </Text>
-                        <input
+                        <FileButton
                             ref={fileInputRef}
-                            type="file"
                             name="image_file"
                             accept="image/*,video/*"
-                            onChange={onImageChange}
-                            style={{ display: 'none' }}
-                        />
+                            onChange={() => {}}
+                            inputProps={{ onChange: onImageChange }}
+                        >
+                            {() => null}
+                        </FileButton>
                     </Paper>
                 ) : (
                     <Box
@@ -117,7 +118,6 @@ export default function ReisFormSidebar({
                         <Group gap="xs" pos="absolute" top={8} right={8}>
                             <ActionIcon
                                 type="button"
-                                variant="default"
                                 size="md"
                                 onClick={() => fileInputRef.current?.click()}
                                 aria-label="Banner wijzigen"
@@ -127,7 +127,6 @@ export default function ReisFormSidebar({
                             <ActionIcon
                                 type="button"
                                 color="error"
-                                variant="filled"
                                 size="md"
                                 onClick={onRemoveImage}
                                 aria-label="Banner verwijderen"
@@ -135,75 +134,72 @@ export default function ReisFormSidebar({
                                 <X size={14} />
                             </ActionIcon>
                         </Group>
-                        <input
+                        <FileButton
                             ref={fileInputRef}
-                            type="file"
                             name="image_file"
                             accept="image/*,video/*"
-                            onChange={onImageChange}
-                            style={{ display: 'none' }}
-                        />
+                            onChange={() => {}}
+                            inputProps={{ onChange: onImageChange }}
+                        >
+                            {() => null}
+                        </FileButton>
                     </Box>
                 )}
             </Card>
 
-            <Card withBorder radius="lg" padding="lg">
+            <Card withBorder padding="lg">
                 <Group gap="sm" mb="md">
-                    <ThemeIcon size="md" radius="md" variant="light" color="accent">
+                    <ThemeIcon size="md" color="accent">
                         <Eye size={16} />
                     </ThemeIcon>
                     <Title order={2} size="h5">Instellingen</Title>
                 </Group>
                 <Divider mb="md" />
                 <Stack gap="sm">
-                    <Paper withBorder radius="md" p="sm">
+                    <Paper withBorder p="sm">
                         <Group justify="space-between" wrap="wrap" gap="xs">
                             <Checkbox
                                 checked={registrationOpen}
                                 onChange={(e) => setRegistrationOpen(e.currentTarget.checked)}
                                 label="Inschrijving Open"
-                                color="accent"
                             />
                             {isAutoOpen && (
-                                <Badge color="success" variant="light" size="xs">
+                                <Badge color="success" size="xs">
                                     Auto-Open Actief
                                 </Badge>
                             )}
                         </Group>
                     </Paper>
 
-                    <Paper withBorder radius="md" p="sm">
+                    <Paper withBorder p="sm">
                         <Checkbox
                             checked={allowDepositPayments}
                             onChange={(e) => setAllowDepositPayments(e.currentTarget.checked)}
                             label="Aanbetalingen Open"
-                            color="accent"
                         />
                     </Paper>
 
-                    <Paper withBorder radius="md" p="sm">
+                    <Paper withBorder p="sm">
                         <Checkbox
                             checked={allowFinalPayments}
                             onChange={(e) => setAllowFinalPayments(e.currentTarget.checked)}
                             label="Restbetalingen Aan"
-                            color="accent"
                         />
                     </Paper>
 
                     {allowFinalPayments && (
-                        <Alert color="accent" variant="light" icon={<AlertTriangle size={16} />}>
+                        <Alert color="accent" icon={<AlertTriangle size={16} />}>
                             <Text size="xs" fw={600}>
                                 Let op: Het inschakelen van restbetalingen sluit automatisch nieuwe inschrijvingen voor deze reis.
                             </Text>
                         </Alert>
                     )}
 
-                    <Paper withBorder radius="md" p="sm">
+                    <Paper withBorder p="sm">
                         <Checkbox
                             checked={isBusTrip}
                             onChange={(e) => setIsBusTrip(e.currentTarget.checked)}
                             label="Busreis (Rijbewijs)"
-                            color="accent"
                         />
                     </Paper>
                 </Stack>
@@ -212,7 +208,6 @@ export default function ReisFormSidebar({
             <Stack gap="sm">
                 <Button
                     type="submit"
-                    color="accent"
                     loading={pending}
                     fullWidth
                     size="md"
@@ -223,7 +218,6 @@ export default function ReisFormSidebar({
 
                 <Button
                     type="button"
-                    variant="default"
                     onClick={onCancel}
                     fullWidth
                     size="md"

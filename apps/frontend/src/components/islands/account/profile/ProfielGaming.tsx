@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Gamepad2, Pen, Save } from 'lucide-react';
-import { ActionIcon, Group, Paper, Stack, Text, TextInput } from '@mantine/core';
+import { ActionIcon, Box, Group, Paper, Stack, Text, TextInput } from '@mantine/core';
 import { Tile, formatForBreak } from './ProfielUI';
 import { UseFormRegister, UseFormHandleSubmit } from 'react-hook-form';
 
@@ -37,7 +37,6 @@ export default function ProfielGaming({
                     {!isEditingMinecraft && (
                         <ActionIcon
                             type="button"
-                            variant="subtle"
                             size="sm"
                             onClick={() => setIsEditingMinecraft(true)}
                             aria-label="Minecraft username bewerken"
@@ -53,7 +52,8 @@ export default function ProfielGaming({
                             <Gamepad2 size={20} />
                         </Text>
                         {isEditingMinecraft ? (
-                            <form
+                            <Box
+                                component="form"
                                 onSubmit={(e) => {
                                     void handleSubmitMinecraft(onSaveMinecraft)(e);
                                 }}
@@ -69,7 +69,6 @@ export default function ProfielGaming({
                                     />
                                     <ActionIcon
                                         type="submit"
-                                        variant="filled"
                                         size="lg"
                                         loading={isPending}
                                         aria-label="Minecraft username opslaan"
@@ -77,7 +76,7 @@ export default function ProfielGaming({
                                         <Save size={16} />
                                     </ActionIcon>
                                 </Group>
-                            </form>
+                            </Box>
                         ) : (
                             <Text size="sm" fw={700} style={{ wordBreak: 'break-word', minWidth: 0, flex: 1 }}>
                                 {formatForBreak(user.minecraft_username) || 'Niet ingesteld'}
