@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from '@/components/ui/Link';
-import { ClipboardCheck, ArrowRight, FileSignature } from 'lucide-react';
+import { ClipboardCheck, ArrowRight, FileSignature, Sparkles } from 'lucide-react';
 import { Anchor, Card, Container, Group, Stack, Text, ThemeIcon } from '@mantine/core';
 import { ProfielIsland } from '@/components/islands/account/ProfielIsland';
 import { getMyProfileView, getUserEventSignups, getUserPubCrawlSignups } from '@/server/actions/profile/profiel.actions';
@@ -8,6 +8,7 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { getIntroAttendanceAccess, getIntroAttendanceVisible } from '@/server/actions/public/intro-attendance.actions';
 import { getMyNdas } from '@/server/actions/nda/member-nda.actions';
 import { getBorrelBarClaimStatus } from '@/server/actions/profile/borrelbar-claim.actions';
+import { getSamuWrappedVisible } from '@/server/actions/profile/samu-wrapped.actions';
 
 export const metadata = {
     title: 'Mijn Profiel | SV Salve Mundi',
@@ -15,14 +16,15 @@ export const metadata = {
 };
 
 export default async function ProfielPage() {
-    const [eventSignups, pubCrawlSignups, profile, attendanceVisible, attendanceAccess, ndas, borrelBarClaimStatus] = await Promise.all([
+    const [eventSignups, pubCrawlSignups, profile, attendanceVisible, attendanceAccess, ndas, borrelBarClaimStatus, wrappedVisible] = await Promise.all([
         getUserEventSignups(),
         getUserPubCrawlSignups(),
         getMyProfileView(),
         getIntroAttendanceVisible(),
         getIntroAttendanceAccess(),
         getMyNdas(),
-        getBorrelBarClaimStatus()
+        getBorrelBarClaimStatus(),
+        getSamuWrappedVisible()
     ]);
 
     const hasIntroAttendanceAccess = attendanceAccess.isCrew || attendanceAccess.ledGroupIds.length > 0;
@@ -33,6 +35,30 @@ export default async function ProfielPage() {
         <PublicPageShell title="Mijn Profiel">
             <Container size="xl" py="xl">
                 <Stack gap="lg">
+                    {wrappedVisible && (
+                        <Anchor component={Link} href="/profiel/wrapped" underline="never">
+                            <Card
+                                c="white"
+                                style={{ background: 'linear-gradient(120deg, #F8CF45 0%, #e05b8a 45%, #5A3761 100%)' }}
+                            >
+                                <Group justify="space-between" wrap="nowrap" gap="md">
+                                    <Group gap="md" wrap="nowrap">
+                                        <ThemeIcon size={48} radius="lg" variant="white" color="dark">
+                                            <Sparkles size={22} />
+                                        </ThemeIcon>
+                                        <Stack gap={2}>
+                                            <Text fw={900} size="lg">Jouw Samu Wrapped staat klaar!</Text>
+                                            <Text size="sm" opacity={0.85}>
+                                                Bekijk jouw jaar bij Salve Mundi in cijfers
+                                            </Text>
+                                        </Stack>
+                                    </Group>
+                                    <ArrowRight size={20} />
+                                </Group>
+                            </Card>
+                        </Anchor>
+                    )}
+
                     {pendingNdaCount > 0 && (
                         <Anchor component={Link} href="/profiel/nda" underline="never">
                             <Card>
