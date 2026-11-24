@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import type { UserContext } from '../src/auth/jwt.js';
 import { AccessDeniedError, createGraphReader, resolveGraphUrl, SourceUnavailableError, type GraphReader } from '../src/graph/client.js';
 import { createGraphBijbelSources, htmlToText } from '../src/graph/source.js';
