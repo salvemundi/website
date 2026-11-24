@@ -45,27 +45,8 @@ jobs:
       - run: bun run --filter=@salvemundi/monitoring-service type-check
       - run: bun run --filter=@salvemundi/monitoring-service lint
 
-  build-monitoring:
-    needs: [lint-and-typecheck]
-    name: Build & Validate Monitoring Service
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 26
-      - uses: actions/cache@v4
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-      - run: bun install --frozen-lockfile --filter=@salvemundi/monitoring-service...
-      - run: bun run --filter=@salvemundi/monitoring-service build
-
   deploy-monitoring:
-    needs: [build-monitoring]
+    needs: [lint-and-typecheck]
     if: (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/acceptance') && github.event_name != 'pull_request'
     name: Provision & Sync Uptime Kuma Monitors
     runs-on: ubuntu-latest
@@ -161,5 +142,4 @@ jobs:
             sleep 2
           done
 
-          bun run --filter=@salvemundi/monitoring-service build
           bun run --filter=@salvemundi/monitoring-service provision

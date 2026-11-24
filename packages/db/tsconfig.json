@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "types": ["node"],
-    "outDir": "dist",
-    "declaration": true},
+    "noEmit": true
+  },
   "include": ["src/**/*", "drizzle/**/*"]
 }

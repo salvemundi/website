@@ -1,7 +1,7 @@
 import { createBackendConfig } from "../../eslint.backend.mjs";
 
 export default [
-  { ignores: ["eslint.config.mjs", "build.mjs"] },
+  { ignores: ["eslint.config.mjs"] },
   {
     files: ["scripts/**/*.mjs", "scripts/**/*.js"],
     languageOptions: {

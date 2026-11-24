@@ -26,7 +26,6 @@
       "@types/node": "^26.0.0",
       "@types/qrcode": "^1.5.6",
       "drizzle-orm": "0.45.2",
-      "esbuild": "^0.28.1",
       "eslint": "^9.39.5",
       "fastify": "5.12.6",
       "fastify-plugin": "^6.0.0",
@@ -40,7 +39,6 @@
   "scripts": {
     "dev": "bun run --filter @salvemundi/frontend dev",
     "dev:services": "bun run --parallel --if-present --filter './apps/services/*' dev",
-    "build:packages": "bun run --filter @salvemundi/db build && bun run --filter @salvemundi/validations build",
     "dev:infra": "docker compose -f infrastructure/dev/docker-compose.yml up -d --wait",
     "dev:infra:down": "docker compose -f infrastructure/dev/docker-compose.yml down",
     "dev:db:init": "bun run --filter @salvemundi/db dev:init",
@@ -51,7 +49,7 @@
     "type-check": "bun run --if-present --filter '*' type-check",
     "validate": "bun run type-check && bun run lint && bun run knip && bun run build",
     "setup": "bun install && bun run validate",
-    "db:sync": "bun run --filter @salvemundi/db pull && node packages/db/scripts/normalize-schema.mjs && bun run --filter @salvemundi/db build && bun run --filter @salvemundi/validations build"
+    "db:sync": "bun run --filter @salvemundi/db pull && node packages/db/scripts/normalize-schema.mjs"
   },
   "trustedDependencies": [
     "sharp"
@@ -69,7 +67,6 @@
     "@better-auth/telemetry": "1.7.7",
     "next": "16.4.6",
     "fast-uri": "^3.1.9",
-    "esbuild": "^0.28.1",
     "axios": "1.15.0",
     "handlebars": "4.7.10",
     "fastify": "5.12.6",

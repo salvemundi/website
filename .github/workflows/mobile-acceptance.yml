@@ -33,11 +33,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
-      - run: bun run build:packages
       - name: Authentication and acceptance boundary tests
-        run: node --experimental-strip-types --test apps/mobile/tests/mobile-security.test.mjs
+        run: bun test apps/mobile/tests/mobile-security.test.mjs
       - name: Mobile auth, activity administration, widget and preference tests
-        run: node --experimental-vm-modules --test apps/mobile/tests/mobile-auth-flow.test.mjs apps/mobile/tests/mobile-admin*.test.mjs apps/mobile/tests/mobile-notification-preferences.test.mjs
+        run: bun test apps/mobile/tests/mobile-auth-flow.test.mjs apps/mobile/tests/mobile-admin*.test.mjs apps/mobile/tests/mobile-notification-preferences.test.mjs
       - name: APNs and notification worker tests
         run: node --test apps/services/mobile-notification-service/test/*.test.mjs
       - name: Acceptance setup safety tests
