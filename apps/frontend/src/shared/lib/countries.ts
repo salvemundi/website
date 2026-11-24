@@ -117,6 +117,10 @@ export function parsePhoneNumber(raw: string): { country: Country; nationalNumbe
 /** Normalizes a stored phone number (e.g. "0612345678") to the "+31 612345678" format the forms validate on. */
 export function toInternationalPhoneNumber(raw: string | null | undefined): string {
     if (!raw) return '';
-    const { country, nationalNumber } = parsePhoneNumber(raw);
-    return nationalNumber ? `${country.dialCode} ${nationalNumber}` : '';
+    // Opgeslagen nummers (o.a. uit Entra) kunnen punten, streepjes, "(0)" of onzichtbare tekens bevatten
+    const cleaned = raw.replace(/\(0\)/g, '').replace(/[^\d+]/g, '');
+    if (!cleaned) return '';
+    const { country, nationalNumber } = parsePhoneNumber(cleaned);
+    const digits = nationalNumber.replace(/\D/g, '').replace(/^0+/, '');
+    return digits ? `${country.dialCode} ${digits}` : '';
 }

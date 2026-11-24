@@ -94,8 +94,7 @@ export default async function WebshopBestellenPage({ searchParams }: PageProps) 
                             <WebshopCheckoutIsland
                                 product={product}
                                 initialUser={{
-                                    first_name: user.first_name,
-                                    last_name: user.last_name,
+                                    ...resolveCheckoutName(user.first_name, user.last_name, user.name),
                                     email: session.user.email,
                                     phone_number: user.phone_number
                                 }}
@@ -106,4 +105,31 @@ export default async function WebshopBestellenPage({ searchParams }: PageProps) 
             </Container>
         </PublicPageShell>
     );
+}
+
+/**
+ * first_name/last_name kunnen leeg zijn in directus_users (de Azure-sync vult ze alleen bij nieuwe accounts).
+ * Val dan terug op de volledige naam uit de sessie, zoals andere formulieren ook doen.
+ */
+function resolveCheckoutName(
+    firstName: string | null | undefined,
+    lastName: string | null | undefined,
+    fullName: string | null | undefined
+): { first_name: string; last_name: string } {
+    const first = firstName?.trim() ?? '';
+    const last = lastName?.trim() ?? '';
+    const full = fullName?.trim() ?? '';
+    if ((first && last) || !full || full.includes('@')) return { first_name: first, last_name: last };
+
+    // Sessienamen kunnen ook de vorm "voornaam.achternaam" hebben
+    const parts = (full.includes(' ') ? full.split(/\s+/) : full.split('.'))
+        .filter(Boolean)
+        .map((p) => (full.includes(' ') ? p : p.charAt(0).toUpperCase() + p.slice(1)));
+    if (!first) {
+        return { first_name: parts[0] ?? '', last_name: last || parts.slice(1).join(' ') };
+    }
+    const rest = full.includes(' ') && full.toLowerCase().startsWith(first.toLowerCase())
+        ? full.slice(first.length).trim()
+        : parts.slice(1).join(' ');
+    return { first_name: first, last_name: rest };
 }

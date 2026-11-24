@@ -53,14 +53,17 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                         backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
                     }}
                 >
-                    <MediaAsset
-                        asset={{ id: active.asset, type: active.asset_type }}
-                        alt={`${productName} - foto ${activeIndex + 1}`}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        objectFit="cover"
-                        priority
-                    />
+                    {/* AspectRatio is niet gepositioneerd; zonder deze Box positioneert de `fill`-afbeelding zich t.o.v. de pagina */}
+                    <Box pos="relative" w="100%" h="100%">
+                        <MediaAsset
+                            asset={{ id: active.asset, type: active.asset_type }}
+                            alt={`${productName} - foto ${activeIndex + 1}`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                            objectFit="cover"
+                            priority
+                        />
+                    </Box>
                 </AspectRatio>
             </UnstyledButton>
 
@@ -85,13 +88,15 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                                         : '2px solid transparent',
                                 }}
                             >
-                                <MediaAsset
-                                    asset={{ id: item.asset, type: item.asset_type }}
-                                    alt={`${productName} - miniatuur ${idx + 1}`}
-                                    fill
-                                    sizes="20vw"
-                                    objectFit="cover"
-                                />
+                                <Box pos="relative" w="100%" h="100%">
+                                    <MediaAsset
+                                        asset={{ id: item.asset, type: item.asset_type }}
+                                        alt={`${productName} - miniatuur ${idx + 1}`}
+                                        fill
+                                        sizes="20vw"
+                                        objectFit="cover"
+                                    />
+                                </Box>
                             </AspectRatio>
                         </UnstyledButton>
                     ))}

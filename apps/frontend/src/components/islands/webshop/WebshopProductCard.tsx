@@ -36,28 +36,30 @@ export default function WebshopProductCard({ product }: WebshopProductCardProps)
                         ratio={1}
                         style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)' }}
                     >
-                        {showVideo ? (
-                            <MediaAsset
-                                asset={{ id: video.asset, type: video.asset_type }}
-                                alt={`${product.name} - video preview`}
-                                fill
-                                objectFit="cover"
-                            />
-                        ) : cover ? (
-                            <MediaAsset
-                                asset={{ id: cover.asset, type: cover.asset_type }}
-                                alt={product.name}
-                                fill
-                                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
-                                objectFit="cover"
-                            />
-                        ) : (
-                            <Center h="100%">
-                                <Text span c="brand" opacity={0.3} lh={1}>
-                                    <ShoppingBag size={48} />
-                                </Text>
-                            </Center>
-                        )}
+                        <Box pos="relative" w="100%" h="100%">
+                            {showVideo ? (
+                                <MediaAsset
+                                    asset={{ id: video.asset, type: video.asset_type }}
+                                    alt={`${product.name} - video preview`}
+                                    fill
+                                    objectFit="cover"
+                                />
+                            ) : cover ? (
+                                <MediaAsset
+                                    asset={{ id: cover.asset, type: cover.asset_type }}
+                                    alt={product.name}
+                                    fill
+                                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
+                                    objectFit="cover"
+                                />
+                            ) : (
+                                <Center h="100%">
+                                    <Text span c="brand" opacity={0.3} lh={1}>
+                                        <ShoppingBag size={48} />
+                                    </Text>
+                                </Center>
+                            )}
+                        </Box>
                     </AspectRatio>
                     <Badge
                         pos="absolute"

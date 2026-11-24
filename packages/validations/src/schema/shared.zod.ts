@@ -20,9 +20,10 @@ export const dateOfBirthSchema = z.string()
     }, 'Geboortedatum kan niet meer dan 100 jaar geleden zijn.');
 
 export const phoneNumberSchema = z.string()
-    .min(8, 'Telefoonnummer moet beginnen met + followed by landcode (bijv. +31612345678)')
+    .min(8, 'Telefoonnummer is te kort (bijv. +31 612345678)')
     .max(16, 'Telefoonnummer is te lang')
-    .regex(/^\+[1-9][0-9\s\-()]+$/, 'Telefoonnummer moet beginnen met + followed by landcode (bijv. +31612345678)');
+    .regex(/^\+/, 'Telefoonnummer moet beginnen met + en de landcode (bijv. +31 612345678)')
+    .regex(/^\+[1-9][0-9\s\-()]+$/, 'Telefoonnummer mag alleen cijfers bevatten (bijv. +31 612345678)');
 
 const MAX_UPLOAD_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
