@@ -105,6 +105,13 @@ function plural(n: number, one: string, many: string): string {
     return n === 1 ? one : many;
 }
 
+/** Zet "commissie" op een eigen regel, zodat lange namen (bijv. "Activiteitencommissie") op het scherm passen. */
+function CommitteeName({ name }: { name: string }) {
+    const match = /^(.+?)[\s-]?(commissie)$/i.exec(name.trim());
+    if (!match) return <>{name}</>;
+    return <>{match[1]}<br />{match[2].toLowerCase()}</>;
+}
+
 /** Bouwt de lijst met slides op basis van de stats. Slides zonder data worden overgeslagen. */
 export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
     const slides: WrappedSlide[] = [];
@@ -211,7 +218,7 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
                 <>
                     <Kicker>Jouw favoriete commissie</Kicker>
                     <Emoji at={150}>💜</Emoji>
-                    <Title at={350}>{a.topCommittee.name}</Title>
+                    <Title at={350}><CommitteeName name={a.topCommittee.name} /></Title>
                     <Body at={650}>
                         Je ging naar {a.topCommittee.count} {plural(a.topCommittee.count, 'activiteit', 'activiteiten')} van
                         hen. Zij weten inmiddels wel wie je bent.
