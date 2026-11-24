@@ -544,8 +544,9 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
   line-height: 1.1;
   text-transform: uppercase;
   text-wrap: balance;
+  /* Alleen tussen woorden afbreken (geen "LE-DEN"); een woord breder dan het scherm breekt pas als laatste redmiddel */
   overflow-wrap: break-word;
-  hyphens: auto;
+  hyphens: manual;
   color: var(--w-title);
 }
 [data-wrapped-body] { margin: 0; max-width: 34ch; font-size: 1.0625rem; font-weight: 300; line-height: 1.6; color: var(--w-ink); }
