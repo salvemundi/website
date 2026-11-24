@@ -3,7 +3,7 @@
 import { Box, UnstyledButton, VisuallyHidden } from '@mantine/core';
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import Link from '@/components/ui/Link';
-import { toPng } from 'html-to-image';
+import { toBlob } from 'html-to-image';
 import { X, Share2, Download, RotateCcw, Pause } from 'lucide-react';
 import { type SamuWrappedStats } from '@/lib/wrapped/samu-wrapped.types';
 import { buildWrappedSlides, WrappedShareCard } from './wrapped-slides';
@@ -101,50 +101,93 @@ export default function SamuWrappedIsland({ stats }: Props) {
         }
     };
 
-    const renderImage = async (): Promise<Blob | null> => {
-        if (!cardRef.current) return null;
-        const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
-        const res = await fetch(dataUrl);
-        return res.blob();
-    };
+    const fileName = `samu-wrapped-${stats.year}.png`;
+    const [imageBlob, setImageBlob] = useState<Blob | null>(null);
+
+    /**
+     * Rendert de deelkaart naar PNG.
+     * - toBlob i.p.v. toPng + fetch(dataUrl): de CSP (connect-src) blokkeert fetch naar data:-URL's.
+     * - Safari mist bij de eerste render soms fonts; daarom twee keer renderen.
+     * - Lukt het inbedden van fonts niet, dan nog een poging zonder fonts.
+     */
+    const renderImage = useCallback(async (): Promise<Blob | null> => {
+        const node = cardRef.current;
+        if (!node) return null;
+        const options = { pixelRatio: 3, cacheBust: true };
+        try {
+            await toBlob(node, options);
+            return await toBlob(node, options);
+        } catch (error) {
+            safeConsoleError('[SamuWrappedIsland.tsx][renderImage] retry zonder fonts', error);
+            return toBlob(node, { ...options, skipFonts: true });
+        }
+    }, []);
+
+    // Vooraf renderen zodra de laatste slide zichtbaar is (na de in-animatie), zodat "Delen"
+    // direct binnen de klik kan gebeuren; iOS weigert navigator.share na een lange await.
+    useEffect(() => {
+        if (!isLast) return;
+        let cancelled = false;
+        const timer = setTimeout(() => {
+            renderImage()
+                .then((blob) => { if (!cancelled) setImageBlob(blob); })
+                .catch((error: unknown) => safeConsoleError('[SamuWrappedIsland.tsx][prerender]', error));
+        }, 1200);
+        return () => {
+            cancelled = true;
+            clearTimeout(timer);
+        };
+    }, [isLast, renderImage]);
+
+    const getBlob = async (): Promise<Blob | null> => imageBlob ?? (await renderImage());
 
     const handleShare = async () => {
-        setSharing(true);
         setShareError(null);
         try {
-            const blob = await renderImage();
-            if (!blob) return;
-            const file = new File([blob], `samu-wrapped-${stats.year}.png`, { type: 'image/png' });
-
-            if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: `Mijn Samu Wrapped ${stats.year}`,
-                    text: `Mijn jaar bij Salve Mundi: ${stats.persona.title} ${stats.persona.emoji}`
-                });
-            } else {
-                downloadBlob(blob, file.name);
+            const blob = imageBlob;
+            if (blob) {
+                // Geen await vóór share: de klik-activatie moet behouden blijven
+                await shareOrDownload(blob);
+                return;
             }
+            setSharing(true);
+            const rendered = await renderImage();
+            if (!rendered) throw new Error('Render mislukt');
+            setImageBlob(rendered);
+            await shareOrDownload(rendered);
         } catch (error) {
             // AbortError = gebruiker sloot het deelmenu zelf
-            if (!(error instanceof DOMException && error.name === 'AbortError')) {
-                safeConsoleError('[SamuWrappedIsland.tsx][handleShare]', error);
-                setShareError('Delen lukte niet. Probeer opslaan.');
-            }
+            if (error instanceof DOMException && error.name === 'AbortError') return;
+            safeConsoleError('[SamuWrappedIsland.tsx][handleShare]', error);
+            setShareError('Delen lukte niet. Probeer het nog eens of gebruik Opslaan.');
         } finally {
             setSharing(false);
         }
     };
 
+    const shareOrDownload = async (blob: Blob) => {
+        const file = new File([blob], fileName, { type: 'image/png' });
+        if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+                files: [file],
+                title: `Mijn Samu Wrapped ${stats.year}`,
+                text: `Mijn jaar bij Salve Mundi: ${stats.persona.title} ${stats.persona.emoji}`
+            });
+        } else {
+            downloadBlob(blob, fileName);
+        }
+    };
+
     const handleDownload = async () => {
-        setSharing(true);
         setShareError(null);
+        setSharing(!imageBlob);
         try {
-            const blob = await renderImage();
-            if (blob) downloadBlob(blob, `samu-wrapped-${stats.year}.png`);
+            const blob = await getBlob();
+            if (!blob) throw new Error('Render mislukt');
+            downloadBlob(blob, fileName);
         } catch (error) {
             safeConsoleError('[SamuWrappedIsland.tsx][handleDownload]', error);
-            setShareError('Opslaan lukte niet.');
+            setShareError('Opslaan lukte niet. Probeer het nog eens.');
         } finally {
             setSharing(false);
         }
@@ -196,8 +239,11 @@ export default function SamuWrappedIsland({ stats }: Props) {
                             <Box component="p" mod={{ 'wrapped-kicker': true }}>Dat was jouw jaar!</Box>
                             <Box component="h2" mod={{ 'wrapped-summary-title': true }}>Deel je Wrapped</Box>
                         </Box>
-                        <Box ref={cardRef} mod={{ 'wrapped-pop': true }} style={{ animationDelay: '150ms' }}>
-                            <WrappedShareCard stats={stats} />
+                        <Box mod={{ 'wrapped-pop': true }} style={{ animationDelay: '150ms' }}>
+                            {/* ref op een niet-geanimeerd element: html-to-image kopieert anders de in-animatie (lege afbeelding) */}
+                            <Box ref={cardRef}>
+                                <WrappedShareCard stats={stats} />
+                            </Box>
                         </Box>
                         <Box mod={{ 'wrapped-actions': true, 'wrapped-rise': true }} style={{ animationDelay: '500ms' }}>
                             <UnstyledButton mod={{ 'wrapped-btn': 'primary' }} onClick={() => void handleShare()} disabled={sharing}>
@@ -245,6 +291,10 @@ function downloadBlob(blob: Blob, filename: string) {
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
+    link.rel = 'noopener';
+    // Firefox vereist dat de link in het document staat
+    document.body.appendChild(link);
     link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }

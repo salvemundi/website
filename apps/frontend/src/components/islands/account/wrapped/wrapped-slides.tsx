@@ -207,8 +207,10 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
                             En op <Accent>{a.favoriteWeekday.name}</Accent> ben je niet te stoppen
                         </Title>
                     </Section>
-                    {a.distinctLocations > 1 && (
-                        <Body at={1100}>Je kwam op {a.distinctLocations} verschillende locaties.</Body>
+                    {a.favoriteWeekday.count > 1 && (
+                        <Body at={1100}>
+                            Op {a.favoriteWeekday.name} was je bij {a.favoriteWeekday.count} verschillende activiteiten.
+                        </Body>
                     )}
                 </>
             )
