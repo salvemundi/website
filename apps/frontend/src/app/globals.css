@@ -570,6 +570,7 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 [data-wrapped-emoji="xl"] { margin: 1.5rem 0; font-size: 7rem; }
 [data-wrapped-hint] { margin: 2.5rem 0 0; font-size: 0.875rem; font-weight: 700; color: rgba(255, 255, 255, 0.6); }
 [data-wrapped-note] { margin: 1.5rem 0 0; font-size: 0.75rem; font-weight: 600; color: rgba(255, 255, 255, 0.5); }
+[data-wrapped-name] { hyphens: none; overflow-wrap: normal; word-break: normal; }
 [data-wrapped-section] { margin-top: 2.5rem; }
 [data-wrapped-chips] { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
 [data-wrapped-chip] {

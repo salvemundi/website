@@ -97,6 +97,11 @@ function Chip({ children, at }: { children: ReactNode; at: number }) {
     return <Box component="span" mod={{ 'wrapped-chip': true, ...anim('rise') }} style={delay(at)}>{children}</Box>;
 }
 
+/** Namen nooit midden in een woord afbreken; alleen tussen woorden (bijv. tussen voor- en achternaam). */
+function Name({ children }: { children: ReactNode }) {
+    return <Box component="span" mod={{ 'wrapped-name': true }}>{children}</Box>;
+}
+
 function Section({ children }: { children: ReactNode }) {
     return <Box mod={{ 'wrapped-section': true }}>{children}</Box>;
 }
@@ -123,7 +128,7 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
         content: (
             <>
                 <Emoji>👋</Emoji>
-                <Title at={150}>Hoi {s.firstName}!</Title>
+                <Title at={150}>Hoi <Name>{s.firstName}!</Name></Title>
                 <Body at={400}>
                     Tijd om terug te kijken op jouw {s.year} bij Salve Mundi. Klaar voor je Samu Wrapped?
                 </Body>
@@ -414,7 +419,7 @@ export function WrappedShareCard({ stats: s }: { stats: SamuWrappedStats }) {
             <Box mod={{ 'wrapped-card-glow': true }} />
             <Box mod={{ 'wrapped-card-inner': true }}>
                 <Box component="p" mod={{ 'wrapped-card-kicker': true }}>Samu Wrapped {s.year}</Box>
-                <Box component="p" mod={{ 'wrapped-card-name': true }}>{s.firstName}</Box>
+                <Box component="p" mod={{ 'wrapped-card-name': true }}><Name>{s.firstName}</Name></Box>
                 <Box mod={{ 'wrapped-card-persona': true }}>
                     <Box component="span" mod={{ 'wrapped-card-emoji': true }}>{s.persona.emoji}</Box>
                     <Box component="span" mod={{ 'wrapped-card-persona-title': true }}>{s.persona.title}</Box>
