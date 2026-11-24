@@ -34,8 +34,6 @@ export interface SamuWrappedStats {
         busiestMonth: WrappedNamedCount | null;
         favoriteWeekday: WrappedNamedCount | null;
         distinctLocations: number;
-        /** "Je hoort bij de top X% van actiefste Samu'ers" — null als er te weinig data is */
-        topPercent: number | null;
     };
 
     pubCrawls: {
@@ -71,6 +69,13 @@ export interface SamuWrappedStats {
     };
 
     totalSpent: number;
+
+    /**
+     * "Je hoort bij de top X%": samengestelde score over alle stats van het jaar
+     * (activiteiten, kroegentochten, reizen, stickers, webshop-items, commissies).
+     * null bij te weinig deelnemers of een score van 0.
+     */
+    topPercent: number | null;
 
     persona: WrappedPersona;
 }

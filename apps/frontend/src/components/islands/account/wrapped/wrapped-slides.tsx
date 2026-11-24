@@ -263,7 +263,7 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
         });
     }
 
-    if (a.topPercent !== null && a.topPercent <= 50) {
+    if (s.topPercent !== null && s.topPercent <= 50) {
         slides.push({
             id: 'top-percent',
             section: 'Ranking',
@@ -271,9 +271,9 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
             content: (
                 <>
                     <Kicker>Je hoort bij de</Kicker>
-                    <Huge>top <CountUp value={a.topPercent} />%</Huge>
+                    <Huge>top <CountUp value={s.topPercent} />%</Huge>
                     <Title at={400}>actiefste leden van {s.year}</Title>
-                    <Body at={600}>Je was bij meer activiteiten dan de meeste Samu&apos;ers.</Body>
+                    <Body at={600}>Gemeten over al je stats: activiteiten, kroegentochten, reizen, stickers, webshop en commissies.</Body>
                 </>
             )
         });
@@ -470,7 +470,7 @@ export function WrappedShareCard({ stats: s }: { stats: SamuWrappedStats }) {
     if (s.stickers.total > 0) rows.push({ label: 'Stickers', value: s.stickers.total });
     if (s.trips.length > 0) rows.push({ label: 'Reizen', value: s.trips.length });
     if (s.committees.names.length > 0) rows.push({ label: 'Commissies', value: s.committees.names.length });
-    if (s.activities.topPercent !== null && s.activities.topPercent <= 50) rows.push({ label: 'Ranking', value: `top ${s.activities.topPercent}%` });
+    if (s.topPercent !== null && s.topPercent <= 50) rows.push({ label: 'Ranking', value: `top ${s.topPercent}%` });
 
     return (
         <Box mod={{ 'wrapped-card': true }}>

@@ -209,7 +209,7 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
     const committeeNames = sortedEvents.map((e) => e.committee).filter((c): c is string => !!c);
     const locations = new Set(sortedEvents.map((e) => e.location?.trim().toLowerCase()).filter(Boolean));
 
-    const topPercent = sortedEvents.length > 0 ? await getActivityTopPercent(sortedEvents.length, start, end) : null;
+    const topPercent = await getOverallTopPercent(user.id, start, end);
 
     // ── Stickers ────────────────────────────────────────────────────
     let farthest: SamuWrappedStats['stickers']['farthest'] = null;
@@ -246,7 +246,6 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
             busiestMonth: topOf(monthNames),
             favoriteWeekday: topOf(weekdayNames),
             distinctLocations: locations.size,
-            topPercent
         },
         pubCrawls: {
             total: pubCrawlRows.length,
@@ -266,6 +265,7 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
             leaderOf: committeeRows.filter((c) => c.isLeader).length
         },
         membership,
+        topPercent,
         totalSpent: Math.round((spentRows[0]?.total ?? 0) * 100) / 100
     };
 
@@ -273,33 +273,93 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
 }
 
 /**
- * Berekent bij welk top-percentage de gebruiker hoort qua aantal activiteiten.
- * Groepeert alleen op e-mailadres en geeft geen gegevens van anderen terug.
+ * Punten per onderdeel voor de samengestelde activiteitsscore ("top X%").
+ * Activiteiten en kroegentochten tellen gelijk; een reis is een groter evenement;
+ * stickers en merch tellen licht mee; commissiewerk zwaar.
  */
-async function getActivityTopPercent(myCount: number, start: string, end: string): Promise<number | null> {
-    const perUser = db
-        .select({ c: sql<number>`COUNT(*)`.as('c') })
-        .from(schema.event_signups)
-        .innerJoin(schema.events, eq(schema.events.id, schema.event_signups.event_id))
-        .where(and(
-            eq(schema.event_signups.payment_status, 'paid'),
-            sql`${schema.event_signups.participant_email} IS NOT NULL`,
-            gte(schema.events.event_date, start),
-            lt(schema.events.event_date, end)
-        ))
-        .groupBy(sql`LOWER(${schema.event_signups.participant_email})`)
-        .as('per_user');
+export const WRAPPED_SCORE_WEIGHTS = {
+    activity: 1,
+    pubCrawl: 1,
+    trip: 3,
+    sticker: 0.5,
+    merchItem: 0.5,
+    committee: 2,
+    committeeLeader: 1
+} as const;
 
-    const result = await db
-        .select({
-            total: sql<number>`COUNT(*)::int`,
-            atLeast: sql<number>`(COUNT(*) FILTER (WHERE ${perUser.c} >= ${myCount}))::int`
-        })
-        .from(perUser);
+/**
+ * Berekent bij welk top-percentage de gebruiker hoort op basis van ALLE stats van het jaar:
+ * activiteiten, kroegentochten, reizen, stickers, webshop-items en commissies.
+ * Iedereen wordt herkend aan zijn account (directus_users.id); aanmeldingen zonder account
+ * vallen terug op het e-mailadres. Geeft geen gegevens van anderen terug.
+ */
+async function getOverallTopPercent(userId: string, start: string, end: string): Promise<number | null> {
+    const w = WRAPPED_SCORE_WEIGHTS;
+    const rows = await db.execute<{ total: number; at_least: number; mine: number }>(sql`
+        WITH users AS (
+            SELECT id::text AS id, LOWER(email) AS email FROM directus_users WHERE email IS NOT NULL
+        ),
+        points AS (
+            -- Activiteiten
+            SELECT COALESCE(s.directus_relations::text, u.id, LOWER(s.participant_email)) AS k, ${w.activity}::float8 AS p
+            FROM event_signups s
+            JOIN events e ON e.id = s.event_id
+            LEFT JOIN users u ON u.email = LOWER(s.participant_email)
+            WHERE s.payment_status = 'paid' AND e.event_date >= ${start}::date AND e.event_date < ${end}::date
 
-    const row = result.at(0);
-    if (!row || row.total < MIN_PARTICIPANTS_FOR_PERCENTILE) return null;
-    return Math.max(1, Math.ceil((row.atLeast / row.total) * 100));
+            UNION ALL
+            -- Kroegentochten
+            SELECT COALESCE(ps.directus_relations::text, u.id, LOWER(ps.email)), ${w.pubCrawl}::float8
+            FROM pub_crawl_signups ps
+            JOIN pub_crawl_events pe ON pe.id = ps.pub_crawl_event_id
+            LEFT JOIN users u ON u.email = LOWER(ps.email)
+            WHERE ps.payment_status = 'paid'
+              AND COALESCE(pe.date, ps.created_at) >= ${start}::date AND COALESCE(pe.date, ps.created_at) < ${end}::date
+
+            UNION ALL
+            -- Reizen
+            SELECT COALESCE(ts.directus_relations::text, u.id, LOWER(ts.email)), ${w.trip}::float8
+            FROM trip_signups ts
+            JOIN trips t ON t.id = ts.trip_id
+            LEFT JOIN users u ON u.email = LOWER(ts.email)
+            WHERE ts.status NOT IN ('cancelled', 'waitlist') AND t.start_date >= ${start}::date AND t.start_date < ${end}::date
+
+            UNION ALL
+            -- Stickers
+            SELECT st.user_created::text, ${w.sticker}::float8
+            FROM "Stickers" st
+            WHERE st.user_created IS NOT NULL AND st.date_created >= ${start}::date AND st.date_created < ${end}::date
+
+            UNION ALL
+            -- Webshop-items (aanbetaling binnen)
+            SELECT COALESCE(wp.user_id::text, u.id, LOWER(wp.email)), ${w.merchItem}::float8 * wl.quantity
+            FROM webshop_preorders wp
+            JOIN webshop_preorder_lines wl ON wl.preorder_id = wp.id
+            LEFT JOIN users u ON u.email = LOWER(wp.email)
+            WHERE wp.deposit_paid = true AND wp.created_at >= ${start}::date AND wp.created_at < ${end}::date
+
+            UNION ALL
+            -- Commissies (huidige lidmaatschappen) en leiderschap
+            SELECT cm.user_id::text, ${w.committee}::float8 + CASE WHEN cm.is_leader THEN ${w.committeeLeader}::float8 ELSE 0 END
+            FROM committee_members cm
+            WHERE cm.user_id IS NOT NULL
+        ),
+        scores AS (
+            SELECT k, SUM(p) AS score FROM points WHERE k IS NOT NULL GROUP BY k
+        ),
+        me AS (
+            SELECT COALESCE((SELECT score FROM scores WHERE k = ${userId}), 0) AS score
+        )
+        SELECT
+            COUNT(*)::int AS total,
+            (COUNT(*) FILTER (WHERE scores.score >= me.score))::int AS at_least,
+            MAX(me.score)::float8 AS mine
+        FROM scores, me
+    `);
+
+    const row = rows.at(0);
+    if (!row || row.mine <= 0 || row.total < MIN_PARTICIPANTS_FOR_PERCENTILE) return null;
+    return Math.max(1, Math.ceil((row.at_least / row.total) * 100));
 }
 
 function pickPersona(s: Omit<SamuWrappedStats, 'persona'>): WrappedPersona {
