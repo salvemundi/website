@@ -63,7 +63,7 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
     const end = `${year + 1}-01-01`;
     const email = user.email.toLowerCase();
 
-    const [eventRows, pubCrawlRows, stickerRows, stickerAllTime, tripRows, merchRows, committeeRows, spentRows, userRows] = await Promise.all([
+    const [eventRows, pubCrawlRows, stickerRows, stickerAllTime, tripRows, merchRows, committeeRows, spentRows, userRows, firstMembershipPayment, firstActiveStatus] = await Promise.all([
         db.select({
             name: schema.events.name,
             date: schema.events.event_date,
@@ -168,7 +168,27 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
         db.select({ memberSince: schema.directus_users.originele_betaaldatum, firstName: schema.directus_users.first_name })
             .from(schema.directus_users)
             .where(eq(schema.directus_users.id, user.id))
-            .limit(1)
+            .limit(1),
+
+        // originele_betaaldatum wordt bij elke verlenging overschreven; voor "dagen lid in totaal"
+        // zoeken we daarom ook de eerste betaalde lidmaatschapstransactie en de eerste activering op.
+        db.select({ first: sql<string | null>`MIN(${schema.transactions.created_at})::date::text` })
+            .from(schema.transactions)
+            .where(and(
+                or(
+                    eq(schema.transactions.user_id, user.id),
+                    sql`LOWER(${schema.transactions.email}) = ${email}`
+                ),
+                eq(schema.transactions.product_type, 'membership'),
+                eq(schema.transactions.payment_status, 'paid')
+            )),
+
+        db.select({ first: sql<string | null>`MIN(${schema.membership_history.changed_at})::date::text` })
+            .from(schema.membership_history)
+            .where(and(
+                eq(schema.membership_history.user_id, user.id),
+                eq(schema.membership_history.new_status, 'active')
+            ))
     ]);
 
     // ── Activiteiten ────────────────────────────────────────────────
@@ -202,7 +222,13 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
     const countries = new Set(stickerRows.map((s) => s.country?.trim().toLowerCase()).filter(Boolean));
 
     // ── Lidmaatschap ────────────────────────────────────────────────
-    const memberSince = toDateOnly(userRows[0]?.memberSince ?? null);
+    const memberSince = [
+        toDateOnly(userRows[0]?.memberSince ?? null),
+        toDateOnly(firstMembershipPayment[0]?.first ?? null),
+        toDateOnly(firstActiveStatus[0]?.first ?? null)
+    ]
+        .filter((d): d is string => !!d)
+        .sort()[0] ?? null;
     const daysMember = memberSince
         ? Math.max(0, Math.floor((Date.now() - new Date(`${memberSince}T00:00:00Z`).getTime()) / 86_400_000))
         : null;
