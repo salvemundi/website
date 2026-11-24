@@ -105,9 +105,9 @@ Remote MCP-server-URL `https://<MCP_PUBLIC_URL host>/mcp`; OAuth authorization c
 
 ## Lokaal ontwikkelen en testen
 ```
-pnpm --filter=@salvemundi/mcp-service type-check
-pnpm --filter=@salvemundi/mcp-service lint
-pnpm --filter=@salvemundi/mcp-service test
+bun run --filter=@salvemundi/mcp-service type-check
+bun run --filter=@salvemundi/mcp-service lint
+bun run --filter=@salvemundi/mcp-service test
 ```
 Tests gebruiken lokaal gegenereerde sleutels en gemockte Graph/OBO; er is geen verbinding met Entra of SharePoint.
 
