@@ -41,5 +41,5 @@ jobs:
         run: node --test apps/services/mobile-notification-service/test/*.test.mjs
       - name: Acceptance setup safety tests
         run: python3 -m unittest discover -s apps/mobile/deployment -p 'test_*.py'
-      - name: Worker syntax checks
-        run: bun run --filter=@salvemundi/mobile-notification-service build
+      - name: Worker lint
+        run: bun run --filter=@salvemundi/mobile-notification-service lint

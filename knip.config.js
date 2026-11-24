@@ -1,6 +1,10 @@
 const config = {
   exclude: ["exports", "types"],
+  ignore: ["apps/frontend/public/**"],
   workspaces: {
+    ".": {
+      entry: ["tests/*.test.mjs", "apps/mobile/tests/*.test.mjs"]
+    },
     "apps/frontend": {
       entry: ["src/sw.ts"],
       next: {
@@ -16,9 +20,7 @@ const config = {
       entry: ["src/index.ts", "src/server.ts"]
     },
     "packages/db": {},
-    "packages/validations": {
-      ignoreDependencies: ["directus-ts-typegen"]
-    }
+    "packages/validations": {}
   }
 };
 
