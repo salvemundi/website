@@ -311,7 +311,7 @@ function pickPersona(s: Omit<SamuWrappedStats, 'persona'>): WrappedPersona {
         return { emoji: '🗺️', title: 'De Stickerkoning', description: 'Waar je ook komt, Salve Mundi is al geweest. Jij markeert de wereld.' };
     }
     if (a >= 15) {
-        return { emoji: '🏆', title: 'De Vaste Waarde', description: 'Als er iets te doen is, ben jij er. Elke activiteit voelt als thuiskomen.' };
+        return { emoji: '🏆', title: 'De Vaste Waarde', description: 'Als er iets te doen is, ben jij er.' };
     }
     if (s.pubCrawls.total >= 2) {
         return { emoji: '🍻', title: 'Het Feestbeest', description: 'Geen kroeg is veilig voor jou. Proost op een legendarisch jaar!' };
@@ -320,16 +320,16 @@ function pickPersona(s: Omit<SamuWrappedStats, 'persona'>): WrappedPersona {
         return { emoji: '✈️', title: 'De Wereldreiziger', description: 'Jij pakt je koffer en gaat. De beste herinneringen maak je onderweg.' };
     }
     if (s.committees.names.length >= 2) {
-        return { emoji: '🧩', title: 'De Duizendpoot', description: 'Meerdere commissies, één Samu-hart. Waar haal je de tijd vandaan?' };
+        return { emoji: '🧩', title: 'De Duizendpoot', description: 'Meerdere commissies tegelijk. Waar haal je de tijd vandaan?' };
     }
     if (s.committees.names.length === 1) {
         return { emoji: '💪', title: 'De Actieve Kracht', description: 'Achter de schermen maak jij het verschil voor iedereen.' };
     }
     if (a >= 5) {
-        return { emoji: '🎉', title: 'Het Gezelligheidsdier', description: 'Jij weet waar het feest is. En meestal ben jij het feest.' };
+        return { emoji: '🎉', title: 'Het Gezelligheidsdier', description: 'Jij weet waar het feest is.' };
     }
     if (a >= 1) {
-        return { emoji: '🎯', title: 'De Selectieve Genieter', description: 'Jij kiest je momenten zorgvuldig — en die waren raak.' };
+        return { emoji: '🎯', title: 'De Selectieve Genieter', description: 'Je kiest je momenten zorgvuldig, en die waren raak.' };
     }
-    return { emoji: '🌱', title: 'De Rustige Kracht', description: 'Dit jaar was rustig, maar volgend jaar wordt het jouw jaar. We zien je snel!' };
+    return { emoji: '🌱', title: 'De Rustige Kracht', description: 'Dit jaar was rustig. Volgend jaar zien we je graag vaker.' };
 }

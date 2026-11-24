@@ -1,25 +1,32 @@
 'use client';
 
-import { Box } from '@mantine/core';
+import { Box, Image } from '@mantine/core';
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { type SamuWrappedStats } from '@/lib/wrapped/samu-wrapped.types';
 
+/**
+ * Slide-thema's volgens de Brandguide Salve Mundi:
+ * - brand:  donker paars vlak, titels geel, tekst wit paars (titel-/hoofdstukpagina's)
+ * - dark:   donker blauw vlak, titels geel, tekst wit paars
+ * - light:  wit paars vlak, tekst donker blauw, nadruk donker paars (inhoudspagina's)
+ * - yellow: geel vlak, tekst donker blauw (spaarzaam, voor één hoogtepunt)
+ */
+export type WrappedTheme = 'brand' | 'dark' | 'light' | 'yellow';
+
 export interface WrappedSlide {
     id: string;
-    background: string;
+    /** Sectienaam in de voettekst, zoals in de brandguide ("1.0 Activiteiten") */
+    section: string;
+    theme: WrappedTheme;
     content: ReactNode;
 }
 
-// Merkkleuren: donker paars #5A3761, licht paars #936695, geel #F8CF45
-const BG = {
-    night: 'radial-gradient(120% 90% at 10% 0%, #936695 0%, #5A3761 45%, #201024 100%)',
-    sunset: 'linear-gradient(160deg, #F8CF45 0%, #f0855a 45%, #5A3761 100%)',
-    berry: 'linear-gradient(200deg, #e05b8a 0%, #936695 50%, #2d1933 100%)',
-    ocean: 'linear-gradient(165deg, #3fb5c9 0%, #3a5ba8 50%, #2d1933 100%)',
-    lime: 'linear-gradient(170deg, #b8e05b 0%, #3ba57a 50%, #1f2a33 100%)',
-    gold: 'radial-gradient(110% 80% at 50% 0%, #F8CF45 0%, #d99a2b 40%, #5A3761 100%)',
-    plum: 'linear-gradient(180deg, #46254c 0%, #201024 100%)'
-} as const;
+export const BEELDMERK: Record<WrappedTheme, string> = {
+    brand: '/img/wrapped/beeldmerk-geel.png',
+    dark: '/img/wrapped/beeldmerk-geel.png',
+    light: '/img/wrapped/beeldmerk-paars.png',
+    yellow: '/img/wrapped/beeldmerk-paars.png'
+};
 
 const dateFmt = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long' });
 const euroFmt = new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
@@ -32,7 +39,7 @@ function prefersReducedMotion(): boolean {
     return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-export function CountUp({ value, duration = 1400 }: { value: number; duration?: number }) {
+export function CountUp({ value, duration = 1200 }: { value: number; duration?: number }) {
     const [display, setDisplay] = useState(() => (prefersReducedMotion() ? value : 0));
 
     useEffect(() => {
@@ -59,62 +66,79 @@ function delay(ms: number): CSSProperties {
     return { animationDelay: `${ms}ms` };
 }
 
-type Anim = 'rise' | 'pop';
+const rise = { 'wrapped-rise': true };
 
-function anim(kind: Anim) {
-    return kind === 'rise' ? { 'wrapped-rise': true } : { 'wrapped-pop': true };
-}
-
+/** Kleine kop boven een slide, ExtraBold Italic in hoofdletters (toc-entry). */
 function Kicker({ children, at = 0 }: { children: ReactNode; at?: number }) {
-    return <Box component="p" mod={{ 'wrapped-kicker': true, ...anim('rise') }} style={delay(at)}>{children}</Box>;
+    return <Box component="p" mod={{ 'wrapped-kicker': true, ...rise }} style={delay(at)}>{children}</Box>;
 }
 
-function Huge({ children, at = 150 }: { children: ReactNode; at?: number }) {
-    return <Box component="p" mod={{ 'wrapped-huge': true, ...anim('pop') }} style={delay(at)}>{children}</Box>;
+/** Groot cijfer, Poppins Black (chapter-number). */
+function Huge({ children, at = 100 }: { children: ReactNode; at?: number }) {
+    return <Box component="p" mod={{ 'wrapped-huge': true, ...rise }} style={delay(at)}>{children}</Box>;
 }
 
+/** Kop in Poppins Black, hoofdletters (chapter-title). */
 function Title({ children, at = 150 }: { children: ReactNode; at?: number }) {
-    return <Box component="h2" mod={{ 'wrapped-title': true, ...anim('rise') }} style={delay(at)}>{children}</Box>;
+    return <Box component="h2" mod={{ 'wrapped-title': true, ...rise }} style={delay(at)}>{children}</Box>;
 }
 
-function Body({ children, at = 400 }: { children: ReactNode; at?: number }) {
-    return <Box component="p" mod={{ 'wrapped-body': true, ...anim('rise') }} style={delay(at)}>{children}</Box>;
+/** Lopende tekst in Poppins Light (body). */
+function Body({ children, at = 300 }: { children: ReactNode; at?: number }) {
+    return <Box component="p" mod={{ 'wrapped-body': true, ...rise }} style={delay(at)}>{children}</Box>;
 }
 
-function Emoji({ children, at = 0, size }: { children: ReactNode; at?: number; size?: 'xl' }) {
-    return <Box component="p" mod={{ 'wrapped-emoji': size ?? true, ...anim('pop') }} style={delay(at)}>{children}</Box>;
+/** Nadruk binnen lopende tekst (body-strong in de accentkleur). */
+function Strong({ children }: { children: ReactNode }) {
+    return <Box component="span" mod={{ 'wrapped-strong': true }}>{children}</Box>;
 }
 
-function Accent({ children, capitalize }: { children: ReactNode; capitalize?: boolean }) {
-    return <Box component="span" mod={{ 'wrapped-accent': capitalize ? 'capitalize' : true }}>{children}</Box>;
+/** Definitielijst zoals de kernwaarden-pagina: label in Black Italic, waarde rechts. */
+function DefList({ items, at = 400 }: { items: { label: string; value: ReactNode }[]; at?: number }) {
+    return (
+        <Box mod={{ 'wrapped-deflist': true, ...rise }} style={delay(at)}>
+            {items.map((item) => (
+                <Box key={item.label} mod={{ 'wrapped-defrow': true }}>
+                    <Box component="span" mod={{ 'wrapped-deflabel': true }}>{item.label}</Box>
+                    <Box component="span" mod={{ 'wrapped-defvalue': true }}>{item.value}</Box>
+                </Box>
+            ))}
+        </Box>
+    );
 }
 
-function Chips({ children }: { children: ReactNode }) {
-    return <Box mod={{ 'wrapped-chips': true }}>{children}</Box>;
+/** Lijst van namen onder elkaar (label-stijl). */
+function NameList({ names, at = 400 }: { names: string[]; at?: number }) {
+    return (
+        <Box mod={{ 'wrapped-namelist': true, ...rise }} style={delay(at)}>
+            {names.map((n) => <Box key={n} component="span" mod={{ 'wrapped-deflabel': true }}>{n}</Box>)}
+        </Box>
+    );
 }
 
-function Chip({ children, at }: { children: ReactNode; at: number }) {
-    return <Box component="span" mod={{ 'wrapped-chip': true, ...anim('rise') }} style={delay(at)}>{children}</Box>;
+function Spacer() {
+    return <Box mod={{ 'wrapped-spacer': true }} />;
 }
 
-/** Namen nooit midden in een woord afbreken; alleen tussen woorden (bijv. tussen voor- en achternaam). */
+/** Namen nooit midden in een woord afbreken; alleen tussen woorden. */
 function Name({ children }: { children: ReactNode }) {
     return <Box component="span" mod={{ 'wrapped-name': true }}>{children}</Box>;
 }
 
-function Section({ children }: { children: ReactNode }) {
-    return <Box mod={{ 'wrapped-section': true }}>{children}</Box>;
+/** Zet "commissie" op een eigen regel, zodat lange namen (bijv. "Activiteitencommissie") passen. */
+function CommitteeName({ name }: { name: string }) {
+    const match = /^(.+?)[\s-]?(commissie)$/i.exec(name.trim());
+    if (!match) return <>{name}</>;
+    return (
+        <>
+            <Box component="span" mod={{ 'wrapped-line': true }}>{match[1]}</Box>
+            <Box component="span" mod={{ 'wrapped-line': true }}>{match[2].toLowerCase()}</Box>
+        </>
+    );
 }
 
 function plural(n: number, one: string, many: string): string {
     return n === 1 ? one : many;
-}
-
-/** Zet "commissie" op een eigen regel, zodat lange namen (bijv. "Activiteitencommissie") op het scherm passen. */
-function CommitteeName({ name }: { name: string }) {
-    const match = /^(.+?)[\s-]?(commissie)$/i.exec(name.trim());
-    if (!match) return <>{name}</>;
-    return <><Box component="span" mod={{ 'wrapped-line': true }}>{match[1]}</Box><Box component="span" mod={{ 'wrapped-line': true }}>{match[2].toLowerCase()}</Box></>;
 }
 
 /** Bouwt de lijst met slides op basis van de stats. Slides zonder data worden overgeslagen. */
@@ -124,16 +148,20 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
 
     slides.push({
         id: 'intro',
-        background: BG.night,
+        section: 'Samu Wrapped',
+        theme: 'brand',
         content: (
             <>
-                <Emoji>👋</Emoji>
-                <Title at={150}>Hoi <Name>{s.firstName}!</Name></Title>
-                <Body at={400}>
-                    Tijd om terug te kijken op jouw {s.year} bij Salve Mundi. Klaar voor je Samu Wrapped?
+                <Box mod={{ 'wrapped-cover-logo': true, ...rise }}>
+                    <Image src="/img/Logo_Light.svg" alt="Salve Mundi" fit="contain" h="100%" w="auto" />
+                </Box>
+                <Box component="h1" mod={{ 'wrapped-cover-title': true, ...rise }} style={delay(150)}>Samu Wrapped</Box>
+                <Box component="p" mod={{ 'wrapped-subtitle': true, ...rise }} style={delay(250)}>{s.year}</Box>
+                <Body at={450}>
+                    Hoi <Name>{s.firstName}</Name>. Dit was jouw jaar bij Salve Mundi, in cijfers.
                 </Body>
-                <Box component="p" mod={{ 'wrapped-hint': true, ...anim('rise') }} style={delay(900)}>
-                    Tik om verder te gaan →
+                <Box component="p" mod={{ 'wrapped-hint': true, ...rise }} style={delay(800)}>
+                    Tik om verder te gaan
                 </Box>
             </>
         )
@@ -142,14 +170,15 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
     if (a.total > 0) {
         slides.push({
             id: 'activities',
-            background: BG.sunset,
+            section: 'Activiteiten',
+            theme: 'dark',
             content: (
                 <>
                     <Kicker>Dit jaar was je bij</Kicker>
                     <Huge><CountUp value={a.total} /></Huge>
-                    <Title at={600}>{plural(a.total, 'activiteit', 'activiteiten')}</Title>
+                    <Title at={400}>{plural(a.total, 'activiteit', 'activiteiten')}</Title>
                     {a.checkedIn > 0 && (
-                        <Body at={900}>Bij {a.checkedIn} daarvan werd je ook echt ingecheckt. Bewijs geleverd. ✅</Body>
+                        <Body at={600}>Bij <Strong>{a.checkedIn}</Strong> daarvan ben je ook echt ingecheckt.</Body>
                     )}
                 </>
             )
@@ -157,12 +186,13 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
     } else {
         slides.push({
             id: 'activities-none',
-            background: BG.sunset,
+            section: 'Activiteiten',
+            theme: 'dark',
             content: (
                 <>
-                    <Emoji>🛋️</Emoji>
-                    <Title>Dit jaar was je nog niet bij een activiteit</Title>
-                    <Body>Geen zorgen — de agenda voor volgend jaar staat vol met kansen om dat goed te maken.</Body>
+                    <Kicker>Activiteiten</Kicker>
+                    <Title>Nog geen activiteit dit jaar</Title>
+                    <Body>Volgend jaar staat er weer genoeg op de agenda. We zien je graag een keer.</Body>
                 </>
             )
         });
@@ -171,18 +201,20 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
     if (a.firstEvent) {
         slides.push({
             id: 'first-last',
-            background: BG.berry,
+            section: 'Eerste en laatste',
+            theme: 'light',
             content: (
                 <>
-                    <Kicker>Het begon allemaal met</Kicker>
-                    <Title at={150}>{a.firstEvent.name}</Title>
-                    <Body at={350}>op {formatWrappedDate(a.firstEvent.date)}</Body>
+                    <Kicker>Je eerste activiteit</Kicker>
+                    <Title at={100}>{a.firstEvent.name}</Title>
+                    <Body at={250}>{formatWrappedDate(a.firstEvent.date)}</Body>
                     {a.lastEvent && (
-                        <Section>
-                            <Kicker at={800}>…en je laatste was</Kicker>
-                            <Title at={950}>{a.lastEvent.name}</Title>
-                            <Body at={1150}>op {formatWrappedDate(a.lastEvent.date)}</Body>
-                        </Section>
+                        <>
+                            <Spacer />
+                            <Kicker at={500}>Je laatste activiteit</Kicker>
+                            <Title at={600}>{a.lastEvent.name}</Title>
+                            <Body at={750}>{formatWrappedDate(a.lastEvent.date)}</Body>
+                        </>
                     )}
                 </>
             )
@@ -192,24 +224,21 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
     if (a.total >= 2 && a.busiestMonth && a.favoriteWeekday) {
         slides.push({
             id: 'rhythm',
-            background: BG.ocean,
+            section: 'Ritme',
+            theme: 'brand',
             content: (
                 <>
-                    <Kicker>Jouw Samu-ritme</Kicker>
-                    <Title at={150}>
-                        Je drukste maand was <Accent capitalize>{a.busiestMonth.name}</Accent>
-                    </Title>
-                    <Body at={400}>
-                        met {a.busiestMonth.count} {plural(a.busiestMonth.count, 'activiteit', 'activiteiten')}.
+                    <Kicker>Drukste maand</Kicker>
+                    <Title at={100}>{a.busiestMonth.name}</Title>
+                    <Body at={250}>
+                        <Strong>{a.busiestMonth.count}</Strong> {plural(a.busiestMonth.count, 'activiteit', 'activiteiten')} in {a.busiestMonth.name}.
                     </Body>
-                    <Section>
-                        <Title at={800}>
-                            En op <Accent>{a.favoriteWeekday.name}</Accent> ben je niet te stoppen
-                        </Title>
-                    </Section>
+                    <Spacer />
+                    <Kicker at={500}>Favoriete dag</Kicker>
+                    <Title at={600}>{a.favoriteWeekday.name}</Title>
                     {a.favoriteWeekday.count > 1 && (
-                        <Body at={1100}>
-                            Op {a.favoriteWeekday.name} was je bij {a.favoriteWeekday.count} verschillende activiteiten.
+                        <Body at={750}>
+                            Op {a.favoriteWeekday.name} was je bij <Strong>{a.favoriteWeekday.count}</Strong> verschillende activiteiten.
                         </Body>
                     )}
                 </>
@@ -220,15 +249,14 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
     if (a.topCommittee) {
         slides.push({
             id: 'top-committee',
-            background: BG.lime,
+            section: 'Favoriete commissie',
+            theme: 'light',
             content: (
                 <>
-                    <Kicker>Jouw favoriete commissie</Kicker>
-                    <Emoji at={150}>💜</Emoji>
-                    <Title at={350}><CommitteeName name={a.topCommittee.name} /></Title>
-                    <Body at={650}>
-                        Je ging naar {a.topCommittee.count} {plural(a.topCommittee.count, 'activiteit', 'activiteiten')} van
-                        hen. Zij weten inmiddels wel wie je bent.
+                    <Kicker>Je favoriete commissie</Kicker>
+                    <Title at={100}><CommitteeName name={a.topCommittee.name} /></Title>
+                    <Body at={300}>
+                        Je ging naar <Strong>{a.topCommittee.count}</Strong> {plural(a.topCommittee.count, 'activiteit', 'activiteiten')} van deze commissie.
                     </Body>
                 </>
             )
@@ -238,13 +266,14 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
     if (a.topPercent !== null && a.topPercent <= 50) {
         slides.push({
             id: 'top-percent',
-            background: BG.gold,
+            section: 'Ranking',
+            theme: 'yellow',
             content: (
                 <>
                     <Kicker>Je hoort bij de</Kicker>
                     <Huge>top <CountUp value={a.topPercent} />%</Huge>
-                    <Title at={600}>actiefste Samu&apos;ers van {s.year}</Title>
-                    <Body at={900}>Je was bij meer activiteiten dan het grootste deel van de vereniging. 🔥</Body>
+                    <Title at={400}>actiefste leden van {s.year}</Title>
+                    <Body at={600}>Je was bij meer activiteiten dan de meeste Samu&apos;ers.</Body>
                 </>
             )
         });
@@ -253,15 +282,15 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
     if (s.pubCrawls.total > 0) {
         slides.push({
             id: 'pub-crawls',
-            background: BG.sunset,
+            section: 'Kroegentocht',
+            theme: 'dark',
             content: (
                 <>
-                    <Emoji>🍻</Emoji>
-                    <Kicker at={150}>Kroegentocht</Kicker>
-                    <Huge at={300}><CountUp value={s.pubCrawls.total} /></Huge>
-                    <Title at={650}>{plural(s.pubCrawls.total, 'kroegentocht', 'kroegentochten')} meegelopen</Title>
+                    <Kicker>Kroegentocht</Kicker>
+                    <Huge><CountUp value={s.pubCrawls.total} /></Huge>
+                    <Title at={400}>{plural(s.pubCrawls.total, 'kroegentocht', 'kroegentochten')} gelopen</Title>
                     {s.pubCrawls.tickets > s.pubCrawls.total && (
-                        <Body at={900}>En je nam in totaal {s.pubCrawls.tickets} tickets mee. Gezellig!</Body>
+                        <Body at={600}>Met in totaal <Strong>{s.pubCrawls.tickets}</Strong> tickets. Gezellig.</Body>
                     )}
                 </>
             )
@@ -269,22 +298,23 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
     }
 
     if (s.stickers.total > 0) {
+        const items: { label: string; value: ReactNode }[] = [];
+        if (s.stickers.cities > 0) items.push({ label: plural(s.stickers.cities, 'Stad', 'Steden'), value: s.stickers.cities });
+        if (s.stickers.countries > 1) items.push({ label: 'Landen', value: s.stickers.countries });
+        if (s.stickers.allTime > s.stickers.total) items.push({ label: 'Totaal ooit', value: s.stickers.allTime });
         slides.push({
             id: 'stickers',
-            background: BG.ocean,
+            section: 'Stickers',
+            theme: 'brand',
             content: (
                 <>
                     <Kicker>Je plakte</Kicker>
                     <Huge><CountUp value={s.stickers.total} /></Huge>
-                    <Title at={600}>{plural(s.stickers.total, 'sticker', 'stickers')} op de kaart</Title>
-                    <Chips>
-                        {s.stickers.cities > 0 && <Chip at={850}>📍 {s.stickers.cities} {plural(s.stickers.cities, 'stad', 'steden')}</Chip>}
-                        {s.stickers.countries > 1 && <Chip at={950}>🌍 {s.stickers.countries} landen</Chip>}
-                        {s.stickers.allTime > s.stickers.total && <Chip at={1050}>🏷️ {s.stickers.allTime} all-time</Chip>}
-                    </Chips>
+                    <Title at={400}>{plural(s.stickers.total, 'sticker', 'stickers')}</Title>
+                    {items.length > 0 && <DefList items={items} at={550} />}
                     {s.stickers.farthest && s.stickers.farthest.distanceKm >= 25 && (
-                        <Body at={1250}>
-                            Je verste sticker hangt in {s.stickers.farthest.place}: {s.stickers.farthest.distanceKm.toLocaleString('nl-NL')} km van Fontys.
+                        <Body at={700}>
+                            Je verste sticker hangt in <Strong>{s.stickers.farthest.place}</Strong>, {s.stickers.farthest.distanceKm.toLocaleString('nl-NL')} km van Fontys.
                         </Body>
                     )}
                 </>
@@ -295,18 +325,14 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
     if (s.trips.length > 0) {
         slides.push({
             id: 'trips',
-            background: BG.berry,
+            section: 'Reizen',
+            theme: 'light',
             content: (
                 <>
-                    <Emoji>✈️</Emoji>
-                    <Kicker at={150}>Op reis</Kicker>
-                    <Title at={300}>Je ging mee op {s.trips.length === 1 ? s.trips[0] : `${s.trips.length} reizen`}</Title>
-                    {s.trips.length > 1 && (
-                        <Chips>
-                            {s.trips.map((t, i) => <Chip key={t} at={600 + i * 100}>{t}</Chip>)}
-                        </Chips>
-                    )}
-                    <Body at={900}>Wat op reis gebeurt, blijft op reis. Behalve deze stat.</Body>
+                    <Kicker>Op reis</Kicker>
+                    <Title at={100}>{s.trips.length === 1 ? s.trips[0] : `${s.trips.length} reizen`}</Title>
+                    {s.trips.length > 1 && <NameList names={s.trips} at={300} />}
+                    <Body at={500}>Wat op reis gebeurt, blijft op reis. Behalve deze stat.</Body>
                 </>
             )
         });
@@ -316,18 +342,17 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
         const n = s.committees.names.length;
         slides.push({
             id: 'committees',
-            background: BG.lime,
+            section: 'Commissies',
+            theme: 'dark',
             content: (
                 <>
-                    <Kicker>Achter de schermen</Kicker>
-                    <Title at={150}>Je zat in {n} {plural(n, 'commissie', 'commissies')}</Title>
-                    <Chips>
-                        {s.committees.names.slice(0, 8).map((c, i) => <Chip key={c} at={400 + i * 90}>{c}</Chip>)}
-                    </Chips>
-                    <Body at={900}>
+                    <Kicker>Actief in</Kicker>
+                    <Title at={100}>{n} {plural(n, 'commissie', 'commissies')}</Title>
+                    <NameList names={s.committees.names.slice(0, 8)} at={300} />
+                    <Body at={500}>
                         {s.committees.leaderOf > 0
-                            ? `Waarvan ${s.committees.leaderOf === 1 ? 'één' : s.committees.leaderOf} als leider. Respect. 👑`
-                            : 'Zonder mensen zoals jij gebeurt er niks. Dankjewel!'}
+                            ? <>Bij <Strong>{s.committees.leaderOf === 1 ? 'één' : s.committees.leaderOf}</Strong> daarvan ben je leider.</>
+                            : 'Dankjewel voor je inzet.'}
                     </Body>
                 </>
             )
@@ -337,15 +362,14 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
     if (s.merch.items > 0) {
         slides.push({
             id: 'merch',
-            background: BG.gold,
+            section: 'Merch',
+            theme: 'light',
             content: (
                 <>
-                    <Emoji>👕</Emoji>
-                    <Kicker at={150}>Merch</Kicker>
-                    <Title at={300}>
-                        Je scoorde {s.merch.items} {plural(s.merch.items, 'merch-item', 'merch-items')}
-                    </Title>
-                    <Body at={600}>Je loopt de vereniging letterlijk te promoten. Top!</Body>
+                    <Kicker>Merch</Kicker>
+                    <Huge><CountUp value={s.merch.items} /></Huge>
+                    <Title at={400}>{plural(s.merch.items, 'item', 'items')} besteld</Title>
+                    <Body at={600}>Je draagt de vereniging letterlijk uit.</Body>
                 </>
             )
         });
@@ -355,15 +379,16 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
         const years = Math.floor(s.membership.daysMember / 365);
         slides.push({
             id: 'membership',
-            background: BG.night,
+            section: 'Lidmaatschap',
+            theme: 'brand',
             content: (
                 <>
                     <Kicker>Je bent al</Kicker>
-                    <Huge><CountUp value={s.membership.daysMember} duration={1800} /></Huge>
-                    <Title at={600}>dagen lid</Title>
-                    <Body at={900}>
-                        Sinds {formatWrappedDate(s.membership.memberSince)} {s.membership.memberSince.slice(0, 4)}
-                        {years >= 1 ? ` — dat is ruim ${years} jaar!` : '. Welkom in de familie!'}
+                    <Huge><CountUp value={s.membership.daysMember} duration={1600} /></Huge>
+                    <Title at={400}>dagen lid</Title>
+                    <Body at={600}>
+                        Lid sinds {formatWrappedDate(s.membership.memberSince)} {s.membership.memberSince.slice(0, 4)}
+                        {years >= 1 ? <>, ruim <Strong>{years} jaar</Strong>.</> : '. Welkom bij de vereniging.'}
                     </Body>
                 </>
             )
@@ -373,15 +398,15 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
     if (s.totalSpent >= 5) {
         slides.push({
             id: 'spent',
-            background: BG.berry,
+            section: 'Uitgaven',
+            theme: 'dark',
             content: (
                 <>
-                    <Kicker>Je investeerde</Kicker>
+                    <Kicker>Uitgegeven bij Salve Mundi</Kicker>
                     <Huge>{euroFmt.format(s.totalSpent)}</Huge>
-                    <Title at={600}>in herinneringen</Title>
-                    <Body at={900}>Tickets, reizen en merch. Elke euro waard, toch? 😉</Body>
-                    <Box component="p" mod={{ 'wrapped-note': true, ...anim('rise') }} style={delay(1100)}>
-                        Alleen jij ziet dit — het staat niet op je deelkaart.
+                    <Body at={400}>Aan tickets, reizen en merch.</Body>
+                    <Box component="p" mod={{ 'wrapped-note': true, ...rise }} style={delay(600)}>
+                        Alleen jij ziet dit. Het staat niet op je deelkaart.
                     </Box>
                 </>
             )
@@ -390,13 +415,16 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
 
     slides.push({
         id: 'persona',
-        background: BG.plum,
+        section: 'Samu-type',
+        theme: 'brand',
         content: (
             <>
-                <Kicker>Jouw Samu-type van {s.year}</Kicker>
-                <Emoji at={300} size="xl">{s.persona.emoji}</Emoji>
-                <Title at={700}>{s.persona.title}</Title>
-                <Body at={1000}>{s.persona.description}</Body>
+                <Box mod={{ 'wrapped-mark': true, ...rise }}>
+                    <Image src={BEELDMERK.brand} alt="" fit="contain" h="100%" w="auto" />
+                </Box>
+                <Kicker at={200}>Jouw Samu-type van {s.year}</Kicker>
+                <Title at={350}>{s.persona.title}</Title>
+                <Body at={550}>{s.persona.description}</Body>
             </>
         )
     });
@@ -421,7 +449,10 @@ interface ShareRow {
     text?: string;
 }
 
-/** De kaart die als afbeelding gedeeld kan worden. Bevat bewust geen financiële gegevens. */
+/**
+ * De kaart die als afbeelding gedeeld kan worden, opgemaakt als een pagina uit de brandguide
+ * (beeldmerk + SALVE MUNDI, donker paars vlak, geel kop). Bevat bewust geen financiële gegevens.
+ */
 export function WrappedShareCard({ stats: s }: { stats: SamuWrappedStats }) {
     const rows: ShareRow[] = [
         { label: 'Activiteiten', value: s.activities.total }
@@ -431,38 +462,41 @@ export function WrappedShareCard({ stats: s }: { stats: SamuWrappedStats }) {
         rows.push({ label: 'Favoriete commissie', value: name, text: name });
     }
     if (s.pubCrawls.total > 0) rows.push({ label: 'Kroegentochten', value: s.pubCrawls.total });
-    if (s.stickers.total > 0) rows.push({ label: 'Stickers geplakt', value: s.stickers.total });
+    if (s.stickers.total > 0) rows.push({ label: 'Stickers', value: s.stickers.total });
     if (s.trips.length > 0) rows.push({ label: 'Reizen', value: s.trips.length });
     if (s.committees.names.length > 0) rows.push({ label: 'Commissies', value: s.committees.names.length });
     if (s.activities.topPercent !== null && s.activities.topPercent <= 50) rows.push({ label: 'Ranking', value: `top ${s.activities.topPercent}%` });
 
     return (
         <Box mod={{ 'wrapped-card': true }}>
-            <Box mod={{ 'wrapped-card-glow': true }} />
-            <Box mod={{ 'wrapped-card-inner': true }}>
-                <Box component="p" mod={{ 'wrapped-card-kicker': true }}>Samu Wrapped {s.year}</Box>
-                <Box component="p" mod={{ 'wrapped-card-name': true }} style={oneLineFit(s.firstName, 1.5)}>
-                    <Name>{s.firstName}</Name>
+            <Box mod={{ 'wrapped-card-head': true }}>
+                <Box mod={{ 'wrapped-card-mark': true }}>
+                    <Image src={BEELDMERK.brand} alt="" fit="contain" h="100%" w="auto" />
                 </Box>
-                <Box mod={{ 'wrapped-card-persona': true }}>
-                    <Box component="span" mod={{ 'wrapped-card-emoji': true }}>{s.persona.emoji}</Box>
-                    <Box component="span" mod={{ 'wrapped-card-persona-title': true }}>{s.persona.title}</Box>
-                </Box>
-                <Box mod={{ 'wrapped-rows': true }}>
-                    {rows.slice(0, 6).map((r) => (
-                        <Box key={r.label} mod={{ 'wrapped-row': r.text ? 'stacked' : true }}>
-                            <Box component="span" mod={{ 'wrapped-row-label': true }}>{r.label}</Box>
-                            <Box
-                                component="span"
-                                mod={{ 'wrapped-row-value': true }}
-                                style={r.text ? oneLineFit(r.text, 1.25) : undefined}
-                            >
-                                {r.value}
-                            </Box>
+                <Box component="span" mod={{ 'wrapped-card-brand': true }}>Salve Mundi</Box>
+            </Box>
+            <Box component="p" mod={{ 'wrapped-card-title': true }}>Wrapped {s.year}</Box>
+            <Box component="p" mod={{ 'wrapped-card-name': true }} style={oneLineFit(s.firstName, 1.5)}>
+                <Name>{s.firstName}</Name>
+            </Box>
+            <Box component="p" mod={{ 'wrapped-card-persona': true }}>{s.persona.title}</Box>
+            <Box mod={{ 'wrapped-rows': true }}>
+                {rows.slice(0, 6).map((r) => (
+                    <Box key={r.label} mod={{ 'wrapped-row': r.text ? 'stacked' : true }}>
+                        <Box component="span" mod={{ 'wrapped-row-label': true }}>{r.label}</Box>
+                        <Box
+                            component="span"
+                            mod={{ 'wrapped-row-value': true }}
+                            style={r.text ? oneLineFit(r.text, 1.25) : undefined}
+                        >
+                            {r.value}
                         </Box>
-                    ))}
-                </Box>
-                <Box component="p" mod={{ 'wrapped-card-foot': true }}>salvemundi.nl</Box>
+                    </Box>
+                ))}
+            </Box>
+            <Box mod={{ 'wrapped-card-foot': true }}>
+                <Box component="span">salvemundi.nl</Box>
+                <Box component="span">Spreid je vleugels</Box>
             </Box>
         </Box>
     );

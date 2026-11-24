@@ -1,12 +1,12 @@
 'use client';
 
-import { Box, UnstyledButton, VisuallyHidden } from '@mantine/core';
+import { Box, Image, UnstyledButton, VisuallyHidden } from '@mantine/core';
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import Link from '@/components/ui/Link';
 import { toBlob } from 'html-to-image';
 import { X, Share2, Download, RotateCcw, Pause } from 'lucide-react';
 import { type SamuWrappedStats } from '@/lib/wrapped/samu-wrapped.types';
-import { buildWrappedSlides, WrappedShareCard } from './wrapped-slides';
+import { BEELDMERK, buildWrappedSlides, WrappedShareCard } from './wrapped-slides';
 import { safeConsoleError } from '@/server/utils/logger';
 
 const SLIDE_DURATION_MS = 7000;
@@ -20,7 +20,7 @@ interface Props {
 export default function SamuWrappedIsland({ stats }: Props) {
     const slides = useMemo(() => {
         const built = buildWrappedSlides(stats);
-        built.push({ id: 'summary', background: 'linear-gradient(180deg, #2d1933 0%, #120814 100%)', content: null });
+        built.push({ id: 'summary', section: 'Delen', theme: 'dark', content: null });
         return built;
     }, [stats]);
 
@@ -171,7 +171,7 @@ export default function SamuWrappedIsland({ stats }: Props) {
             await navigator.share({
                 files: [file],
                 title: `Mijn Samu Wrapped ${stats.year}`,
-                text: `Mijn jaar bij Salve Mundi: ${stats.persona.title} ${stats.persona.emoji}`
+                text: `Mijn Samu Wrapped ${stats.year}: ${stats.persona.title}`
             });
         } else {
             downloadBlob(blob, fileName);
@@ -193,16 +193,14 @@ export default function SamuWrappedIsland({ stats }: Props) {
         }
     };
 
+    const pageNumber = String(index + 1).padStart(2, '0');
+    const pageTotal = String(slides.length).padStart(2, '0');
+
     return (
         <Box mod={{ 'wrapped-screen': true }} role="dialog" aria-modal="true" aria-label={`Samu Wrapped ${stats.year}`}>
-            {/* Op desktop een telefoon-formaat kader, op mobiel volledig scherm */}
-            <Box mod={{ 'wrapped-frame': true }} style={{ background: current.background }}>
-                <Box mod={{ 'wrapped-blobs': true }} aria-hidden>
-                    <Box mod={{ 'wrapped-blob': 'a' }} />
-                    <Box mod={{ 'wrapped-blob': 'b' }} />
-                </Box>
-
-                {/* Voortgang + sluiten */}
+            {/* Op desktop een kader op telefoonformaat, op mobiel volledig scherm */}
+            <Box mod={{ 'wrapped-frame': true, 'wrapped-theme': current.theme }}>
+                {/* Kop: voortgang, beeldmerk + "Salve Mundi", sluiten */}
                 <Box mod={{ 'wrapped-top': true }}>
                     <Box mod={{ 'wrapped-progress': true }} aria-hidden>
                         {slides.map((s, i) => (
@@ -223,7 +221,12 @@ export default function SamuWrappedIsland({ stats }: Props) {
                         ))}
                     </Box>
                     <Box mod={{ 'wrapped-header': true }}>
-                        <Box component="span" mod={{ 'wrapped-label': true }}>Samu Wrapped {stats.year}</Box>
+                        <Box mod={{ 'wrapped-brand': true }}>
+                            <Box mod={{ 'wrapped-brand-mark': true }}>
+                                <Image src={BEELDMERK[current.theme]} alt="" fit="contain" h="100%" w="auto" />
+                            </Box>
+                            <Box component="span">Salve Mundi</Box>
+                        </Box>
                         <Box mod={{ 'wrapped-header-actions': true }}>
                             {paused && <Pause size={16} aria-label="Gepauzeerd" />}
                             <Link href="/profiel" aria-label="Sluiten" data-wrapped-close="">
@@ -235,28 +238,28 @@ export default function SamuWrappedIsland({ stats }: Props) {
 
                 {isLast ? (
                     <Box mod={{ 'wrapped-summary': true }}>
-                        <Box mod={{ 'wrapped-summary-head': true, 'wrapped-rise': true }}>
-                            <Box component="p" mod={{ 'wrapped-kicker': true }}>Dat was jouw jaar!</Box>
-                            <Box component="h2" mod={{ 'wrapped-summary-title': true }}>Deel je Wrapped</Box>
+                        <Box mod={{ 'wrapped-rise': true }}>
+                            <Box component="p" mod={{ 'wrapped-kicker': true }}>Dat was je jaar</Box>
+                            <Box component="h2" mod={{ 'wrapped-title': true }}>Deel je Wrapped</Box>
                         </Box>
-                        <Box mod={{ 'wrapped-pop': true }} style={{ animationDelay: '150ms' }}>
+                        <Box mod={{ 'wrapped-rise': true }} style={{ animationDelay: '100ms' }}>
                             {/* ref op een niet-geanimeerd element: html-to-image kopieert anders de in-animatie (lege afbeelding) */}
                             <Box ref={cardRef}>
                                 <WrappedShareCard stats={stats} />
                             </Box>
                         </Box>
-                        <Box mod={{ 'wrapped-actions': true, 'wrapped-rise': true }} style={{ animationDelay: '500ms' }}>
+                        <Box mod={{ 'wrapped-actions': true, 'wrapped-rise': true }} style={{ animationDelay: '250ms' }}>
                             <UnstyledButton mod={{ 'wrapped-btn': 'primary' }} onClick={() => void handleShare()} disabled={sharing}>
-                                <Share2 size={20} /> Delen
+                                <Share2 size={18} /> Delen
                             </UnstyledButton>
                             <UnstyledButton mod={{ 'wrapped-btn': 'ghost' }} onClick={() => void handleDownload()} disabled={sharing}>
-                                <Download size={20} /> Opslaan
+                                <Download size={18} /> Opslaan
                             </UnstyledButton>
                         </Box>
                         {shareError && <Box component="p" mod={{ 'wrapped-error': true }} role="alert">{shareError}</Box>}
                         <Box mod={{ 'wrapped-links': true }}>
                             <UnstyledButton mod={{ 'wrapped-link': true }} onClick={() => setIndex(0)}>
-                                <RotateCcw size={16} /> Opnieuw bekijken
+                                <RotateCcw size={14} /> Opnieuw bekijken
                             </UnstyledButton>
                             <Link href="/profiel" data-wrapped-link="">Terug naar profiel</Link>
                         </Box>
@@ -274,6 +277,12 @@ export default function SamuWrappedIsland({ stats }: Props) {
                         </Box>
                     </Box>
                 )}
+
+                {/* Voettekst zoals in de brandguide: haarlijn, sectie links, paginanummer rechts */}
+                <Box mod={{ 'wrapped-footer': true }}>
+                    <Box component="span">{index + 1}.0 {current.section}</Box>
+                    <Box component="span">{pageNumber} / {pageTotal}</Box>
+                </Box>
 
                 {/* Toegankelijke navigatieknoppen voor toetsenbord/screenreaders */}
                 <VisuallyHidden>
