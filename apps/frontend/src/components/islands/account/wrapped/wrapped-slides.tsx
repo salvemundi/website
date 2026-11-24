@@ -402,12 +402,40 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
     return slides;
 }
 
+/**
+ * Kiest een kleinere lettergrootte naarmate het langste woord langer is,
+ * zodat namen heel blijven (nooit midden in een woord afbreken) en niet buiten de kaart vallen.
+ */
+function fitFontSize(text: string, baseRem: number): string | undefined {
+    const longest = Math.max(0, ...text.split(/\s+/).map((w) => w.length));
+    if (longest > 18) return `${(baseRem * 0.65).toFixed(2)}rem`;
+    if (longest > 14) return `${(baseRem * 0.75).toFixed(2)}rem`;
+    if (longest > 11) return `${(baseRem * 0.88).toFixed(2)}rem`;
+    return undefined;
+}
+
+/** Splitst "Activiteitencommissie" in delen, zodat elk deel als heel woord op een eigen regel past. */
+function committeeParts(name: string): string {
+    const match = /^(.+?)[\s-]?(commissie)$/i.exec(name.trim());
+    return match ? `${match[1]} ${match[2].toLowerCase()}` : name;
+}
+
+interface ShareRow {
+    label: string;
+    value: ReactNode;
+    /** Lange tekstwaarde: label boven de waarde, zodat de waarde de hele breedte krijgt */
+    text?: string;
+}
+
 /** De kaart die als afbeelding gedeeld kan worden. Bevat bewust geen financiële gegevens. */
 export function WrappedShareCard({ stats: s }: { stats: SamuWrappedStats }) {
-    const rows: { label: string; value: ReactNode }[] = [
+    const rows: ShareRow[] = [
         { label: 'Activiteiten', value: s.activities.total }
     ];
-    if (s.activities.topCommittee) rows.push({ label: 'Favoriete commissie', value: s.activities.topCommittee.name });
+    if (s.activities.topCommittee) {
+        const name = s.activities.topCommittee.name;
+        rows.push({ label: 'Favoriete commissie', value: <CommitteeName name={name} />, text: committeeParts(name) });
+    }
     if (s.pubCrawls.total > 0) rows.push({ label: 'Kroegentochten', value: s.pubCrawls.total });
     if (s.stickers.total > 0) rows.push({ label: 'Stickers geplakt', value: s.stickers.total });
     if (s.trips.length > 0) rows.push({ label: 'Reizen', value: s.trips.length });
@@ -419,16 +447,24 @@ export function WrappedShareCard({ stats: s }: { stats: SamuWrappedStats }) {
             <Box mod={{ 'wrapped-card-glow': true }} />
             <Box mod={{ 'wrapped-card-inner': true }}>
                 <Box component="p" mod={{ 'wrapped-card-kicker': true }}>Samu Wrapped {s.year}</Box>
-                <Box component="p" mod={{ 'wrapped-card-name': true }}><Name>{s.firstName}</Name></Box>
+                <Box component="p" mod={{ 'wrapped-card-name': true }} style={{ fontSize: fitFontSize(s.firstName, 1.5) }}>
+                    <Name>{s.firstName}</Name>
+                </Box>
                 <Box mod={{ 'wrapped-card-persona': true }}>
                     <Box component="span" mod={{ 'wrapped-card-emoji': true }}>{s.persona.emoji}</Box>
                     <Box component="span" mod={{ 'wrapped-card-persona-title': true }}>{s.persona.title}</Box>
                 </Box>
                 <Box mod={{ 'wrapped-rows': true }}>
                     {rows.slice(0, 6).map((r) => (
-                        <Box key={r.label} mod={{ 'wrapped-row': true }}>
+                        <Box key={r.label} mod={{ 'wrapped-row': r.text ? 'stacked' : true }}>
                             <Box component="span" mod={{ 'wrapped-row-label': true }}>{r.label}</Box>
-                            <Box component="span" mod={{ 'wrapped-row-value': true }}>{r.value}</Box>
+                            <Box
+                                component="span"
+                                mod={{ 'wrapped-row-value': true }}
+                                style={r.text ? { fontSize: fitFontSize(r.text, 1.25) } : undefined}
+                            >
+                                {r.value}
+                            </Box>
                         </Box>
                     ))}
                 </Box>
