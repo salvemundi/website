@@ -1,11 +1,10 @@
 FROM node:26-alpine AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm@12.21.0
+ENV BUN_INSTALL_CACHE_DIR="/bun-cache"
+RUN npm install -g bun@1.4.5
 WORKDIR /app
 
 FROM base AS manifests
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY bun.lock bunfig.toml package.json ./
 COPY apps/frontend/package.json ./apps/frontend/
 COPY apps/services/finance-service/package.json ./apps/services/finance-service/
 COPY apps/services/azure-sync-service/package.json ./apps/services/azure-sync-service/
@@ -18,16 +17,16 @@ COPY packages/validations/package.json ./packages/validations/
 COPY packages/db/package.json ./packages/db/
 
 FROM manifests AS prod-deps
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile --filter=@salvemundi/frontend...
+RUN --mount=type=cache,id=bun,target=/bun-cache bun install --production --frozen-lockfile --filter=@salvemundi/frontend...
 
 FROM manifests AS builder
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --filter=@salvemundi/frontend...
+RUN --mount=type=cache,id=bun,target=/bun-cache bun install --frozen-lockfile --filter=@salvemundi/frontend...
 
 COPY packages/db ./packages/db
-RUN pnpm --filter=@salvemundi/db build
+RUN bun run --filter=@salvemundi/db build
 
 COPY packages/validations ./packages/validations
-RUN pnpm --filter=@salvemundi/validations build
+RUN bun run --filter=@salvemundi/validations build
 
 COPY apps/frontend ./apps/frontend
 RUN BETTER_AUTH_SECRET=dummy_secret_at_least_32_characters_long_v7_salve_mundi \
@@ -42,7 +41,7 @@ RUN BETTER_AUTH_SECRET=dummy_secret_at_least_32_characters_long_v7_salve_mundi \
     DB_PORT=0000 \
     DB_NAME=dummy \
     DB_HOST=localhost \
-    pnpm --filter=@salvemundi/frontend build
+    bun run --filter=@salvemundi/frontend build
 
 FROM node:26-alpine AS runner
 WORKDIR /app
@@ -59,6 +58,7 @@ COPY --from=builder --chown=node:node /app/apps/frontend/.next/standalone ./
 COPY --from=builder --chown=node:node /app/apps/frontend/.next/static ./apps/frontend/.next/static
 # Copy production node_modules (without devDependencies) so native sharp bindings exist at runtime
 COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
+RUN ln -sfn /app/node_modules/.bun/node_modules/sharp apps/frontend/node_modules/sharp && chown -h node:node apps/frontend/node_modules/sharp
 
 RUN mkdir -p apps/frontend/.next/cache && chown -R node:node apps/frontend/.next/cache
 
@@ -66,7 +66,7 @@ USER node
 
 # Exercise the native binding and bundled libvips in the final runtime image.
 # Loading sharp during next build alone does not validate this stage.
-RUN node -e "const sharp = require('./node_modules/.pnpm/node_modules/sharp'); sharp({ create: { width: 1, height: 1, channels: 4, background: '#00000000' } }).png().toBuffer().then(() => console.log('Sharp runtime smoke test passed'), error => { console.error(error); process.exit(1); });"
+RUN node -e "const sharp = require('./apps/frontend/node_modules/sharp'); sharp({ create: { width: 1, height: 1, channels: 4, background: '#00000000' } }).png().toBuffer().then(() => console.log('Sharp runtime smoke test passed'), error => { console.error(error); process.exit(1); });"
 
 EXPOSE 3000
 ENV PORT=3000

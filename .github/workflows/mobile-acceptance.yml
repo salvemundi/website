@@ -22,13 +22,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v6
+      - uses: oven-sh/setup-bun@v2
       - uses: actions/setup-node@v4
         with:
           node-version: 26
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build:packages
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+      - run: bun install --frozen-lockfile
+      - run: bun run build:packages
       - name: Authentication and acceptance boundary tests
         run: node --experimental-strip-types --test apps/mobile/tests/mobile-security.test.mjs
       - name: Mobile auth, activity administration, widget and preference tests
@@ -38,4 +43,4 @@ jobs:
       - name: Acceptance setup safety tests
         run: python3 -m unittest discover -s apps/mobile/deployment -p 'test_*.py'
       - name: Worker syntax checks
-        run: pnpm --filter=@salvemundi/mobile-notification-service build
+        run: bun run --filter=@salvemundi/mobile-notification-service build

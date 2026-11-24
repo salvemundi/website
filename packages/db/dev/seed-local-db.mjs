@@ -308,7 +308,7 @@ async function main() {
     const sql = postgres(connectionString(), { max: 4, onnotice: () => {} });
     try {
         const [{ ready }] = await sql`SELECT to_regclass('public.events') IS NOT NULL AS ready`;
-        if (!ready) throw new Error('The app tables do not exist yet. Run `pnpm dev:db:init` first.');
+        if (!ready) throw new Error('The app tables do not exist yet. Run `bun run dev:db:init` first.');
 
         const asset = await importAssets(sql);
 
@@ -332,7 +332,7 @@ async function main() {
 
         console.log('Local database seeded.');
         // A running dev server also holds unstable_cache entries in memory, which the rmSync above can't reach.
-        console.log('Restart `pnpm dev` if it is running, otherwise cached pages may still show the old data.');
+        console.log('Restart `bun run dev` if it is running, otherwise cached pages may still show the old data.');
     } finally {
         await sql.end();
     }
