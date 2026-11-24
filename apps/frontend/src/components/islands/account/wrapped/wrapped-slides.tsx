@@ -486,7 +486,7 @@ export function WrappedShareCard({ stats: s }: { stats: SamuWrappedStats }) {
             </Box>
             <Box component="p" mod={{ 'wrapped-card-persona': true }}>{s.persona.title}</Box>
             <Box mod={{ 'wrapped-rows': true }}>
-                {rows.slice(0, 6).map((r) => (
+                {rows.slice(0, 5).map((r) => (
                     <Box key={r.label} mod={{ 'wrapped-row': r.text ? 'stacked' : true }}>
                         <Box component="span" mod={{ 'wrapped-row-label': true }}>{r.label}</Box>
                         <Box

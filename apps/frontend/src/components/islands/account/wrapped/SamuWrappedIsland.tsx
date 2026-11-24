@@ -238,10 +238,7 @@ export default function SamuWrappedIsland({ stats }: Props) {
 
                 {isLast ? (
                     <Box mod={{ 'wrapped-summary': true }}>
-                        <Box mod={{ 'wrapped-rise': true }}>
-                            <Box component="p" mod={{ 'wrapped-kicker': true }}>Dat was je jaar</Box>
-                            <Box component="h2" mod={{ 'wrapped-title': true }}>Deel je Wrapped</Box>
-                        </Box>
+                        <Box component="h2" mod={{ 'wrapped-summary-title': true, 'wrapped-rise': true }}>Deel je Wrapped</Box>
                         <Box mod={{ 'wrapped-rise': true }} style={{ animationDelay: '100ms' }}>
                             {/* ref op een niet-geanimeerd element: html-to-image kopieert anders de in-animatie (lege afbeelding) */}
                             <Box ref={cardRef}>
@@ -278,11 +275,11 @@ export default function SamuWrappedIsland({ stats }: Props) {
                     </Box>
                 )}
 
-                {/* Voettekst zoals in de brandguide: haarlijn, sectie links, paginanummer rechts */}
-                <Box mod={{ 'wrapped-footer': true }}>
+                {/* Voettekst zoals in de brandguide (niet op de laatste slide: daar moet alles zonder scrollen passen) */}
+                {!isLast && <Box mod={{ 'wrapped-footer': true }}>
                     <Box component="span">{index + 1}.0 {current.section}</Box>
                     <Box component="span">{pageNumber} / {pageTotal}</Box>
-                </Box>
+                </Box>}
 
                 {/* Toegankelijke navigatieknoppen voor toetsenbord/screenreaders */}
                 <VisuallyHidden>

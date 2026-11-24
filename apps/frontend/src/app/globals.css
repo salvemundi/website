@@ -587,15 +587,25 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
   color: var(--w-ink);
 }
 
-/* Laatste slide: delen */
+/* Laatste slide: delen. Alles moet zonder scrollen op een telefoon passen,
+   daarom schalen maten mee met de schermhoogte (dvh). */
 [data-wrapped-summary] {
   display: flex;
   flex: 1;
+  min-height: 0;
   flex-direction: column;
   justify-content: center;
-  gap: 1.25rem;
+  gap: clamp(0.5rem, 1.6dvh, 1.1rem);
   overflow-y: auto;
-  padding: 1rem 1.5rem;
+  padding: clamp(0.5rem, 1.5dvh, 1rem) 1.5rem max(0.75rem, env(safe-area-inset-bottom));
+}
+[data-wrapped-summary-title] {
+  margin: 0;
+  font-size: clamp(1.375rem, 3.6dvh, 2rem);
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
+  color: var(--w-title);
 }
 [data-wrapped-actions] { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 [data-wrapped-btn] {
@@ -603,7 +613,7 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  min-height: 48px;
+  min-height: 44px;
   padding: 0 1rem;
   border: 2px solid var(--w-geel);
   font-size: 0.9375rem;
@@ -621,7 +631,7 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  min-height: 44px;
+  min-height: 40px;
   font-size: 0.875rem;
   font-weight: 300;
   color: var(--w-ink);
@@ -631,7 +641,7 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 
 /* Deelkaart: een pagina uit de brandguide */
 [data-wrapped-card] {
-  padding: 1.25rem 1.25rem 1rem;
+  padding: clamp(0.75rem, 2dvh, 1.25rem) 1.25rem clamp(0.6rem, 1.6dvh, 1rem);
   background: #5a3761;
   color: #f0f1f9;
   font-family: "Poppins", system-ui, sans-serif;
@@ -640,16 +650,24 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 [data-wrapped-card-head] { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 300; }
 [data-wrapped-card-mark] { height: 22px; }
 [data-wrapped-card-brand] { font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; }
-[data-wrapped-card-title] { margin: 1.25rem 0 0; font-size: 2rem; font-weight: 900; line-height: 1.05; text-transform: uppercase; color: #f8cf45; }
-[data-wrapped-card-name] { margin: 0.5rem 0 0; font-size: 1.5rem; font-weight: 300; line-height: 1.2; hyphens: none; overflow-wrap: normal; word-break: normal; }
+[data-wrapped-card-title] { margin: clamp(0.5rem, 1.8dvh, 1.25rem) 0 0; font-size: clamp(1.375rem, 3.8dvh, 2rem); font-weight: 900; line-height: 1.05; text-transform: uppercase; color: #f8cf45; }
+[data-wrapped-card-name] { margin: 0.25rem 0 0; font-size: clamp(1.125rem, 3dvh, 1.5rem); font-weight: 300; line-height: 1.2; hyphens: none; overflow-wrap: normal; word-break: normal; }
 [data-wrapped-card-persona] { margin: 0.25rem 0 0; font-size: 1rem; font-weight: 800; font-style: italic; text-transform: uppercase; hyphens: none; }
-[data-wrapped-rows] { margin-top: 1rem; border-top: 1px solid #f0f1f9; container-type: inline-size; }
-[data-wrapped-row] { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0.55rem 0; border-bottom: 1px solid rgba(240, 241, 249, 0.35); }
+[data-wrapped-rows] { margin-top: clamp(0.5rem, 1.5dvh, 1rem); border-top: 1px solid #f0f1f9; container-type: inline-size; }
+[data-wrapped-row] { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: clamp(0.25rem, 0.9dvh, 0.55rem) 0; border-bottom: 1px solid rgba(240, 241, 249, 0.35); }
 [data-wrapped-row-label] { font-size: 0.875rem; font-weight: 300; }
-[data-wrapped-row-value] { font-size: 1.25rem; font-weight: 900; line-height: 1.2; text-align: right; color: #f8cf45; hyphens: none; overflow-wrap: normal; word-break: normal; }
+[data-wrapped-row-value] { font-size: clamp(1rem, 2.6dvh, 1.25rem); font-weight: 900; line-height: 1.2; text-align: right; color: #f8cf45; hyphens: none; overflow-wrap: normal; word-break: normal; }
 [data-wrapped-row="stacked"] { flex-direction: column; align-items: flex-start; gap: 0.15rem; }
 [data-wrapped-row="stacked"] [data-wrapped-row-value] { align-self: stretch; text-align: left; }
-[data-wrapped-card-foot] { display: flex; justify-content: space-between; margin-top: 0.9rem; font-size: 0.75rem; font-weight: 300; }
+[data-wrapped-card-foot] { display: flex; justify-content: space-between; margin-top: clamp(0.4rem, 1.4dvh, 0.9rem); font-size: 0.75rem; font-weight: 300; }
+
+/* Heel lage schermen (bijv. iPhone SE met browserbalken): kop compacter, minder regels */
+@media (max-height: 600px) {
+  [data-wrapped-top] { padding-top: max(0.5rem, env(safe-area-inset-top)); }
+  [data-wrapped-header] { margin-top: 0.25rem; }
+  [data-wrapped-row]:nth-child(n + 5) { display: none; }
+  [data-wrapped-card-persona] { font-size: 0.875rem; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   [data-wrapped-rise] { animation: none; }
