@@ -43,7 +43,7 @@ export default async function ProfielPage() {
                             >
                                 <Group justify="space-between" wrap="nowrap" gap="md">
                                     <Group gap="md" wrap="nowrap">
-                                        <ThemeIcon size={48} radius="lg" variant="white" color="dark">
+                                        <ThemeIcon size={48} variant="white" color="dark">
                                             <Sparkles size={22} />
                                         </ThemeIcon>
                                         <Stack gap={2}>

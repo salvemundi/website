@@ -43,7 +43,9 @@ export async function getMySamuWrapped(year?: number): Promise<SamuWrappedResult
         : getDefaultWrappedYear();
 
     try {
-        const firstName = user.name.trim().split(' ')[0] || 'Samu\'er';
+        // Fallback als first_name in de database leeg is; sessienamen kunnen de vorm "voornaam.achternaam" hebben
+        const fromSession = user.name.trim().split(/[\s.@]/)[0] ?? '';
+        const firstName = fromSession ? fromSession.charAt(0).toUpperCase() + fromSession.slice(1) : 'Samu\'er';
         const stats = await getSamuWrappedStatsInternal({ id: user.id, email: user.email, firstName }, targetYear);
         return { status: 'ok', stats };
     } catch (error) {
