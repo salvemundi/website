@@ -387,9 +387,14 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
                     <Huge><CountUp value={s.membership.daysMember} duration={1600} /></Huge>
                     <Title at={400}>dagen lid</Title>
                     <Body at={600}>
-                        Lid sinds {formatWrappedDate(s.membership.memberSince)} {s.membership.memberSince.slice(0, 4)}
-                        {years >= 1 ? <>, ruim <Strong>{years} jaar</Strong>.</> : '. Welkom bij de vereniging.'}
+                        {s.membership.hadBreak ? 'Voor het eerst lid' : 'Lid sinds'} {formatWrappedDate(s.membership.memberSince)} {s.membership.memberSince.slice(0, 4)}
+                        {years >= 1 ? <>, in totaal ruim <Strong>{years} jaar</Strong>.</> : '. Welkom bij de vereniging.'}
                     </Body>
+                    {s.membership.hadBreak && (
+                        <Box component="p" mod={{ 'wrapped-note': true, ...rise }} style={delay(800)}>
+                            Periodes waarin je geen lid was, tellen niet mee.
+                        </Box>
+                    )}
                 </>
             )
         });
@@ -461,7 +466,7 @@ export function WrappedShareCard({ stats: s }: { stats: SamuWrappedStats }) {
         const name = s.activities.topCommittee.name;
         rows.push({ label: 'Favoriete commissie', value: name, text: name });
     }
-    if (s.pubCrawls.total > 0) rows.push({ label: 'Kroegentochten', value: s.pubCrawls.total });
+    if (s.merch.items > 0) rows.push({ label: 'Webshop-items', value: s.merch.items });
     if (s.stickers.total > 0) rows.push({ label: 'Stickers', value: s.stickers.total });
     if (s.trips.length > 0) rows.push({ label: 'Reizen', value: s.trips.length });
     if (s.committees.names.length > 0) rows.push({ label: 'Commissies', value: s.committees.names.length });

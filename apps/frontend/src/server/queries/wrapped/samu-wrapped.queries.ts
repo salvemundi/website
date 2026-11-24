@@ -63,7 +63,7 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
     const end = `${year + 1}-01-01`;
     const email = user.email.toLowerCase();
 
-    const [eventRows, pubCrawlRows, stickerRows, stickerAllTime, tripRows, merchRows, committeeRows, spentRows, userRows, firstMembershipPayment, firstActiveStatus] = await Promise.all([
+    const [eventRows, pubCrawlRows, stickerRows, stickerAllTime, tripRows, merchRows, committeeRows, spentRows, userRows, membershipPayments, membershipHistory] = await Promise.all([
         db.select({
             name: schema.events.name,
             date: schema.events.event_date,
@@ -165,14 +165,17 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
                 lt(schema.transactions.created_at, end)
             )),
 
-        db.select({ memberSince: schema.directus_users.originele_betaaldatum, firstName: schema.directus_users.first_name })
+        db.select({
+            lastPayment: schema.directus_users.originele_betaaldatum,
+            expiry: schema.directus_users.membership_expiry,
+            firstName: schema.directus_users.first_name
+        })
             .from(schema.directus_users)
             .where(eq(schema.directus_users.id, user.id))
             .limit(1),
 
-        // originele_betaaldatum wordt bij elke verlenging overschreven; voor "dagen lid in totaal"
-        // zoeken we daarom ook de eerste betaalde lidmaatschapstransactie en de eerste activering op.
-        db.select({ first: sql<string | null>`MIN(${schema.transactions.created_at})::date::text` })
+        // Alle betaalde lidmaatschappen en statuswijzigingen, om de lidmaatschapsperiodes te reconstrueren
+        db.select({ paidAt: sql<string>`${schema.transactions.created_at}::date::text` })
             .from(schema.transactions)
             .where(and(
                 or(
@@ -181,14 +184,16 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
                 ),
                 eq(schema.transactions.product_type, 'membership'),
                 eq(schema.transactions.payment_status, 'paid')
-            )),
-
-        db.select({ first: sql<string | null>`MIN(${schema.membership_history.changed_at})::date::text` })
-            .from(schema.membership_history)
-            .where(and(
-                eq(schema.membership_history.user_id, user.id),
-                eq(schema.membership_history.new_status, 'active')
             ))
+            .orderBy(schema.transactions.created_at),
+
+        db.select({
+            at: sql<string>`${schema.membership_history.changed_at}::date::text`,
+            status: schema.membership_history.new_status
+        })
+            .from(schema.membership_history)
+            .where(eq(schema.membership_history.user_id, user.id))
+            .orderBy(schema.membership_history.changed_at)
     ]);
 
     // ── Activiteiten ────────────────────────────────────────────────
@@ -222,16 +227,12 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
     const countries = new Set(stickerRows.map((s) => s.country?.trim().toLowerCase()).filter(Boolean));
 
     // ── Lidmaatschap ────────────────────────────────────────────────
-    const memberSince = [
-        toDateOnly(userRows[0]?.memberSince ?? null),
-        toDateOnly(firstMembershipPayment[0]?.first ?? null),
-        toDateOnly(firstActiveStatus[0]?.first ?? null)
-    ]
-        .filter((d): d is string => !!d)
-        .sort()[0] ?? null;
-    const daysMember = memberSince
-        ? Math.max(0, Math.floor((Date.now() - new Date(`${memberSince}T00:00:00Z`).getTime()) / 86_400_000))
-        : null;
+    const membership = computeMembershipDays({
+        payments: membershipPayments.map((p) => p.paidAt),
+        history: membershipHistory,
+        lastPayment: toDateOnly(userRows[0]?.lastPayment ?? null),
+        expiry: toDateOnly(userRows[0]?.expiry ?? null)
+    });
 
     const stats: Omit<SamuWrappedStats, 'persona'> = {
         year,
@@ -264,7 +265,7 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
             names: [...new Set(committeeRows.map((c) => c.name))],
             leaderOf: committeeRows.filter((c) => c.isLeader).length
         },
-        membership: { memberSince, daysMember },
+        membership,
         totalSpent: Math.round((spentRows[0]?.total ?? 0) * 100) / 100
     };
 
@@ -332,4 +333,95 @@ function pickPersona(s: Omit<SamuWrappedStats, 'persona'>): WrappedPersona {
         return { emoji: '🎯', title: 'De Selectieve Genieter', description: 'Je kiest je momenten zorgvuldig, en die waren raak.' };
     }
     return { emoji: '🌱', title: 'De Rustige Kracht', description: 'Dit jaar was rustig. Volgend jaar zien we je graag vaker.' };
+}
+
+// ── Lidmaatschapsdagen ─────────────────────────────────────────────────────────
+
+const DAY_MS = 86_400_000;
+
+function toDayNumber(date: string): number {
+    return Math.floor(new Date(`${date.slice(0, 10)}T00:00:00Z`).getTime() / DAY_MS);
+}
+
+function fromDayNumber(day: number): string {
+    return new Date(day * DAY_MS).toISOString().slice(0, 10);
+}
+
+function addYears(day: number, years: number): number {
+    const d = new Date(day * DAY_MS);
+    d.setUTCFullYear(d.getUTCFullYear() + years);
+    return Math.floor(d.getTime() / DAY_MS);
+}
+
+interface MembershipInput {
+    /** Datums (YYYY-MM-DD) van betaalde lidmaatschapstransacties, oplopend */
+    payments: string[];
+    /** Statuswijzigingen uit membership_history, oplopend */
+    history: { at: string; status: string | null }[];
+    /** originele_betaaldatum: datum van de laatste betaling (wordt bij verlenging overschreven) */
+    lastPayment: string | null;
+    expiry: string | null;
+}
+
+/**
+ * Telt alleen de dagen waarop iemand echt lid was; periodes zonder lidmaatschap tellen niet mee.
+ * Periodes komen uit:
+ * - betaalde lidmaatschappen: elk één jaar; betaal je vóór je einddatum, dan loopt het jaar vanaf
+ *   die einddatum (zelfde regel als de provisioning-service);
+ * - de huidige periode uit het profiel (laatste betaaldatum t/m verloopdatum), ook voor leden van
+ *   vóór de website zonder transacties;
+ * - membership_history: van "active" tot de volgende andere status.
+ * Overlappende periodes worden samengevoegd en alles wordt afgekapt op vandaag.
+ */
+export function computeMembershipDays(input: MembershipInput, now: Date = new Date()): SamuWrappedStats['membership'] {
+    const today = Math.floor(now.getTime() / DAY_MS) + 1; // t/m vandaag
+    const periods: [number, number][] = [];
+
+    let paidUntil = -Infinity;
+    for (const paidAt of input.payments) {
+        const pay = toDayNumber(paidAt);
+        const start = paidUntil > pay ? paidUntil : pay;
+        const end = addYears(start, 1);
+        periods.push([start, end]);
+        paidUntil = end;
+    }
+
+    if (input.expiry) {
+        const end = toDayNumber(input.expiry) + 1;
+        // Zonder betaaldatum: een lidmaatschap duurt een jaar, dus vanaf een jaar vóór de verloopdatum
+        const start = input.lastPayment ? toDayNumber(input.lastPayment) : addYears(end, -1);
+        if (start < end) periods.push([start, end]);
+    }
+
+    let activeSince: number | null = null;
+    for (const h of input.history) {
+        const day = toDayNumber(h.at);
+        if (h.status === 'active') {
+            activeSince ??= day;
+        } else if (activeSince !== null) {
+            periods.push([activeSince, day]);
+            activeSince = null;
+        }
+    }
+    if (activeSince !== null) periods.push([activeSince, today]);
+
+    const clipped = periods
+        .map(([s, e]): [number, number] => [s, Math.min(e, today)])
+        .filter(([s, e]) => e > s)
+        .sort((x, y) => x[0] - y[0]);
+
+    if (clipped.length === 0) return { memberSince: null, daysMember: null, hadBreak: false };
+
+    const merged: [number, number][] = [];
+    for (const [s, e] of clipped) {
+        const last = merged.at(-1);
+        if (last && s <= last[1]) last[1] = Math.max(last[1], e);
+        else merged.push([s, e]);
+    }
+
+    return {
+        memberSince: fromDayNumber(merged[0][0]),
+        daysMember: merged.reduce((sum, [s, e]) => sum + (e - s), 0),
+        hadBreak: merged.length > 1
+    };
 }

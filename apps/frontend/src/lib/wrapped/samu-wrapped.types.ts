@@ -64,7 +64,10 @@ export interface SamuWrappedStats {
 
     membership: {
         memberSince: string | null; // YYYY-MM-DD
+        /** Aantal dagen echt lid; periodes zonder lidmaatschap tellen niet mee */
         daysMember: number | null;
+        /** true als er periodes tussen zaten waarin iemand geen lid was */
+        hadBreak: boolean;
     };
 
     totalSpent: number;
