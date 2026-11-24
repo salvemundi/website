@@ -51,7 +51,8 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(({
     };
 
     const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const inputVal = e.target.value;
+        // Alleen tekens toestaan die de validatie accepteert (voorkomt fouten bij plakken van bijv. "06.12.34.56.78")
+        const inputVal = e.target.value.replace(/[^\d\s\-()+]/g, '');
 
         if (inputVal.startsWith('+') || inputVal.startsWith('00')) {
             const parsedPasted = parsePhoneNumber(inputVal);
