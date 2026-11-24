@@ -15,12 +15,12 @@ COPY apps/services/monitoring-service/package.json ./apps/services/monitoring-se
 COPY packages/validations/package.json ./packages/validations/
 COPY packages/db/package.json ./packages/db/
 
-# TODO: use proper bun build
 RUN --mount=type=cache,id=bun,target=/bun-cache bun install --production --frozen-lockfile --filter=@salvemundi/mail-service...
 
 COPY packages/db ./packages/db
 COPY packages/validations ./packages/validations
 COPY apps/services/mail-service ./apps/services/mail-service
+RUN bun run --filter=@salvemundi/mail-service build
 
 FROM oven/bun:1.4.5-alpine AS runner
 WORKDIR /app
@@ -29,10 +29,11 @@ ENV NODE_ENV=production
 RUN apk add --no-cache tzdata
 ENV TZ=Europe/Amsterdam
 
-COPY --from=builder --chown=bun:bun /app ./
-WORKDIR /app/apps/services/mail-service
+COPY --from=builder --chown=bun:bun /app/apps/services/mail-service/dist ./dist
+COPY --chown=bun:bun apps/services/mail-service/src/templates ./templates
+COPY --chown=bun:bun apps/services/mail-service/src/assets ./assets
 
 USER bun
 
 EXPOSE 3003
-CMD ["bun", "src/server.ts"]
+CMD ["bun", "dist/server.js"]

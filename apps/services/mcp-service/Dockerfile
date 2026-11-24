@@ -15,20 +15,19 @@ COPY apps/services/monitoring-service/package.json ./apps/services/monitoring-se
 COPY packages/validations/package.json ./packages/validations/
 COPY packages/db/package.json ./packages/db/
 
-# TODO: use proper bun build
 RUN --mount=type=cache,id=bun,target=/bun-cache bun install --production --frozen-lockfile --filter=@salvemundi/mcp-service...
 
 COPY apps/services/mcp-service ./apps/services/mcp-service
+RUN bun run --filter=@salvemundi/mcp-service build
 
 FROM oven/bun:1.4.5-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=builder --chown=bun:bun /app ./
-WORKDIR /app/apps/services/mcp-service
+COPY --from=builder --chown=bun:bun /app/apps/services/mcp-service/dist ./dist
 
 USER bun
 
 EXPOSE 3005
-CMD ["bun", "src/server.ts"]
+CMD ["bun", "dist/server.js"]
