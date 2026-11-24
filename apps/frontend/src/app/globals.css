@@ -667,6 +667,8 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
   line-height: 1.05;
   letter-spacing: -0.025em;
   text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: auto;
   color: #fff;
 }
 [data-wrapped-body] { margin: 0; font-size: 1.125rem; font-weight: 600; line-height: 1.35; text-wrap: pretty; color: rgba(255, 255, 255, 0.9); }
@@ -681,6 +683,8 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 [data-wrapped-chips] { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
 [data-wrapped-chip] {
   display: inline-flex;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   align-items: center;
   padding: 0.5rem 1rem;
   border-radius: 9999px;
@@ -753,7 +757,7 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 [data-wrapped-rows] { margin-top: 0.75rem; }
 [data-wrapped-row] { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.15); }
 [data-wrapped-row-label] { font-size: 1rem; font-weight: 600; color: rgba(255, 255, 255, 0.75); }
-[data-wrapped-row-value] { text-align: right; font-size: 1.25rem; font-weight: 900; color: #fff; }
+[data-wrapped-row-value] { min-width: 0; overflow-wrap: anywhere; text-align: right; font-size: 1.25rem; font-weight: 900; color: #fff; }
 [data-wrapped-card-foot] { margin: 1rem 0 0; text-align: center; font-size: 0.75rem; font-weight: 700; color: rgba(255, 255, 255, 0.6); }
 
 @media (prefers-reduced-motion: reduce) {
