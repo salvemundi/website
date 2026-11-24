@@ -114,7 +114,7 @@ function plural(n: number, one: string, many: string): string {
 function CommitteeName({ name }: { name: string }) {
     const match = /^(.+?)[\s-]?(commissie)$/i.exec(name.trim());
     if (!match) return <>{name}</>;
-    return <>{match[1]}<br />{match[2].toLowerCase()}</>;
+    return <><Box component="span" mod={{ 'wrapped-line': true }}>{match[1]}</Box><Box component="span" mod={{ 'wrapped-line': true }}>{match[2].toLowerCase()}</Box></>;
 }
 
 /** Bouwt de lijst met slides op basis van de stats. Slides zonder data worden overgeslagen. */
@@ -403,27 +403,19 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
 }
 
 /**
- * Kiest een kleinere lettergrootte naarmate het langste woord langer is,
- * zodat namen heel blijven (nooit midden in een woord afbreken) en niet buiten de kaart vallen.
+ * Houdt tekst op één regel en verkleint de letter als hij niet past.
+ * Gebruikt container-query-eenheden (cqi) t.o.v. de breedte van de kaart.
  */
-function fitFontSize(text: string, baseRem: number): string | undefined {
-    const longest = Math.max(0, ...text.split(/\s+/).map((w) => w.length));
-    if (longest > 18) return `${(baseRem * 0.65).toFixed(2)}rem`;
-    if (longest > 14) return `${(baseRem * 0.75).toFixed(2)}rem`;
-    if (longest > 11) return `${(baseRem * 0.88).toFixed(2)}rem`;
-    return undefined;
-}
-
-/** Splitst "Activiteitencommissie" in delen, zodat elk deel als heel woord op een eigen regel past. */
-function committeeParts(name: string): string {
-    const match = /^(.+?)[\s-]?(commissie)$/i.exec(name.trim());
-    return match ? `${match[1]} ${match[2].toLowerCase()}` : name;
+function oneLineFit(text: string, maxRem: number): CSSProperties {
+    // ~0.62em per teken voor Poppins Black
+    const ems = Math.max(1, text.length * 0.62);
+    return { fontSize: `min(${maxRem}rem, calc(100cqi / ${ems.toFixed(2)}))`, whiteSpace: 'nowrap' };
 }
 
 interface ShareRow {
     label: string;
     value: ReactNode;
-    /** Lange tekstwaarde: label boven de waarde, zodat de waarde de hele breedte krijgt */
+    /** Tekstwaarde: label boven de waarde, waarde op één regel over de volle breedte */
     text?: string;
 }
 
@@ -434,7 +426,7 @@ export function WrappedShareCard({ stats: s }: { stats: SamuWrappedStats }) {
     ];
     if (s.activities.topCommittee) {
         const name = s.activities.topCommittee.name;
-        rows.push({ label: 'Favoriete commissie', value: <CommitteeName name={name} />, text: committeeParts(name) });
+        rows.push({ label: 'Favoriete commissie', value: name, text: name });
     }
     if (s.pubCrawls.total > 0) rows.push({ label: 'Kroegentochten', value: s.pubCrawls.total });
     if (s.stickers.total > 0) rows.push({ label: 'Stickers geplakt', value: s.stickers.total });
@@ -447,7 +439,7 @@ export function WrappedShareCard({ stats: s }: { stats: SamuWrappedStats }) {
             <Box mod={{ 'wrapped-card-glow': true }} />
             <Box mod={{ 'wrapped-card-inner': true }}>
                 <Box component="p" mod={{ 'wrapped-card-kicker': true }}>Samu Wrapped {s.year}</Box>
-                <Box component="p" mod={{ 'wrapped-card-name': true }} style={{ fontSize: fitFontSize(s.firstName, 1.5) }}>
+                <Box component="p" mod={{ 'wrapped-card-name': true }} style={oneLineFit(s.firstName, 1.5)}>
                     <Name>{s.firstName}</Name>
                 </Box>
                 <Box mod={{ 'wrapped-card-persona': true }}>
@@ -461,7 +453,7 @@ export function WrappedShareCard({ stats: s }: { stats: SamuWrappedStats }) {
                             <Box
                                 component="span"
                                 mod={{ 'wrapped-row-value': true }}
-                                style={r.text ? { fontSize: fitFontSize(r.text, 1.25) } : undefined}
+                                style={r.text ? oneLineFit(r.text, 1.25) : undefined}
                             >
                                 {r.value}
                             </Box>

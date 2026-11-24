@@ -165,7 +165,7 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
                 lt(schema.transactions.created_at, end)
             )),
 
-        db.select({ memberSince: schema.directus_users.originele_betaaldatum })
+        db.select({ memberSince: schema.directus_users.originele_betaaldatum, firstName: schema.directus_users.first_name })
             .from(schema.directus_users)
             .where(eq(schema.directus_users.id, user.id))
             .limit(1)
@@ -209,7 +209,7 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
 
     const stats: Omit<SamuWrappedStats, 'persona'> = {
         year,
-        firstName: user.firstName,
+        firstName: userRows[0]?.firstName?.trim() || user.firstName,
         activities: {
             total: sortedEvents.length,
             checkedIn: sortedEvents.filter((e) => e.checkedIn).length,
