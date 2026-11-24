@@ -537,6 +537,8 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
   color: var(--w-ink);
   font-variant-numeric: tabular-nums;
 }
+/* Klein voorvoegsel voor een groot cijfer, zoals "top" in "top 3%" */
+[data-wrapped-huge-prefix] { margin-right: 0.12em; font-size: 0.4em; letter-spacing: 0; }
 [data-wrapped-title] {
   margin: 0.25rem 0 0.75rem;
   font-size: clamp(1.75rem, 8.5vw, 2.75rem);

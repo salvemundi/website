@@ -271,7 +271,7 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
             content: (
                 <>
                     <Kicker>Je hoort bij de</Kicker>
-                    <Huge>top <CountUp value={s.topPercent} />%</Huge>
+                    <Huge><Box component="span" mod={{ 'wrapped-huge-prefix': true }}>top</Box><CountUp value={s.topPercent} />%</Huge>
                     <Title at={400}>actiefste leden van {s.year}</Title>
                     <Body at={600}>Gemeten over al je stats: activiteiten, kroegentochten, reizen, stickers, webshop en commissies.</Body>
                 </>
