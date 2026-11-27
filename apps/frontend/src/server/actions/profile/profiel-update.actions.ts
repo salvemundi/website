@@ -11,7 +11,7 @@ import { imageUploadSchema } from '@salvemundi/validations/schema/shared.zod';
 import { updateUserProfileForUser } from '@/server/services/member-profile';
 import { triggerUserSyncAction } from '@/server/actions/infrastructure/azure-sync/sync-tasks.actions';
 import { fetchInternalService } from '@/server/utils/internal-service';
-interface AzureErrorResponse { details?: string; error?: { code?: string; message?: string }; code?: string; message?: string }
+interface AzureErrorResponse { details?: string; error?: string | { code?: string; message?: string }; code?: string; message?: string }
 
 export async function updateUserProfile(data: z.infer<typeof updateProfileSchema>) {
     const session = await getEnrichedSession();
@@ -75,8 +75,10 @@ export async function uploadUserAvatar(formData: FormData) {
                 return {};
             }) as AzureErrorResponse;
 
-            const safeErrorCode = errorData.error?.code || errorData.code || azureRes.status;
-            const safeErrorMessage = errorData.error?.message || errorData.message || 'Onbekende Azure fout';
+            // azure-management-service replies with { error: string, details: <Graph error message> }
+            const nestedError = typeof errorData.error === 'object' ? errorData.error : undefined;
+            const safeErrorCode = nestedError?.code || errorData.code || azureRes.status;
+            const safeErrorMessage = nestedError?.message || errorData.details || errorData.message || 'Onbekende Azure fout';
 
             safeConsoleError(`[profiel-update.actions.ts][uploadUserAvatar] Azure API Error [${safeErrorCode}]:`, safeErrorMessage);
 

@@ -1,12 +1,15 @@
-import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 import { getRedis } from './redis-client';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export async function clearSessionCache() {
     try {
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get('better-auth.session-token')?.value ||
-            cookieStore.get('__Secure-better-auth.session-token')?.value;
+        // The Redis session cache is keyed on the raw (still URL-encoded) cookie value as it
+        // appears in the Cookie header (see redis-session/handlers.ts). better-auth names the
+        // cookie `(__Secure-)better-auth.session_token`, and cookies() would return the decoded
+        // value, so read the raw header with the same pattern the sign-out hook uses.
+        const cookieHeader = (await headers()).get('cookie') ?? '';
+        const sessionToken = cookieHeader.match(/better-auth\.session[-_]token=([^;]+)/)?.[1];
 
         if (sessionToken) {
             const redis = await getRedis();

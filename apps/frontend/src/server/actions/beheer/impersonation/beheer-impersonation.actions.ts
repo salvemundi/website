@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { type DirectusUser } from '@salvemundi/validations/schema/members.zod';
 import { getRedis } from "@/server/auth/redis-client";
+import { clearSessionCache } from "@/server/auth/session-utils";
 import { checkBeheerAccess, enforceFeatureAccess } from "@/server/actions/beheer/beheer-utils.actions";
 import { logAuditAction } from "@/server/actions/infrastructure/audit.actions";
 import { safeConsoleError } from '@/server/utils/logger';
@@ -78,13 +79,8 @@ export async function setImpersonateToken(token: string) {
             httpOnly: false
         });
 
-        const sessionToken = cookieStore.get('better-auth.session-token')?.value ||
-            cookieStore.get('__Secure-better-auth.session-token')?.value;
+        await clearSessionCache();
         const redis = await getRedis();
-
-        if (sessionToken) {
-            await redis.del(`session:${sessionToken}`);
-        }
         await redis.del(`impersonation:${token}`);
 
         revalidatePath('/beheer/impersonate');
@@ -123,13 +119,8 @@ export async function clearImpersonateToken() {
     cookieStore.delete(IMPERSONATION_TOKEN_COOKIE);
     cookieStore.delete('impersonation_info');
 
-    const sessionToken = cookieStore.get('better-auth.session-token')?.value ||
-        cookieStore.get('__Secure-better-auth.session-token')?.value;
+    await clearSessionCache();
     const redis = await getRedis();
-
-    if (sessionToken) {
-        await redis.del(`session:${sessionToken}`);
-    }
 
     if (testToken) {
         await redis.del(`impersonation:${testToken}`);
