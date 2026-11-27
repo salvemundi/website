@@ -37,11 +37,12 @@ export function formatWrappedDate(date: string): string {
     return dateFmt.format(new Date(`${date}T12:00:00`));
 }
 
-function prefersReducedMotion(): boolean {
+export function prefersReducedMotion(): boolean {
     return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-export function CountUp({ value, duration = 1200 }: { value: number; duration?: number }) {
+/** Telt op naar `value`. `delayMs` wacht tot het cijfer in beeld is (na de veeg en de reveal). */
+export function CountUp({ value, duration = 1200, delayMs = 420 }: { value: number; duration?: number; delayMs?: number }) {
     const [display, setDisplay] = useState(() => (prefersReducedMotion() ? value : 0));
 
     useEffect(() => {
@@ -50,39 +51,45 @@ export function CountUp({ value, duration = 1200 }: { value: number; duration?: 
             return;
         }
         let frame = 0;
-        const start = performance.now();
+        const start = performance.now() + delayMs;
         const tick = (now: number) => {
-            const t = Math.min(1, (now - start) / duration);
+            const t = Math.max(0, Math.min(1, (now - start) / duration));
             const eased = 1 - Math.pow(1 - t, 3);
             setDisplay(Math.round(value * eased));
             if (t < 1) frame = requestAnimationFrame(tick);
         };
         frame = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(frame);
-    }, [value, duration]);
+    }, [value, duration, delayMs]);
 
     return <>{display.toLocaleString('nl-NL')}</>;
 }
 
+/** Vertraging t.o.v. het binnenkomen van de slide (--w-offset: na de openingsanimatie of de veeg). */
 function delay(ms: number): CSSProperties {
-    return { animationDelay: `${ms}ms` };
+    return { animationDelay: `calc(var(--w-offset, 0ms) + ${ms}ms)` };
 }
 
 const rise = { 'wrapped-rise': true };
+/** Tekst schuift omhoog vanachter een onzichtbare rand (masker), zoals een titelkaart. */
+const reveal = { 'wrapped-reveal': true };
+/** Lijstregels schuiven een voor een binnen. */
+const item = { 'wrapped-item': true };
+const STAGGER_MS = 80;
 
 /** Kleine kop boven een slide, ExtraBold Italic in hoofdletters (toc-entry). */
 function Kicker({ children, at = 0 }: { children: ReactNode; at?: number }) {
-    return <Box component="p" mod={{ 'wrapped-kicker': true, ...rise }} style={delay(at)}>{children}</Box>;
+    return <Box component="p" mod={{ 'wrapped-kicker': true }} style={delay(at)}>{children}</Box>;
 }
 
 /** Groot cijfer, Poppins Black (chapter-number). */
 function Huge({ children, at = 100 }: { children: ReactNode; at?: number }) {
-    return <Box component="p" mod={{ 'wrapped-huge': true, ...rise }} style={delay(at)}>{children}</Box>;
+    return <Box component="p" mod={{ 'wrapped-huge': true, ...reveal }} style={delay(at)}>{children}</Box>;
 }
 
 /** Kop in Poppins Black, hoofdletters (chapter-title). */
 function Title({ children, at = 150 }: { children: ReactNode; at?: number }) {
-    return <Box component="h2" mod={{ 'wrapped-title': true, ...rise }} style={delay(at)}>{children}</Box>;
+    return <Box component="h2" mod={{ 'wrapped-title': true, ...reveal }} style={delay(at)}>{children}</Box>;
 }
 
 /** Lopende tekst in Poppins Light (body). */
@@ -98,11 +105,11 @@ function Strong({ children }: { children: ReactNode }) {
 /** Definitielijst zoals de kernwaarden-pagina: label in Black Italic, waarde rechts. */
 function DefList({ items, at = 400 }: { items: { label: string; value: ReactNode }[]; at?: number }) {
     return (
-        <Box mod={{ 'wrapped-deflist': true, ...rise }} style={delay(at)}>
-            {items.map((item) => (
-                <Box key={item.label} mod={{ 'wrapped-defrow': true }}>
-                    <Box component="span" mod={{ 'wrapped-deflabel': true }}>{item.label}</Box>
-                    <Box component="span" mod={{ 'wrapped-defvalue': true }}>{item.value}</Box>
+        <Box mod={{ 'wrapped-deflist': true }} style={delay(at)}>
+            {items.map((row, i) => (
+                <Box key={row.label} mod={{ 'wrapped-defrow': true, ...item }} style={delay(at + 120 + i * STAGGER_MS)}>
+                    <Box component="span" mod={{ 'wrapped-deflabel': true }}>{row.label}</Box>
+                    <Box component="span" mod={{ 'wrapped-defvalue': true }}>{row.value}</Box>
                 </Box>
             ))}
         </Box>
@@ -112,8 +119,10 @@ function DefList({ items, at = 400 }: { items: { label: string; value: ReactNode
 /** Lijst van namen onder elkaar (label-stijl). */
 function NameList({ names, at = 400 }: { names: string[]; at?: number }) {
     return (
-        <Box mod={{ 'wrapped-namelist': true, ...rise }} style={delay(at)}>
-            {names.map((n) => <Box key={n} component="span" mod={{ 'wrapped-deflabel': true }}>{n}</Box>)}
+        <Box mod={{ 'wrapped-namelist': true }}>
+            {names.map((n, i) => (
+                <Box key={n} component="span" mod={{ 'wrapped-deflabel': true, ...item }} style={delay(at + i * STAGGER_MS)}>{n}</Box>
+            ))}
         </Box>
     );
 }
@@ -156,11 +165,14 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
         theme: 'brand',
         content: (
             <>
-                <Box mod={{ 'wrapped-cover-logo': true, ...rise }}>
+                <Box mod={{ 'wrapped-cover-logo': true, ...rise }} style={delay(0)}>
                     <Image src="/img/Logo_Light.svg" alt="Salve Mundi" fit="contain" h="100%" w="auto" />
                 </Box>
-                <Box component="h1" mod={{ 'wrapped-cover-title': true, ...rise }} style={delay(150)}>Samu Wrapped</Box>
-                <Box component="p" mod={{ 'wrapped-subtitle': true, ...rise }} style={delay(250)}>{s.year}</Box>
+                <Box component="h1" mod={{ 'wrapped-cover-title': true }}>
+                    <Box component="span" mod={{ 'wrapped-line': true, ...reveal }} style={delay(120)}>Samu</Box>
+                    <Box component="span" mod={{ 'wrapped-line': true, ...reveal }} style={delay(220)}>Wrapped</Box>
+                </Box>
+                <Box component="p" mod={{ 'wrapped-subtitle': true, ...reveal }} style={delay(340)}>{s.year}</Box>
                 <Body at={450}>
                     Hoi <Name>{s.firstName}</Name>. Dit was jouw jaar bij Salve Mundi, in cijfers.
                 </Body>
@@ -475,7 +487,7 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
         theme: 'brand',
         content: (
             <>
-                <Box component="p" mod={{ 'wrapped-badge-hero': true, ...rise }} aria-hidden>{s.badges.featured.emoji}</Box>
+                <Box component="p" mod={{ 'wrapped-badge-hero': true }} style={delay(0)} aria-hidden>{s.badges.featured.emoji}</Box>
                 <Kicker at={200}>Jouw meest unieke badge van {s.year}</Kicker>
                 <Title at={350}>{s.badges.featured.title}</Title>
                 <Body at={550}>{s.badges.featured.description}</Body>
@@ -500,10 +512,10 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
                             {others.length} {plural(others.length, 'andere badge', 'andere badges')}
                         </Title>
                     )}
-                    <Box mod={{ 'wrapped-badgelist': true, ...rise }} style={delay(300)}>
-                        {chunk.map((b) => (
-                            <Box key={b.id} mod={{ 'wrapped-badgerow': true }}>
-                                <Box component="span" mod={{ 'wrapped-badge-emoji': true }} aria-hidden>{b.emoji}</Box>
+                    <Box mod={{ 'wrapped-badgelist': true }}>
+                        {chunk.map((b, i) => (
+                            <Box key={b.id} mod={{ 'wrapped-badgerow': true, ...item }} style={delay(300 + i * 140)}>
+                                <Box component="span" mod={{ 'wrapped-badge-emoji': true }} style={delay(420 + i * 140)} aria-hidden>{b.emoji}</Box>
                                 <Box component="span" mod={{ 'wrapped-badge-text': true }}>
                                     <Box component="span" mod={{ 'wrapped-deflabel': true }}>{b.title}</Box>
                                     <Box component="span" mod={{ 'wrapped-badge-desc': true }}>{b.description}</Box>
@@ -537,16 +549,23 @@ const MONTH_LETTERS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D
 function YearHeatmap({ year, dates }: { year: number; dates: string[] }) {
     const active = new Set(dates);
     return (
-        <Box mod={{ 'wrapped-heat': true, ...rise }} style={delay(200)} role="img" aria-label={`Kalender van ${year} met ${dates.length} dagen met een activiteit`}>
+        <Box mod={{ 'wrapped-heat': true }} role="img" aria-label={`Kalender van ${year} met ${dates.length} dagen met een activiteit`}>
             {MONTH_LETTERS.map((letter, m) => {
                 const daysInMonth = new Date(Date.UTC(year, m + 1, 0)).getUTCDate();
                 return (
-                    <Box key={m} mod={{ 'wrapped-heat-row': true }}>
+                    <Box key={m} mod={{ 'wrapped-heat-row': true, ...item }} style={{ ...delay(150 + m * 45), '--m': m } as CSSProperties}>
                         <Box component="span" mod={{ 'wrapped-heat-label': true }}>{letter}</Box>
                         {Array.from({ length: 31 }, (_, d) => {
                             const key = `${year}-${String(m + 1).padStart(2, '0')}-${String(d + 1).padStart(2, '0')}`;
                             const state = d >= daysInMonth ? 'none' : active.has(key) ? 'on' : 'off';
-                            return <Box key={d} component="span" mod={{ 'wrapped-heat-cell': state }} />;
+                            return (
+                                <Box
+                                    key={d}
+                                    component="span"
+                                    mod={{ 'wrapped-heat-cell': state }}
+                                    style={state === 'on' ? delay(450 + m * 45 + d * 8) : undefined}
+                                />
+                            );
                         })}
                     </Box>
                 );
@@ -608,13 +627,15 @@ function QuizSlide({ spec }: { spec: QuizSpec }) {
         <>
             <Kicker>Quizvraag</Kicker>
             <Title at={100}>{spec.question}</Title>
-            <Box mod={{ 'wrapped-quiz': true, ...rise }} style={delay(300)}>
-                {options.map((n) => (
+            <Box mod={{ 'wrapped-quiz': true }}>
+                {options.map((n, i) => (
                     <UnstyledButton
                         key={n}
                         mod={{
-                            'wrapped-quiz-option': answered ? (n === spec.answer ? 'correct' : n === chosen ? 'wrong' : 'idle') : true
+                            'wrapped-quiz-option': answered ? (n === spec.answer ? 'correct' : n === chosen ? 'wrong' : 'idle') : true,
+                            ...item
                         }}
+                        style={delay(300 + i * 100)}
                         disabled={answered}
                         onClick={() => setChosen(n)}
                     >

@@ -446,6 +446,163 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 
 [data-wrapped-rise] { animation: wrapped-rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 
+/* Beweging, in de geest van de brandguide: vlakke kleurvlakken die schuin over elkaar schuiven,
+   tekst die vanachter een harde rand omhoog komt, geen verloop of schaduw. */
+@keyframes wrapped-reveal {
+  /* Transform en clip lopen gelijk op, zodat de onderrand van het masker stil blijft staan */
+  from { transform: translateY(100%); clip-path: inset(-30% -10% 100% -10%); }
+  to { transform: translateY(0); clip-path: inset(-30% -10% 0 -10%); }
+}
+@keyframes wrapped-kicker-in {
+  from { clip-path: inset(-20% 100% -20% 0); transform: translateX(-10px); }
+  to { clip-path: inset(-20% -5% -20% 0); transform: translateX(0); }
+}
+@keyframes wrapped-item-in {
+  from { opacity: 0; transform: translateX(-18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes wrapped-pop {
+  0% { opacity: 0; transform: scale(0.2) rotate(-24deg); }
+  60% { opacity: 1; transform: scale(1.18) rotate(6deg); }
+  80% { transform: scale(0.95) rotate(-2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes wrapped-cell-pop {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.6); }
+  100% { transform: scale(1); }
+}
+@keyframes wrapped-correct {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+@keyframes wrapped-wrong {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(2px); }
+}
+
+/* Veeg tussen slides: schuin vlak in het nieuwe thema, met een accentstreep ervoor */
+@keyframes wrapped-wipe-next {
+  from { transform: translateX(100%) skewX(-14deg); }
+  to { transform: translateX(0) skewX(-14deg); }
+}
+@keyframes wrapped-wipe-prev {
+  from { transform: translateX(-100%) skewX(-14deg); }
+  to { transform: translateX(0) skewX(-14deg); }
+}
+@keyframes wrapped-leave-next {
+  to { opacity: 0; transform: translateX(-48px); }
+}
+@keyframes wrapped-leave-prev {
+  to { opacity: 0; transform: translateX(48px); }
+}
+
+/* Opening */
+@keyframes wrapped-panel-up {
+  from { clip-path: inset(100% 0 0 0); }
+  to { clip-path: inset(0); }
+}
+@keyframes wrapped-intro-out {
+  to { opacity: 0; visibility: hidden; }
+}
+@keyframes wrapped-intro-center-out {
+  to { opacity: 0; transform: translateY(-28px) scale(0.92); }
+}
+@keyframes wrapped-frame-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes wrapped-fade-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+[data-wrapped-reveal] { animation: wrapped-reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+[data-wrapped-kicker] { animation: wrapped-kicker-in 0.55s cubic-bezier(0.65, 0, 0.35, 1) backwards; }
+[data-wrapped-item] { animation: wrapped-item-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
+[data-wrapped-badge-hero], [data-wrapped-badge-emoji] {
+  display: inline-block;
+  animation: wrapped-pop 0.75s cubic-bezier(0.3, 0.7, 0.4, 1) backwards;
+}
+[data-wrapped-heat-cell="on"] { animation: wrapped-cell-pop 0.4s cubic-bezier(0.3, 0.7, 0.4, 1.5) backwards; }
+[data-wrapped-quiz-option="correct"] { animation: wrapped-correct 0.45s cubic-bezier(0.3, 0.7, 0.4, 1.5); }
+[data-wrapped-quiz-option="wrong"] { animation: wrapped-wrong 0.45s ease-out; }
+
+/* Lagen in het kader: basiskleur (0), vertrekkende slide (1), veeg (2), nieuwe slide (3), kop/voet (4), opening (10) */
+[data-wrapped-base] { position: absolute; inset: 0; z-index: 0; background: var(--w-bg); }
+[data-wrapped-wipe] { position: absolute; inset: 0; z-index: 2; overflow: hidden; pointer-events: none; }
+[data-wrapped-wipe-stripe], [data-wrapped-wipe-fill] {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -45%;
+  width: 190%;
+  will-change: transform;
+}
+[data-wrapped-wipe-stripe] { background: var(--w-accent); animation: wrapped-wipe-next 0.56s cubic-bezier(0.7, 0, 0.2, 1) both; }
+[data-wrapped-wipe-fill] { background: var(--w-bg); animation: wrapped-wipe-next 0.6s cubic-bezier(0.7, 0, 0.2, 1) 0.1s both; }
+[data-wrapped-wipe="prev"] [data-wrapped-wipe-stripe],
+[data-wrapped-wipe="prev"] [data-wrapped-wipe-fill] { animation-name: wrapped-wipe-prev; }
+
+[data-wrapped-slide="active"] { position: relative; z-index: 3; }
+[data-wrapped-slide="leaving"] {
+  position: absolute;
+  inset: 0 1.5rem;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
+  pointer-events: none;
+  animation: wrapped-leave-next 0.32s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+}
+[data-wrapped-slide="leaving"][data-wrapped-dir="prev"] { animation-name: wrapped-leave-prev; }
+/* De vertrekkende slide speelt zijn in-animaties niet opnieuw af: alles staat in de eindstand */
+[data-wrapped-slide="leaving"] * { animation: none !important; }
+
+/* Openingsanimatie */
+[data-wrapped-intro] {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  background: var(--w-blauw);
+  cursor: pointer;
+  animation: wrapped-intro-out 0.35s ease-in 1.6s forwards;
+}
+[data-wrapped-intro-panel] { position: absolute; inset: 0; animation: wrapped-panel-up 0.6s cubic-bezier(0.7, 0, 0.2, 1) both; }
+[data-wrapped-intro-panel="geel"] { background: var(--w-geel); animation-delay: 0.08s; }
+[data-wrapped-intro-panel="paars"] { background: var(--w-paars); animation-delay: 0.32s; }
+[data-wrapped-intro-center] {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  animation: wrapped-intro-center-out 0.4s cubic-bezier(0.5, 0, 0.75, 0) 1.35s forwards;
+}
+[data-wrapped-intro-mark] { height: 6.5rem; animation: wrapped-pop 0.7s cubic-bezier(0.3, 0.7, 0.4, 1) 0.68s backwards; }
+[data-wrapped-intro-words] {
+  display: flex;
+  gap: 0.4em;
+  font-size: 1rem;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--w-wit-paars);
+}
+[data-wrapped-intro-words] > span { animation: wrapped-reveal 0.55s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+[data-wrapped-intro-words] > span:nth-child(1) { animation-delay: 0.9s; }
+[data-wrapped-intro-words] > span:nth-child(2) { animation-delay: 0.98s; }
+[data-wrapped-intro-words] > span:nth-child(3) { animation-delay: 1.06s; color: var(--w-geel); }
+
 /* Thema's: kleuren uit de brandguide */
 [data-wrapped-theme] {
   --w-paars: #5a3761;
@@ -480,9 +637,11 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
   max-width: 480px;
   height: 100dvh;
   overflow: hidden;
+  isolation: isolate;
   background: var(--w-bg);
   color: var(--w-ink);
-  transition: background-color 0.35s ease, color 0.35s ease;
+  transition: color 0.35s ease;
+  animation: wrapped-frame-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @media (min-width: 640px) {
@@ -490,7 +649,12 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 }
 
 /* Kop */
-[data-wrapped-top] { padding: max(0.75rem, env(safe-area-inset-top)) 1.5rem 0; }
+[data-wrapped-top] {
+  position: relative;
+  z-index: 4;
+  padding: max(0.75rem, env(safe-area-inset-top)) 1.5rem 0;
+  animation: wrapped-fade-down 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) var(--w-intro, 0ms) backwards;
+}
 [data-wrapped-progress] { display: flex; gap: 4px; }
 [data-wrapped-segment] { flex: 1; height: 3px; overflow: hidden; background: color-mix(in srgb, var(--w-ink) 25%, transparent); }
 [data-wrapped-fill] { width: 100%; height: 100%; background: var(--w-ink); transform-origin: left; }
@@ -514,6 +678,7 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
   flex: 1;
   flex-direction: column;
   min-height: 0;
+  position: relative;
   overflow-y: auto;
   padding: 0 1.5rem;
   cursor: pointer;
@@ -601,6 +766,8 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 
 /* Voettekst: haarlijn, sectie links, paginanummer rechts */
 [data-wrapped-footer] {
+  position: relative;
+  z-index: 4;
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -615,6 +782,8 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 /* Laatste slide: delen. Alles moet zonder scrollen op een telefoon passen,
    daarom schalen maten mee met de schermhoogte (dvh). */
 [data-wrapped-summary] {
+  position: relative;
+  z-index: 3;
   touch-action: pan-y;
   display: flex;
   flex: 1;
@@ -696,6 +865,7 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-wrapped-rise] { animation: none; }
+  [data-wrapped-frame], [data-wrapped-frame] * { animation: none !important; }
   [data-wrapped-frame] { transition: none; }
+  [data-wrapped-intro], [data-wrapped-wipe], [data-wrapped-slide="leaving"] { display: none; }
 }

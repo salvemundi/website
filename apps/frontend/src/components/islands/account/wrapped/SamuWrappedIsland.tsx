@@ -1,17 +1,33 @@
 'use client';
 
 import { Box, Image, UnstyledButton, VisuallyHidden } from '@mantine/core';
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import Link from '@/components/ui/Link';
 import { toBlob } from 'html-to-image';
 import { X, Share2, Download, RotateCcw, Pause, ChevronLeft } from 'lucide-react';
 import { type SamuWrappedStats } from '@/lib/wrapped/samu-wrapped.types';
-import { BEELDMERK, buildWrappedSlides, WrappedShareCard } from './wrapped-slides';
+import { BEELDMERK, buildWrappedSlides, prefersReducedMotion, WrappedShareCard } from './wrapped-slides';
 import { safeConsoleError } from '@/server/utils/logger';
 
 const SLIDE_DURATION_MS = 7000;
 const HOLD_THRESHOLD_MS = 220;
 const SWIPE_THRESHOLD_PX = 50;
+/** Duur van de openingsanimatie; de eerste slide begint pas daarna met verschijnen. */
+const INTRO_MS = 1950;
+const INTRO_OFFSET_MS = 1650;
+/** Tijd die de kleurveeg nodig heeft; nieuwe inhoud verschijnt pas als het vlak bijna dicht is. */
+const WIPE_MS = 760;
+const ENTER_OFFSET_MS = 260;
+
+type Direction = 'next' | 'prev';
+
+interface Transition {
+    id: number;
+    /** Sleutel van de vertrekkende slide (de id van de overgang waarmee hij binnenkwam) */
+    prevId: number;
+    from: number;
+    dir: Direction;
+}
 
 interface Props {
     stats: SamuWrappedStats;
@@ -25,6 +41,9 @@ export default function SamuWrappedIsland({ stats }: Props) {
     }, [stats]);
 
     const [index, setIndex] = useState(0);
+    const [navId, setNavId] = useState(0);
+    const [transition, setTransition] = useState<Transition | null>(null);
+    const [intro, setIntro] = useState(true);
     const [paused, setPaused] = useState(false);
     const [sharing, setSharing] = useState(false);
     const [shareError, setShareError] = useState<string | null>(null);
@@ -33,13 +52,46 @@ export default function SamuWrappedIsland({ stats }: Props) {
     const pointerRef = useRef<{ x: number; y: number; t: number } | null>(null);
     const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const heldRef = useRef(false);
+    const indexRef = useRef(0);
+    const navRef = useRef(0);
 
     const lastIndex = slides.length - 1;
     const isLast = index === lastIndex;
     const current = slides[index];
 
-    const next = useCallback(() => setIndex((i) => Math.min(i + 1, lastIndex)), [lastIndex]);
-    const prev = useCallback(() => setIndex((i) => Math.max(i - 1, 0)), []);
+    /** Naar een slide gaan, met een kleurveeg in de richting van de navigatie. */
+    const go = useCallback((target: number) => {
+        const from = indexRef.current;
+        const to = Math.max(0, Math.min(target, lastIndex));
+        if (to === from) return;
+        const prevId = navRef.current;
+        const id = prevId + 1;
+        indexRef.current = to;
+        navRef.current = id;
+        setIndex(to);
+        setNavId(id);
+        setTransition(prefersReducedMotion() ? null : { id, prevId, from, dir: to > from ? 'next' : 'prev' });
+    }, [lastIndex]);
+
+    const next = useCallback(() => go(indexRef.current + 1), [go]);
+    const prev = useCallback(() => go(indexRef.current - 1), [go]);
+
+    // Overgang opruimen zodra de veeg klaar is (timer i.p.v. animationend: werkt ook als animaties uit staan)
+    useEffect(() => {
+        if (!transition) return;
+        const timer = setTimeout(() => setTransition(null), WIPE_MS);
+        return () => clearTimeout(timer);
+    }, [transition]);
+
+    // Openingsanimatie: overslaan bij "minder beweging", anders na afloop weghalen
+    useEffect(() => {
+        if (prefersReducedMotion()) {
+            setIntro(false);
+            return;
+        }
+        const timer = setTimeout(() => setIntro(false), INTRO_MS);
+        return () => clearTimeout(timer);
+    }, []);
 
     // Scrollen van de pagina blokkeren terwijl Wrapped open is
     useEffect(() => {
@@ -198,13 +250,49 @@ export default function SamuWrappedIsland({ stats }: Props) {
         }
     };
 
+    const leaving = transition && !isLast && slides[transition.from].id !== 'summary' ? slides[transition.from] : null;
+    const dir: Direction = transition?.dir ?? 'next';
+    /** Vertraging voor de in-animaties: na de opening, na een veeg, of direct */
+    const enterOffset = `${navId === 0 ? (intro ? INTRO_OFFSET_MS : 0) : ENTER_OFFSET_MS}ms`;
+    const baseTheme = transition ? slides[transition.from].theme : current.theme;
+
     const pageNumber = String(index + 1).padStart(2, '0');
     const pageTotal = String(slides.length).padStart(2, '0');
 
     return (
         <Box mod={{ 'wrapped-screen': true }} role="dialog" aria-modal="true" aria-label={`Samu Wrapped ${stats.year}`}>
             {/* Op desktop een kader op telefoonformaat, op mobiel volledig scherm */}
-            <Box mod={{ 'wrapped-frame': true, 'wrapped-theme': current.theme }}>
+            <Box
+                mod={{ 'wrapped-frame': true, 'wrapped-theme': current.theme }}
+                style={{ '--w-offset': enterOffset, '--w-intro': `${INTRO_OFFSET_MS - 250}ms` } as CSSProperties}
+            >
+                {/* Kleurvlakken: het vorige thema eronder, het nieuwe veegt er schuin overheen */}
+                <Box mod={{ 'wrapped-base': true, 'wrapped-theme': baseTheme }} aria-hidden />
+                {transition && (
+                    <Box key={transition.id} mod={{ 'wrapped-wipe': transition.dir, 'wrapped-theme': current.theme }} aria-hidden>
+                        <Box mod={{ 'wrapped-wipe-stripe': true }} />
+                        <Box mod={{ 'wrapped-wipe-fill': true }} />
+                    </Box>
+                )}
+
+                {/* Openingsanimatie: geel en paars schuiven omhoog, het beeldmerk springt in beeld. Tik om over te slaan. */}
+                {intro && (
+                    <Box mod={{ 'wrapped-intro': true }} onPointerDown={() => setIntro(false)} aria-hidden>
+                        <Box mod={{ 'wrapped-intro-panel': 'geel' }} />
+                        <Box mod={{ 'wrapped-intro-panel': 'paars' }} />
+                        <Box mod={{ 'wrapped-intro-center': true }}>
+                            <Box mod={{ 'wrapped-intro-mark': true }}>
+                                <Image src={BEELDMERK.brand} alt="" fit="contain" h="100%" w="auto" />
+                            </Box>
+                            <Box mod={{ 'wrapped-intro-words': true }}>
+                                <Box component="span">Samu</Box>
+                                <Box component="span">Wrapped</Box>
+                                <Box component="span" mod={{ 'wrapped-intro-year': true }}>{stats.year}</Box>
+                            </Box>
+                        </Box>
+                    </Box>
+                )}
+
                 {/* Kop: voortgang, beeldmerk + "Salve Mundi", sluiten */}
                 <Box mod={{ 'wrapped-top': true }}>
                     <Box mod={{ 'wrapped-progress': true }} aria-hidden>
@@ -217,7 +305,7 @@ export default function SamuWrappedIsland({ stats }: Props) {
                                         mod={{ 'wrapped-fill': true }}
                                         style={isLast || current.interactive ? undefined : {
                                             animation: `wrapped-progress ${SLIDE_DURATION_MS}ms linear forwards`,
-                                            animationPlayState: paused ? 'paused' : 'running'
+                                            animationPlayState: paused || intro ? 'paused' : 'running'
                                         }}
                                         onAnimationEnd={next}
                                     />
@@ -248,14 +336,14 @@ export default function SamuWrappedIsland({ stats }: Props) {
                         onPointerUp={(e) => endPointer(e)}
                         onPointerCancel={(e) => endPointer(e, true)}
                     >
-                        <Box component="h2" mod={{ 'wrapped-summary-title': true, 'wrapped-rise': true }}>Deel je Wrapped</Box>
-                        <Box mod={{ 'wrapped-rise': true }} style={{ animationDelay: '100ms' }}>
+                        <Box component="h2" mod={{ 'wrapped-summary-title': true, 'wrapped-reveal': true }} style={{ animationDelay: 'var(--w-offset, 0ms)' }}>Deel je Wrapped</Box>
+                        <Box mod={{ 'wrapped-rise': true }} style={{ animationDelay: 'calc(var(--w-offset, 0ms) + 120ms)' }}>
                             {/* ref op een niet-geanimeerd element: html-to-image kopieert anders de in-animatie (lege afbeelding) */}
                             <Box ref={cardRef}>
                                 <WrappedShareCard stats={stats} />
                             </Box>
                         </Box>
-                        <Box mod={{ 'wrapped-actions': true, 'wrapped-rise': true }} style={{ animationDelay: '250ms' }}>
+                        <Box mod={{ 'wrapped-actions': true, 'wrapped-rise': true }} style={{ animationDelay: 'calc(var(--w-offset, 0ms) + 300ms)' }}>
                             <UnstyledButton mod={{ 'wrapped-btn': 'primary' }} onClick={() => void handleShare()} disabled={sharing}>
                                 <Share2 size={18} /> Delen
                             </UnstyledButton>
@@ -268,7 +356,7 @@ export default function SamuWrappedIsland({ stats }: Props) {
                             <UnstyledButton mod={{ 'wrapped-link': true }} onClick={prev}>
                                 <ChevronLeft size={14} /> Vorige
                             </UnstyledButton>
-                            <UnstyledButton mod={{ 'wrapped-link': true }} onClick={() => setIndex(0)}>
+                            <UnstyledButton mod={{ 'wrapped-link': true }} onClick={() => go(0)}>
                                 <RotateCcw size={14} /> Opnieuw bekijken
                             </UnstyledButton>
                             <Link href="/profiel" data-wrapped-link="">Terug naar profiel</Link>
@@ -282,7 +370,17 @@ export default function SamuWrappedIsland({ stats }: Props) {
                         onPointerCancel={(e) => endPointer(e, true)}
                         onContextMenu={(e) => e.preventDefault()}
                     >
-                        <Box key={current.id} mod={{ 'wrapped-slide': true }} aria-live="polite">
+                        {/* Vertrekkende slide blijft even staan (zelfde key = geen remount) en schuift weg onder de veeg */}
+                        {leaving && transition && (
+                            <Box
+                                key={`${leaving.id}-${transition.prevId}`}
+                                mod={{ 'wrapped-slide': 'leaving', 'wrapped-theme': leaving.theme, 'wrapped-dir': dir }}
+                                aria-hidden
+                            >
+                                {leaving.content}
+                            </Box>
+                        )}
+                        <Box key={`${current.id}-${navId}`} mod={{ 'wrapped-slide': 'active' }} aria-live="polite">
                             {current.content}
                         </Box>
                     </Box>
