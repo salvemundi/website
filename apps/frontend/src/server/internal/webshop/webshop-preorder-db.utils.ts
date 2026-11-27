@@ -99,17 +99,16 @@ const LINE_COLUMNS_WITHOUT_CUSTOM_FIELDS = {
     variant_label_snapshot: schema.webshop_preorder_lines.variant_label_snapshot,
 };
 
-// Fetches the lines of the given preorders. `custom_field_values` was added later
-// (packages/db/drizzle/webshop_custom_fields.sql); when that migration has not been applied
-// to the database yet, `select *` throws and takes every order page down with it. Fall back to
-// the columns that always exist so orders stay readable (custom field answers are then empty).
+// Fetches the lines of the given preorders. `custom_field_values` was added later; when that
+// column does not exist in the database yet, `select *` throws and takes every order page down
+// with it. Fall back to the columns that always exist so orders stay readable (custom field answers are then empty).
 async function fetchLinesForPreordersDb(preorderIds: number[]): Promise<PreorderLineRow[]> {
     if (preorderIds.length === 0) return [];
     const where = inArray(schema.webshop_preorder_lines.preorder_id, preorderIds);
     try {
         return await db.select().from(schema.webshop_preorder_lines).where(where);
     } catch (error) {
-        safeConsoleError('[webshop-preorder-db.utils.ts][fetchLinesForPreordersDb] custom_field_values niet beschikbaar, fallback zonder die kolom (migratie webshop_custom_fields.sql toegepast?)', error);
+        safeConsoleError('[webshop-preorder-db.utils.ts][fetchLinesForPreordersDb] custom_field_values niet beschikbaar, fallback zonder die kolom', error);
         const rows = await db.select(LINE_COLUMNS_WITHOUT_CUSTOM_FIELDS).from(schema.webshop_preorder_lines).where(where);
         return rows.map(row => ({ ...row, custom_field_values: null }));
     }
