@@ -7,7 +7,6 @@ const selectSponsorsSchema = createSelectSchema(sponsorsTable);
 
 export const heroBannerSchema = selectHeroBannersSchema.omit({
     date_created: true,
-    user_created: true,
 }).extend({
     id: z.union([z.string(), z.number()]),
     afbeelding_id: z.union([
