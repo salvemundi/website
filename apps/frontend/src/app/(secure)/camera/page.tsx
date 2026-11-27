@@ -10,7 +10,7 @@ import { CameraRequestIsland } from '@/components/islands/camera/CameraRequestIs
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-    title: 'Camera aanvragen | SV Salve Mundi',
+    title: 'Fotograaf aanvraag | SV Salve Mundi',
     description: 'Vraag de verenigingscamera en eventueel een fotograaf aan voor een activiteit.',
 };
 
@@ -26,7 +26,7 @@ export default async function CameraPage() {
     const { events, committees, myCommitteeIds, photographers, mine } = await getCameraPageData();
 
     return (
-        <PublicPageShell title="Camera aanvragen">
+        <PublicPageShell title="Fotograaf aanvraag">
             <Container size="xl" py="xl">
                 <Stack gap="xl">
                     <Group>

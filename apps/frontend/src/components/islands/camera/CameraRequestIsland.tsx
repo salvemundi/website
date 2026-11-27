@@ -20,7 +20,7 @@ import {
     Textarea,
     TextInput,
 } from '@mantine/core';
-import { DateInput, TimeInput } from '@mantine/dates';
+import { DateInput, TimePicker } from '@mantine/dates';
 import {
     CAMERA_PHOTO_STATUS_LABEL,
     createCameraRequestSchema,
@@ -202,7 +202,7 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
         });
     };
 
-    const blocked = (availability?.approved.length ?? 0) > 0;
+    const reserved = (availability?.approved.length ?? 0) > 0;
 
     const filterOptions = useMemo(() => {
         const opts: { value: string; label: string }[] = [];
@@ -238,7 +238,7 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
 
     return (
         <Stack gap="xl">
-            <Tile title="Camera aanvragen" icon={<Camera size={22} />}>
+            <Tile title="Fotograaf aanvraag" icon={<Camera size={22} />}>
                 <Box component="form" onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
                     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
                         {events.length > 0 && (
@@ -296,10 +296,19 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
                             )}
                         />
 
-                        <TimeInput
-                            label="Starttijd (optioneel)"
-                            error={errors.start_time?.message}
-                            {...register('start_time')}
+                        <Controller
+                            name="start_time"
+                            control={control}
+                            render={({ field }) => (
+                                <TimePicker
+                                    label="Starttijd (optioneel)"
+                                    format="24h"
+                                    clearable
+                                    value={field.value ?? ''}
+                                    onChange={field.onChange}
+                                    error={errors.start_time?.message}
+                                />
+                            )}
                         />
 
                         <Controller
@@ -320,21 +329,29 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
                             )}
                         />
 
-                        <TimeInput
-                            label="Eindtijd (optioneel)"
-                            minTime={sameDay && startTime ? startTime : undefined}
-                            error={errors.end_time?.message}
-                            {...register('end_time')}
+                        <Controller
+                            name="end_time"
+                            control={control}
+                            render={({ field }) => (
+                                <TimePicker
+                                    label="Eindtijd (optioneel)"
+                                    format="24h"
+                                    clearable
+                                    min={sameDay && startTime ? startTime : undefined}
+                                    value={field.value ?? ''}
+                                    onChange={field.onChange}
+                                    error={errors.end_time?.message}
+                                />
+                            )}
                         />
 
                         {availability && (
                             <Box style={{ gridColumn: '1 / -1' }} role="status">
-                                {blocked ? (
-                                    <Alert color="error" icon={<AlertTriangle size={16} />}>
-                                        De camera is in deze periode al gereserveerd
-                                        {availability.approved.length > 0 &&
-                                            ` (${availability.approved.map((a) => a.event_name).join(', ')})`}
-                                        . Kies een andere periode.
+                                {reserved ? (
+                                    <Alert color="accent" icon={<AlertTriangle size={16} />}>
+                                        De camera is in deze periode al gereserveerd (
+                                        {availability.approved.map((a) => a.event_name).join(', ')}). Je kunt wel een
+                                        aanvraag indienen; het beheer kijkt of het past.
                                     </Alert>
                                 ) : availability.requested > 0 ? (
                                     <Alert color="accent" icon={<AlertTriangle size={16} />}>
@@ -380,7 +397,6 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
                         <Box style={{ gridColumn: '1 / -1' }}>
                             <Button
                                 type="submit"
-                                disabled={blocked}
                                 loading={isPending}
                                 leftSection={<Camera size={16} />}
                                 w={{ base: '100%', sm: 'auto' }}

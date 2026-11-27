@@ -48,7 +48,7 @@ export default function ProfielQuickLinks({ user = {} }: ProfielQuickLinksProps)
                     href={ROUTES.PIZZA}
                 />
                 <QuickLink
-                    label="Camera aanvragen"
+                    label="Fotograaf aanvraag"
                     icon={<Camera size={22} />}
                     href={ROUTES.CAMERA}
                     locked={!isMember}

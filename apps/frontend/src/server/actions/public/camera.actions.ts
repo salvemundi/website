@@ -298,11 +298,6 @@ export async function createCameraRequest(input: unknown): Promise<Result> {
             eventId = evRows.length > 0 ? evRows[0].id : null;
         }
 
-        const overlaps = await findOverlaps(data);
-        if (overlaps.some((r) => r.status === 'approved')) {
-            return { success: false, error: 'De camera is in deze periode al gereserveerd. Kies een andere periode.' };
-        }
-
         await db.insert(schema.camera_requests).values({
             requester_id: member.userId,
             event_id: eventId,
