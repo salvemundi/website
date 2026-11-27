@@ -777,10 +777,6 @@ export const events_membersRelations = relations(events_members, ({one}) => ({
 }));
 
 export const hero_bannersRelations = relations(hero_banners, ({one}) => ({
-	directus_user: one(directus_users, {
-		fields: [hero_banners.user_created],
-		references: [directus_users.id]
-	}),
 	directus_file: one(directus_files, {
 		fields: [hero_banners.image],
 		references: [directus_files.id]
