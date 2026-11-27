@@ -35,6 +35,10 @@ export function searchPages(pages: BijbelPage[], tokens: string[]) {
     return hits.sort((a, b) => b.score - a.score || a.page.id.localeCompare(b.page.id) || a.sectie.nummer - b.sectie.nummer);
 }
 
+/** Hogere waarden dan MCP_MAX_RESULTS worden begrensd (geen fout); vermeld dat, zodat de client volgende_cursor gebruikt. */
+const limitSchema = (cfg: Pick<Config, 'MCP_MAX_RESULTS'>) =>
+    z.number().int().min(1).max(25).optional().describe(`Aantal resultaten per keer; maximaal ${cfg.MCP_MAX_RESULTS} (hogere waarden worden begrensd). Gebruik volgende_cursor voor meer.`);
+
 const cursorSchema = z.string().regex(/^\d{1,7}$/).optional().describe('Ondoorzichtige cursor uit een vorig antwoord');
 
 /** Vertaalt bronfouten naar een generieke toolfout; geeft nooit inhoud, stacktraces of infra-details terug. */
@@ -61,7 +65,7 @@ export function createMcpServer(source: BijbelSource, cfg: ToolCfg, files?: File
         {
             title: 'Lijst Samu Bijbel-pagina\'s',
             description: 'Geeft pagina-ID\'s, titels en bronlinks van gepubliceerde Samu Bijbel-pagina\'s (gepagineerd). Gebruik het pagina_id met lees_bijbel_pagina.',
-            inputSchema: { limit: z.number().int().min(1).max(25).optional(), cursor: cursorSchema },
+            inputSchema: { limit: limitSchema(cfg), cursor: cursorSchema },
             annotations: READ_ONLY,
         },
         ({ limit, cursor }) =>
@@ -95,7 +99,7 @@ export function createMcpServer(source: BijbelSource, cfg: ToolCfg, files?: File
                 `Zoekt (deterministisch, letterlijk op trefwoord) in maximaal ${cfg.MCP_MAX_SEARCH_PAGES} gepubliceerde Samu Bijbel-pagina's. Geeft letterlijke fragmenten met titel, bronlink en pagina-ID. Antwoord alleen op basis van de resultaten; bij "niet_gevonden" meld je dat expliciet, en bij zoekbereik_beperkt=true zijn niet alle pagina's doorzocht.`,
             inputSchema: {
                 query: z.string().trim().min(2).max(200),
-                limit: z.number().int().min(1).max(25).optional(),
+                limit: limitSchema(cfg),
                 cursor: cursorSchema,
             },
             annotations: READ_ONLY,
@@ -256,7 +260,7 @@ function registerFileTools(server: McpServer, files: FileSource, cfg: ToolCfg): 
             title: 'Lijst sjabloonbestanden',
             description:
                 'Geeft de bestanden (sjablonen) uit de sjablonenmap van de Samu Bijbel, met bestand_id, naam, pad, type, grootte, wijzigingsdatum en bronlink (gepagineerd). Alleen Word (.docx/.dotx), PowerPoint (.pptx/.potx), pdf en tekstbestanden (.txt/.md/.csv) zijn als tekst leesbaar (leesbaar=true); andere bestanden kun je zo nodig met download_sjabloon ophalen. Gebruik het bestand_id met lees_sjabloon.',
-            inputSchema: { limit: z.number().int().min(1).max(25).optional(), cursor: cursorSchema },
+            inputSchema: { limit: limitSchema(cfg), cursor: cursorSchema },
             annotations: READ_ONLY,
         },
         ({ limit, cursor }) =>

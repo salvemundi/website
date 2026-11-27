@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { UserContext } from '../src/auth/jwt.js';
 import { AccessDeniedError, createGraphReader, resolveGraphUrl, SourceUnavailableError, type GraphReader } from '../src/graph/client.js';
-import { createGraphBijbelSources, htmlToText } from '../src/graph/source.js';
+import { createGraphBijbelSources, htmlToText, splitSections } from '../src/graph/source.js';
 import { baseEnv, config } from './helpers.js';
 
 const SITE = 'contoso.sharepoint.com,aaa,bbb';
@@ -167,5 +167,29 @@ describe('configuratie en omgevingsscheiding', () => {
         for (const k of ['MCP_ENTRA_TENANT_ID', 'MCP_ENTRA_CLIENT_ID', 'MCP_ENTRA_CLIENT_SECRET', 'MCP_SHAREPOINT_SITE_ID', 'MCP_PUBLIC_URL']) {
             expect(() => config({ [k]: undefined }), k).toThrow();
         }
+    });
+});
+
+describe('secties per kop', () => {
+    it('splitst op koppen binnen één webonderdeel, met inleiding zonder titel', () => {
+        const s = splitSections('<p>Intro</p><h2>Vergadering</h2><p>Wekelijks.</p><h3>Uitje</h3><p>€40 per lid.</p>');
+        expect(s).toEqual([
+            { nummer: 1, titel: null, tekst: 'Intro' },
+            { nummer: 2, titel: 'Vergadering', tekst: 'Vergadering\nWekelijks.' },
+            { nummer: 3, titel: 'Uitje', tekst: 'Uitje\n€40 per lid.' },
+        ]);
+    });
+
+    it('voegt een kop zonder eigen tekst samen met de volgende sectie', () => {
+        const s = splitSections('<h2>Activiteit</h2><h3>Stappenplan</h3><p>Stap 1</p>');
+        expect(s).toEqual([{ nummer: 1, titel: 'Activiteit', tekst: 'Activiteit\nStappenplan\nStap 1' }]);
+    });
+
+    it('houdt een losse kop aan het einde en negeert lege HTML', () => {
+        expect(splitSections('<p>a</p><h2>Einde</h2>')).toEqual([
+            { nummer: 1, titel: null, tekst: 'a' },
+            { nummer: 2, titel: 'Einde', tekst: 'Einde' },
+        ]);
+        expect(splitSections('<div> </div>')).toEqual([]);
     });
 });

@@ -66,9 +66,37 @@ export function htmlToText(html: string): string {
         .trim();
 }
 
-function firstHeading(html: string): string | null {
-    const m = /<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i.exec(html);
-    return m?.[1] ? htmlToText(m[1]) || null : null;
+const HEADING = /<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1>/gi;
+
+/**
+ * Deelt de pagina-HTML op in secties per kop (h1–h6), zodat een sectie de tekst onder één kop is en de sectietitel
+ * de dichtstbijzijnde kop boven de tekst. Tekst vóór de eerste kop wordt een sectie zonder titel. Een kop zonder
+ * eigen tekst (bv. h2 direct gevolgd door h3) wordt samengevoegd met de volgende sectie en geeft die zijn titel.
+ */
+export function splitSections(html: string): BijbelSection[] {
+    type Part = { titel: string | null; html: string };
+    const parts: Part[] = [];
+    let last = 0;
+    let titel: string | null = null;
+    for (const m of html.matchAll(HEADING)) {
+        parts.push({ titel, html: html.slice(last, m.index) });
+        titel = htmlToText(m[2]) || null;
+        last = m.index;
+    }
+    parts.push({ titel, html: html.slice(last) });
+
+    const out: BijbelSection[] = [];
+    let pending: Part | null = null;
+    for (const p of parts) {
+        const cur: Part = pending ? { titel: pending.titel ?? p.titel, html: pending.html + p.html } : p;
+        const tekst = htmlToText(cur.html);
+        if (!tekst) { pending = null; continue; }
+        if (cur.titel !== null && tekst === cur.titel) { pending = cur; continue; }
+        out.push({ nummer: out.length + 1, titel: cur.titel, tekst });
+        pending = null;
+    }
+    if (pending) out.push({ nummer: out.length + 1, titel: pending.titel, tekst: htmlToText(pending.html) });
+    return out;
 }
 
 export interface SourceOptions {
@@ -153,12 +181,12 @@ export function createGraphBijbelSources(graph: GraphReader, opts: SourceOptions
             const d = detailSchema.parse(await get(`/sites/${opts.siteId}/pages/${meta.id}/microsoft.graph.sitePage?$expand=canvasLayout`));
             // Opnieuw controleren op de detailrespons: concept geworden of verplaatst sinds de lijst = niet leesbaar.
             if (d.id.toLowerCase() !== meta.id || !allowed(d.webUrl, d.publishingState?.level)) throw new SourceUnavailableError(GONE);
-            const secties: BijbelSection[] = [];
-            for (const sec of d.canvasLayout?.horizontalSections ?? []) {
-                const html = (sec.columns ?? []).flatMap((c) => c.webparts ?? []).map((w) => w.innerHtml ?? '').join('\n');
-                const tekst = htmlToText(html);
-                if (tekst) secties.push({ nummer: secties.length + 1, titel: firstHeading(html), tekst });
-            }
+            const html = (d.canvasLayout?.horizontalSections ?? [])
+                .flatMap((sec) => sec.columns ?? [])
+                .flatMap((c) => c.webparts ?? [])
+                .map((w) => w.innerHtml ?? '')
+                .join('\n');
+            const secties = splitSections(html);
             return { id: meta.id, titel: d.title ?? '(zonder titel)', url: d.webUrl, gewijzigd: d.lastModifiedDateTime ?? null, secties };
         }
 
