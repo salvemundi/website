@@ -1198,17 +1198,11 @@ export const events_members = pgTable("events_members", {
 
 export const hero_banners = pgTable("hero_banners", {
 	id: serial().primaryKey().notNull(),
-	user_created: uuid(),
 	date_created: timestamp({ withTimezone: true, mode: 'string' }),
 	image: uuid(),
 	sort: integer(),
 	title: varchar({ length: 255 }),
 }, (table) => [
-	foreignKey({
-			columns: [table.user_created],
-			foreignColumns: [directus_users.id],
-			name: "hero_banners_user_created_directus_users_id_fk"
-		}),
 	foreignKey({
 			columns: [table.image],
 			foreignColumns: [directus_files.id],
