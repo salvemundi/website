@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "type-check": "node ../../../node_modules/typescript-native/bin/tsc --noEmit",
+    "type-check": "bun check",
     "lint": "eslint src",
     "provision": "node dist/index.js"
   },

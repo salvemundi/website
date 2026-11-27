@@ -28,7 +28,7 @@
     },
     "scripts": {
         "build": "node build.mjs",
-        "type-check": "node ../../node_modules/typescript-native/bin/tsc --noEmit",
+        "type-check": "bun check",
         "lint": "eslint src"
     },
     "dependencies": {
