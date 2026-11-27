@@ -25,6 +25,15 @@ on:
         type: choice
         options: [none, migrate, check, start, stop]
         default: none
+      dev_wrapped_testdata:
+        description: 'Dev only: Samu Wrapped test data (seed = recreate for the email below, cleanup = remove all)'
+        type: choice
+        options: [none, seed, cleanup]
+        default: none
+      dev_wrapped_email:
+        description: 'Wrapped test data only: email of your dev account'
+        type: string
+        default: ''
   push:
     branches:
       - main
@@ -75,7 +84,7 @@ permissions:
   packages: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/dev' && (github.event_name == 'push' || (inputs.mobile_setup_action == 'none' && inputs.dev_notifications_action == 'none')) && github.ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/dev' && (github.event_name == 'push' || (inputs.mobile_setup_action == 'none' && inputs.dev_notifications_action == 'none' && inputs.dev_wrapped_testdata == 'none')) && github.ref || github.run_id }}
   cancel-in-progress: false
 
 env:
@@ -83,7 +92,7 @@ env:
 
 jobs:
   prepare:
-    if: github.event_name != 'workflow_dispatch' || (inputs.mobile_setup_action == 'none' && inputs.dev_notifications_action == 'none')
+    if: github.event_name != 'workflow_dispatch' || (inputs.mobile_setup_action == 'none' && inputs.dev_notifications_action == 'none' && inputs.dev_wrapped_testdata == 'none')
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.plan.outputs.tag }}
@@ -233,7 +242,7 @@ jobs:
     name: Deploy to VPS
     runs-on: ubuntu-latest
     needs: [prepare, build-images]
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.mobile_setup_action == 'none' && inputs.dev_notifications_action == 'none'))
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.mobile_setup_action == 'none' && inputs.dev_notifications_action == 'none' && inputs.dev_wrapped_testdata == 'none'))
     environment:
       name: ${{ github.ref_name == 'main' && 'Production' || (github.ref_name == 'dev' && 'Development' || 'Acceptance') }}
     steps:
@@ -543,6 +552,14 @@ jobs:
       confirm_isolation: ${{ inputs.mobile_confirm_isolation }}
       test_user_ids: ${{ inputs.mobile_test_user_ids }}
       shared_database_pilot_ack: ${{ inputs.mobile_shared_database_pilot_ack }}
+    secrets: inherit
+
+  dev-wrapped-testdata:
+    if: github.event_name == 'workflow_dispatch' && inputs.dev_wrapped_testdata != 'none' && inputs.dev_notifications_action == 'none' && inputs.mobile_setup_action == 'none' && github.ref == 'refs/heads/dev'
+    uses: ./.github/workflows/wrapped-testdata-dev.yml
+    with:
+      action: ${{ inputs.dev_wrapped_testdata }}
+      email: ${{ inputs.dev_wrapped_email }}
     secrets: inherit
 
   dev-android-notifications:

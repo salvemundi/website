@@ -1,0 +1,70 @@
+name: Dev Wrapped test data
+
+# Aangeroepen vanuit v7-stack.yml (keuze "dev_wrapped_testdata"), alleen handmatig en alleen op de dev-branch.
+# Draait alleen tegen de dev-core database (v7-dev-db) en nooit automatisch bij een push of deploy.
+on:
+  workflow_call:
+    inputs:
+      action:
+        type: string
+        required: true
+      email:
+        type: string
+        default: ''
+
+concurrency:
+  group: dev-wrapped-testdata
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  testdata:
+    if: github.ref == 'refs/heads/dev' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: Development
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate input
+        shell: bash
+        env:
+          ACTION: ${{ inputs.action }}
+          EMAIL: ${{ inputs.email }}
+        run: |
+          [[ "$ACTION" =~ ^(seed|cleanup)$ ]]
+          # Het adres gaat mee in het SSH-commando: alleen een strikt e-mailformaat toestaan (of leeg bij cleanup)
+          if [[ -n "$EMAIL" && ! "$EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; then
+            echo 'Ongeldig e-mailadres.' >&2
+            exit 1
+          fi
+          if [[ "$ACTION" == seed && -z "$EMAIL" ]]; then
+            echo 'Vul bij "dev_wrapped_email" het e-mailadres van je dev-account in.' >&2
+            exit 1
+          fi
+      - name: Connect through the deployment VPN
+        uses: Alemiz112/netbird-connect@v1
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
+      - name: Run on the dev database
+        shell: bash
+        env:
+          ACTION: ${{ inputs.action }}
+          EMAIL: ${{ inputs.email }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          VPN_IP: ${{ secrets.VPN_IP }}
+        run: |
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          for i in {1..30}; do
+            if nc -z -w 1 "$VPN_IP" 22; then break; fi
+            sleep 2
+          done
+          tar -cf - -C infrastructure/dev-server wrapped-testdata |
+            ssh -o StrictHostKeyChecking=yes -o BatchMode=yes -i ~/.ssh/deploy_key "$SSH_USER@$VPN_IP" \
+              "set -euo pipefail; umask 077; stage=\$(mktemp -d); trap 'rm -rf -- \"\$stage\"' EXIT; cd \"\$stage\"; tar -xf -; ACTION='$ACTION' EMAIL='$EMAIL' bash wrapped-testdata/run.sh"
