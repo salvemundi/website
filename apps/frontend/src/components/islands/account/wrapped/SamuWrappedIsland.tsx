@@ -4,7 +4,7 @@ import { Box, Image, UnstyledButton, VisuallyHidden } from '@mantine/core';
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import Link from '@/components/ui/Link';
 import { toBlob } from 'html-to-image';
-import { X, Share2, Download, RotateCcw, Pause } from 'lucide-react';
+import { X, Share2, Download, RotateCcw, Pause, ChevronLeft } from 'lucide-react';
 import { type SamuWrappedStats } from '@/lib/wrapped/samu-wrapped.types';
 import { BEELDMERK, buildWrappedSlides, WrappedShareCard } from './wrapped-slides';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -70,7 +70,7 @@ export default function SamuWrappedIsland({ stats }: Props) {
 
     /** Tikken op een quizknop is geen navigatie. */
     const isControl = (e: ReactPointerEvent<HTMLDivElement>) =>
-        e.target instanceof Element && e.target.closest('button') !== null;
+        e.target instanceof Element && e.target.closest('button, a') !== null;
 
     const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
         if (isControl(e)) return;
@@ -242,7 +242,12 @@ export default function SamuWrappedIsland({ stats }: Props) {
                 </Box>
 
                 {isLast ? (
-                    <Box mod={{ 'wrapped-summary': true }}>
+                    <Box
+                        mod={{ 'wrapped-summary': true }}
+                        onPointerDown={onPointerDown}
+                        onPointerUp={(e) => endPointer(e)}
+                        onPointerCancel={(e) => endPointer(e, true)}
+                    >
                         <Box component="h2" mod={{ 'wrapped-summary-title': true, 'wrapped-rise': true }}>Deel je Wrapped</Box>
                         <Box mod={{ 'wrapped-rise': true }} style={{ animationDelay: '100ms' }}>
                             {/* ref op een niet-geanimeerd element: html-to-image kopieert anders de in-animatie (lege afbeelding) */}
@@ -260,6 +265,9 @@ export default function SamuWrappedIsland({ stats }: Props) {
                         </Box>
                         {shareError && <Box component="p" mod={{ 'wrapped-error': true }} role="alert">{shareError}</Box>}
                         <Box mod={{ 'wrapped-links': true }}>
+                            <UnstyledButton mod={{ 'wrapped-link': true }} onClick={prev}>
+                                <ChevronLeft size={14} /> Vorige
+                            </UnstyledButton>
                             <UnstyledButton mod={{ 'wrapped-link': true }} onClick={() => setIndex(0)}>
                                 <RotateCcw size={14} /> Opnieuw bekijken
                             </UnstyledButton>
@@ -274,7 +282,7 @@ export default function SamuWrappedIsland({ stats }: Props) {
                         onPointerCancel={(e) => endPointer(e, true)}
                         onContextMenu={(e) => e.preventDefault()}
                     >
-                        <Box key={current.id} aria-live="polite">
+                        <Box key={current.id} mod={{ 'wrapped-slide': true }} aria-live="polite">
                             {current.content}
                         </Box>
                     </Box>

@@ -139,6 +139,8 @@ function CommitteeName({ name }: { name: string }) {
     );
 }
 
+const BADGES_PER_SLIDE = 3;
+
 function plural(n: number, one: string, many: string): string {
     return n === 1 ? one : many;
 }
@@ -481,19 +483,25 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
         )
     });
 
-    if (s.badges.others.length > 0) {
+    // Overige badges in porties van 3, zodat ze ook op een kleine telefoon onder de balk passen
+    const others = s.badges.others;
+    const pages = Math.ceil(others.length / BADGES_PER_SLIDE);
+    for (let page = 0; page < pages; page++) {
+        const chunk = others.slice(page * BADGES_PER_SLIDE, (page + 1) * BADGES_PER_SLIDE);
         slides.push({
-            id: 'badges-other',
+            id: `badges-other-${page}`,
             section: 'Badges',
             theme: 'light',
             content: (
                 <>
-                    <Kicker>Daarnaast verdiende je</Kicker>
-                    <Title at={100}>
-                        {s.badges.others.length} {plural(s.badges.others.length, 'andere badge', 'andere badges')}
-                    </Title>
+                    <Kicker>{page === 0 ? 'Daarnaast verdiende je' : 'En ook nog'}</Kicker>
+                    {page === 0 && (
+                        <Title at={100}>
+                            {others.length} {plural(others.length, 'andere badge', 'andere badges')}
+                        </Title>
+                    )}
                     <Box mod={{ 'wrapped-badgelist': true, ...rise }} style={delay(300)}>
-                        {s.badges.others.slice(0, 6).map((b) => (
+                        {chunk.map((b) => (
                             <Box key={b.id} mod={{ 'wrapped-badgerow': true }}>
                                 <Box component="span" mod={{ 'wrapped-badge-emoji': true }} aria-hidden>{b.emoji}</Box>
                                 <Box component="span" mod={{ 'wrapped-badge-text': true }}>
@@ -503,6 +511,9 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
                             </Box>
                         ))}
                     </Box>
+                    {pages > 1 && (
+                        <Box component="p" mod={{ 'wrapped-note': true, ...rise }} style={delay(500)}>{page + 1} / {pages}</Box>
+                    )}
                 </>
             )
         });
