@@ -36,6 +36,20 @@ export interface SamuWrappedStats {
         distinctLocations: number;
         /** Langste reeks opeenvolgende activiteiten (in de agenda) waarvoor je je aanmeldde */
         longestSignupRun: { count: number; events: string[] };
+        /** Snelste aanmelding na publicatie (in seconden) */
+        fastestSignup: { name: string; seconds: number } | null;
+        /** Unieke datums (YYYY-MM-DD) waarop je bij een activiteit was, voor de jaar-heatmap */
+        dates: string[];
+    };
+
+    /** Cijfers van de hele vereniging over het jaar (geen persoonsgegevens) */
+    samu: {
+        events: number;
+        signups: number;
+        participants: number;
+        stickers: number;
+        pubCrawlTickets: number;
+        trips: number;
     };
 
     pubCrawls: {

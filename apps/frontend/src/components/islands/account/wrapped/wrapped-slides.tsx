@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Image } from '@mantine/core';
+import { Box, Image, UnstyledButton } from '@mantine/core';
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { type SamuWrappedStats } from '@/lib/wrapped/samu-wrapped.types';
 
@@ -19,6 +19,8 @@ export interface WrappedSlide {
     section: string;
     theme: WrappedTheme;
     content: ReactNode;
+    /** Interactieve slide (quiz): niet automatisch doorgaan en tikken op knoppen niet als navigatie zien */
+    interactive?: boolean;
 }
 
 export const BEELDMERK: Record<WrappedTheme, string> = {
@@ -180,6 +182,11 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
                     {a.checkedIn > 0 && (
                         <Body at={600}>Bij <Strong>{a.checkedIn}</Strong> daarvan ben je ook echt ingecheckt.</Body>
                     )}
+                    {a.fastestSignup && a.fastestSignup.seconds <= 86_400 && (
+                        <Body at={800}>
+                            Je snelste aanmelding: <Strong>{a.fastestSignup.name}</Strong>, al {formatDuration(a.fastestSignup.seconds)} na publicatie.
+                        </Body>
+                    )}
                 </>
             )
         });
@@ -239,6 +246,23 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
                             Op {a.favoriteWeekday.name} was je bij <Strong>{a.favoriteWeekday.count}</Strong> verschillende activiteiten.
                         </Body>
                     )}
+                </>
+            )
+        });
+    }
+
+    if (a.dates.length >= 2) {
+        slides.push({
+            id: 'heatmap',
+            section: 'Jouw jaar',
+            theme: 'dark',
+            content: (
+                <>
+                    <Kicker>Jouw {s.year} in één oogopslag</Kicker>
+                    <YearHeatmap year={s.year} dates={a.dates} />
+                    <Body at={500}>
+                        Op <Strong>{a.dates.length}</Strong> verschillende dagen was je bij een activiteit.
+                    </Body>
                 </>
             )
         });
@@ -416,6 +440,33 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
         });
     }
 
+    if (s.samu.events > 0) {
+        const share = a.total > 0 ? Math.round((a.total / s.samu.events) * 100) : 0;
+        const items = [
+            { label: 'Activiteiten', value: s.samu.events.toLocaleString('nl-NL') },
+            { label: 'Aanmeldingen', value: s.samu.signups.toLocaleString('nl-NL') },
+            { label: 'Deelnemers', value: s.samu.participants.toLocaleString('nl-NL') },
+            { label: 'Stickers', value: s.samu.stickers.toLocaleString('nl-NL') },
+            { label: 'Kroegentocht-tickets', value: s.samu.pubCrawlTickets.toLocaleString('nl-NL') },
+            { label: 'Reizen', value: s.samu.trips.toLocaleString('nl-NL') }
+        ].filter((i) => i.value !== '0');
+        slides.push({
+            id: 'samu-total',
+            section: 'Samu in totaal',
+            theme: 'light',
+            content: (
+                <>
+                    <Kicker>Samen met iedereen</Kicker>
+                    <Title at={100}>Samu in {s.year}</Title>
+                    <DefList items={items} at={300} />
+                    {share > 0 && (
+                        <Body at={600}>Jij was bij <Strong>{share}%</Strong> van alle activiteiten.</Body>
+                    )}
+                </>
+            )
+        });
+    }
+
     slides.push({
         id: 'badge-featured',
         section: 'Badge',
@@ -457,7 +508,121 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
         });
     }
 
+    insertQuiz(slides, s);
     return slides;
+}
+
+function formatDuration(seconds: number): string {
+    if (seconds < 60) return `${Math.max(1, seconds)} ${plural(seconds, 'seconde', 'seconden')}`;
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 60) return `${minutes} ${plural(minutes, 'minuut', 'minuten')}`;
+    const hours = Math.round(minutes / 60);
+    return `${hours} uur`;
+}
+
+const MONTH_LETTERS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+
+/** Kalender met per maand een rij en per dag een vakje; dagen met een activiteit lichten op. */
+function YearHeatmap({ year, dates }: { year: number; dates: string[] }) {
+    const active = new Set(dates);
+    return (
+        <Box mod={{ 'wrapped-heat': true, ...rise }} style={delay(200)} role="img" aria-label={`Kalender van ${year} met ${dates.length} dagen met een activiteit`}>
+            {MONTH_LETTERS.map((letter, m) => {
+                const daysInMonth = new Date(Date.UTC(year, m + 1, 0)).getUTCDate();
+                return (
+                    <Box key={m} mod={{ 'wrapped-heat-row': true }}>
+                        <Box component="span" mod={{ 'wrapped-heat-label': true }}>{letter}</Box>
+                        {Array.from({ length: 31 }, (_, d) => {
+                            const key = `${year}-${String(m + 1).padStart(2, '0')}-${String(d + 1).padStart(2, '0')}`;
+                            const state = d >= daysInMonth ? 'none' : active.has(key) ? 'on' : 'off';
+                            return <Box key={d} component="span" mod={{ 'wrapped-heat-cell': state }} />;
+                        })}
+                    </Box>
+                );
+            })}
+        </Box>
+    );
+}
+
+interface QuizSpec {
+    before: string;
+    question: string;
+    answer: number;
+    unit: string;
+}
+
+/** Minimale waarde voor een quizvraag: bij 0 of 1 is raden niet leuk. */
+const MIN_QUIZ_VALUE = 3;
+
+/** Kiest één leuke stat voor de quiz en zet die vlak vóór de slide die het antwoord laat zien. */
+function insertQuiz(slides: WrappedSlide[], s: SamuWrappedStats) {
+    const candidates: QuizSpec[] = [
+        { before: 'stickers', question: `Hoeveel stickers plakte je in ${s.year}?`, answer: s.stickers.total, unit: 'stickers' },
+        { before: 'activities', question: `Bij hoeveel activiteiten was je in ${s.year}?`, answer: s.activities.total, unit: 'activiteiten' },
+        { before: 'pub-crawls', question: 'Hoeveel kroegentocht-tickets kocht je?', answer: s.pubCrawls.tickets, unit: 'tickets' }
+    ];
+    const pick = candidates.find((c) => c.answer >= MIN_QUIZ_VALUE && slides.some((sl) => sl.id === c.before));
+    if (!pick) return;
+    const index = slides.findIndex((sl) => sl.id === pick.before);
+    slides.splice(index, 0, {
+        id: 'quiz',
+        section: 'Quiz',
+        theme: 'yellow',
+        interactive: true,
+        content: <QuizSlide spec={pick} />
+    });
+}
+
+/**
+ * Twee foute opties naast het goede antwoord. De positie van het goede antwoord (laagste, middelste
+ * of hoogste) hangt af van het antwoord zelf, zodat "kies de middelste" niet altijd werkt.
+ */
+function quizOptions(answer: number): number[] {
+    const lower = [...new Set([Math.round(answer * 0.7), Math.round(answer * 0.45)])].filter((n) => n > 0 && n < answer);
+    const higher = [...new Set([Math.round(answer * 1.4), Math.round(answer * 1.9)])].filter((n) => n > answer);
+    const position = answer % 3; // 0 = laagste, 1 = midden, 2 = hoogste
+    let wrong: number[];
+    if (position === 0 || lower.length === 0) wrong = higher.slice(0, 2);
+    else if (position === 2 && lower.length >= 2) wrong = lower.slice(0, 2);
+    else wrong = [lower[0], higher[0]];
+    return [answer, ...wrong].sort((x, y) => x - y);
+}
+
+function QuizSlide({ spec }: { spec: QuizSpec }) {
+    const [chosen, setChosen] = useState<number | null>(null);
+    const options = quizOptions(spec.answer);
+    const answered = chosen !== null;
+
+    return (
+        <>
+            <Kicker>Quizvraag</Kicker>
+            <Title at={100}>{spec.question}</Title>
+            <Box mod={{ 'wrapped-quiz': true, ...rise }} style={delay(300)}>
+                {options.map((n) => (
+                    <UnstyledButton
+                        key={n}
+                        mod={{
+                            'wrapped-quiz-option': answered ? (n === spec.answer ? 'correct' : n === chosen ? 'wrong' : 'idle') : true
+                        }}
+                        disabled={answered}
+                        onClick={() => setChosen(n)}
+                    >
+                        {n.toLocaleString('nl-NL')} {spec.unit}
+                    </UnstyledButton>
+                ))}
+            </Box>
+            {answered && (
+                <>
+                    <Body at={0}>
+                        {chosen === spec.answer
+                            ? 'Goed! Jij kent jezelf.'
+                            : <>Bijna! Het waren er <Strong>{spec.answer.toLocaleString('nl-NL')}</Strong>.</>}
+                    </Body>
+                    <Box component="p" mod={{ 'wrapped-hint': true, ...rise }} style={delay(200)}>Tik om verder te gaan</Box>
+                </>
+            )}
+        </>
+    );
 }
 
 /**

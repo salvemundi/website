@@ -68,7 +68,12 @@ export default function SamuWrappedIsland({ stats }: Props) {
         return () => document.removeEventListener('visibilitychange', onVisibility);
     }, []);
 
+    /** Tikken op een quizknop is geen navigatie. */
+    const isControl = (e: ReactPointerEvent<HTMLDivElement>) =>
+        e.target instanceof Element && e.target.closest('button') !== null;
+
     const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+        if (isControl(e)) return;
         pointerRef.current = { x: e.clientX, y: e.clientY, t: Date.now() };
         heldRef.current = false;
         holdTimer.current = setTimeout(() => {
@@ -87,7 +92,7 @@ export default function SamuWrappedIsland({ stats }: Props) {
             setPaused(false);
             return;
         }
-        if (!start || cancelled) return;
+        if (!start || cancelled || isControl(e)) return;
 
         const dx = e.clientX - start.x;
         const dy = e.clientY - start.y;
@@ -210,7 +215,7 @@ export default function SamuWrappedIsland({ stats }: Props) {
                                     <Box
                                         key={`${s.id}-${index}`}
                                         mod={{ 'wrapped-fill': true }}
-                                        style={isLast ? undefined : {
+                                        style={isLast || current.interactive ? undefined : {
                                             animation: `wrapped-progress ${SLIDE_DURATION_MS}ms linear forwards`,
                                             animationPlayState: paused ? 'paused' : 'running'
                                         }}

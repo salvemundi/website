@@ -218,10 +218,18 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
     const committeeNames = sortedEvents.map((e) => e.committee).filter((c): c is string => !!c);
     const locations = new Set(sortedEvents.map((e) => e.location?.trim().toLowerCase()).filter(Boolean));
 
-    const [topPercent, longestSignupRun] = await Promise.all([
+    const [topPercent, longestSignupRun, samu] = await Promise.all([
         getOverallTopPercent(user.id, start, end),
-        getLongestSignupRunInternal(new Set(sortedEvents.map((e) => e.eventId)), start, end)
+        getLongestSignupRunInternal(new Set(sortedEvents.map((e) => e.eventId)), start, end),
+        getSamuTotalsInternal(start, end)
     ]);
+
+    let fastestSignup: SamuWrappedStats['activities']['fastestSignup'] = null;
+    for (const e of sortedEvents) {
+        if (e.minutesAfterPublish === null || e.minutesAfterPublish < 0) continue;
+        const seconds = Math.round(e.minutesAfterPublish * 60);
+        if (!fastestSignup || seconds < fastestSignup.seconds) fastestSignup = { name: e.name, seconds };
+    }
 
     // ── Stickers ────────────────────────────────────────────────────
     let farthest: SamuWrappedStats['stickers']['farthest'] = null;
@@ -256,8 +264,11 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
             busiestMonth: topOf(monthNames),
             favoriteWeekday: topOf(weekdayNames),
             distinctLocations: locations.size,
-            longestSignupRun
+            longestSignupRun,
+            fastestSignup,
+            dates: [...new Set(sortedEvents.map((e) => e.date.slice(0, 10)))]
         },
+        samu,
         pubCrawls: {
             total: pubCrawlRows.length,
             tickets: pubCrawlRows.reduce((sum, r) => sum + (r.tickets ?? 1), 0)
@@ -303,6 +314,44 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
     });
 
     return { ...stats, persona, badges };
+}
+
+/** Totalen van de hele vereniging voor het jaar. Alleen aantallen, geen persoonsgegevens. */
+async function getSamuTotalsInternal(start: string, end: string): Promise<SamuWrappedStats['samu']> {
+    const [events, signups, stickers, pubCrawls, trips] = await Promise.all([
+        db.select({ c: sql<number>`COUNT(*)::int` })
+            .from(schema.events)
+            .where(and(eq(schema.events.status, 'published'), gte(schema.events.event_date, start), lt(schema.events.event_date, end))),
+        db.select({
+            c: sql<number>`COUNT(*)::int`,
+            people: sql<number>`COUNT(DISTINCT LOWER(${schema.event_signups.participant_email}))::int`
+        })
+            .from(schema.event_signups)
+            .innerJoin(schema.events, eq(schema.events.id, schema.event_signups.event_id))
+            .where(and(eq(schema.event_signups.payment_status, 'paid'), gte(schema.events.event_date, start), lt(schema.events.event_date, end))),
+        db.select({ c: sql<number>`COUNT(*)::int` })
+            .from(schema.Stickers)
+            .where(and(gte(schema.Stickers.date_created, start), lt(schema.Stickers.date_created, end))),
+        db.select({ c: sql<number>`COALESCE(SUM(COALESCE(${schema.pub_crawl_signups.amount_tickets}, 1)), 0)::int` })
+            .from(schema.pub_crawl_signups)
+            .innerJoin(schema.pub_crawl_events, eq(schema.pub_crawl_signups.pub_crawl_event_id, schema.pub_crawl_events.id))
+            .where(and(
+                eq(schema.pub_crawl_signups.payment_status, 'paid'),
+                sql`COALESCE(${schema.pub_crawl_events.date}, ${schema.pub_crawl_signups.created_at}) >= ${start}::date`,
+                sql`COALESCE(${schema.pub_crawl_events.date}, ${schema.pub_crawl_signups.created_at}) < ${end}::date`
+            )),
+        db.select({ c: sql<number>`COUNT(*)::int` })
+            .from(schema.trips)
+            .where(and(gte(schema.trips.start_date, start), lt(schema.trips.start_date, end)))
+    ]);
+    return {
+        events: events[0]?.c ?? 0,
+        signups: signups[0]?.c ?? 0,
+        participants: signups[0]?.people ?? 0,
+        stickers: stickers[0]?.c ?? 0,
+        pubCrawlTickets: pubCrawls[0]?.c ?? 0,
+        trips: trips[0]?.c ?? 0
+    };
 }
 
 /**

@@ -581,6 +581,18 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 [data-wrapped-badge-text] { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
 [data-wrapped-badge-desc] { font-size: 0.875rem; font-weight: 300; line-height: 1.4; color: var(--w-ink); }
 [data-wrapped-badge-hero] { margin: 0 0 1.25rem; font-size: 5.5rem; line-height: 1; }
+[data-wrapped-heat] { display: flex; flex-direction: column; gap: 3px; width: 100%; margin: 1rem 0 1.25rem; }
+[data-wrapped-heat-row] { display: grid; grid-template-columns: 1rem repeat(31, minmax(0, 1fr)); gap: 2px; align-items: center; }
+[data-wrapped-heat-label] { font-size: 0.625rem; font-weight: 900; color: var(--w-ink); }
+[data-wrapped-heat-cell] { aspect-ratio: 1; border-radius: 2px; }
+[data-wrapped-heat-cell="off"] { background: color-mix(in srgb, var(--w-ink) 15%, transparent); }
+[data-wrapped-heat-cell="on"] { background: var(--w-accent); }
+[data-wrapped-quiz] { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; margin: 1rem 0 1.25rem; }
+[data-wrapped-quiz-option] { padding: 0.85rem 1rem; border: 2px solid var(--w-ink); border-radius: 999px; font-weight: 900; font-size: 1rem; text-align: center; color: var(--w-ink); background: transparent; transition: background 150ms, color 150ms, opacity 150ms; }
+[data-wrapped-quiz-option]:focus-visible { outline: 2px solid var(--w-ink); outline-offset: 2px; }
+[data-wrapped-quiz-option="correct"] { background: var(--w-ink); color: var(--w-bg); }
+[data-wrapped-quiz-option="wrong"] { opacity: 0.6; text-decoration: line-through; }
+[data-wrapped-quiz-option="idle"] { opacity: 0.4; }
 [data-wrapped-namelist] { display: flex; flex-direction: column; gap: 0.35rem; margin: 0.5rem 0 1.25rem; }
 
 /* Voettekst: haarlijn, sectie links, paginanummer rechts */
