@@ -5,11 +5,6 @@ export interface WrappedNamedCount {
     count: number;
 }
 
-export interface WrappedEventRef {
-    name: string;
-    date: string; // YYYY-MM-DD
-}
-
 export interface WrappedStickerHighlight {
     place: string;
     distanceKm: number;
@@ -35,14 +30,12 @@ export interface SamuWrappedStats {
     activities: {
         total: number;
         checkedIn: number;
-        firstEvent: WrappedEventRef | null;
-        lastEvent: WrappedEventRef | null;
         topCommittee: WrappedNamedCount | null;
         busiestMonth: WrappedNamedCount | null;
         favoriteWeekday: WrappedNamedCount | null;
         distinctLocations: number;
         /** Langste reeks opeenvolgende activiteiten (in de agenda) waarvoor je je aanmeldde */
-        longestSignupRun: number;
+        longestSignupRun: { count: number; events: string[] };
     };
 
     pubCrawls: {

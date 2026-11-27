@@ -209,8 +209,6 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
 
     // ── Activiteiten ────────────────────────────────────────────────
     const sortedEvents = [...eventRows].sort((a, b) => a.date.localeCompare(b.date));
-    const firstEvent = sortedEvents.at(0);
-    const lastEvent = sortedEvents.at(-1);
 
     const monthNames = sortedEvents.map((e) => MONTHS[Number(e.date.slice(5, 7)) - 1] ?? '');
     const weekdayNames = sortedEvents.map((e) => {
@@ -254,8 +252,6 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
         activities: {
             total: sortedEvents.length,
             checkedIn: sortedEvents.filter((e) => e.checkedIn).length,
-            firstEvent: firstEvent ? { name: firstEvent.name, date: firstEvent.date.slice(0, 10) } : null,
-            lastEvent: lastEvent && sortedEvents.length > 1 ? { name: lastEvent.name, date: lastEvent.date.slice(0, 10) } : null,
             topCommittee: topOf(committeeNames),
             busiestMonth: topOf(monthNames),
             favoriteWeekday: topOf(weekdayNames),

@@ -198,30 +198,9 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
         });
     }
 
-    if (a.firstEvent) {
-        slides.push({
-            id: 'first-last',
-            section: 'Eerste en laatste',
-            theme: 'light',
-            content: (
-                <>
-                    <Kicker>Je eerste activiteit</Kicker>
-                    <Title at={100}>{a.firstEvent.name}</Title>
-                    <Body at={250}>{formatWrappedDate(a.firstEvent.date)}</Body>
-                    {a.lastEvent && (
-                        <>
-                            <Spacer />
-                            <Kicker at={500}>Je laatste activiteit</Kicker>
-                            <Title at={600}>{a.lastEvent.name}</Title>
-                            <Body at={750}>{formatWrappedDate(a.lastEvent.date)}</Body>
-                        </>
-                    )}
-                </>
-            )
-        });
-    }
-
-    if (a.longestSignupRun > 2) {
+    if (a.longestSignupRun.count > 2) {
+        const run = a.longestSignupRun;
+        const shown = run.events.slice(0, 6);
         slides.push({
             id: 'signup-run',
             section: 'Op rij',
@@ -229,9 +208,12 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
             content: (
                 <>
                     <Kicker>Je meldde je aan voor</Kicker>
-                    <Huge><CountUp value={a.longestSignupRun} /></Huge>
+                    <Huge><CountUp value={run.count} /></Huge>
                     <Title at={400}>activiteiten op rij</Title>
-                    <Body at={600}>Activiteit na activiteit in de agenda stond jouw naam op de lijst, zonder er één over te slaan.</Body>
+                    <NameList names={shown} at={600} />
+                    {run.events.length > shown.length && (
+                        <Body at={700}>…en nog <Strong>{run.events.length - shown.length}</Strong> meer.</Body>
+                    )}
                 </>
             )
         });
@@ -434,6 +416,20 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
         });
     }
 
+    slides.push({
+        id: 'badge-featured',
+        section: 'Badge',
+        theme: 'brand',
+        content: (
+            <>
+                <Box component="p" mod={{ 'wrapped-badge-hero': true, ...rise }} aria-hidden>{s.badges.featured.emoji}</Box>
+                <Kicker at={200}>Jouw meest unieke badge van {s.year}</Kicker>
+                <Title at={350}>{s.badges.featured.title}</Title>
+                <Body at={550}>{s.badges.featured.description}</Body>
+            </>
+        )
+    });
+
     if (s.badges.others.length > 0) {
         slides.push({
             id: 'badges-other',
@@ -441,7 +437,7 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
             theme: 'light',
             content: (
                 <>
-                    <Kicker>Je verdiende ook</Kicker>
+                    <Kicker>Daarnaast verdiende je</Kicker>
                     <Title at={100}>
                         {s.badges.others.length} {plural(s.badges.others.length, 'andere badge', 'andere badges')}
                     </Title>
@@ -460,20 +456,6 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
             )
         });
     }
-
-    slides.push({
-        id: 'badge-featured',
-        section: 'Badge',
-        theme: 'brand',
-        content: (
-            <>
-                <Box component="p" mod={{ 'wrapped-badge-hero': true, ...rise }} aria-hidden>{s.badges.featured.emoji}</Box>
-                <Kicker at={200}>Jouw meest unieke badge van {s.year}</Kicker>
-                <Title at={350}>{s.badges.featured.title}</Title>
-                <Body at={550}>{s.badges.featured.description}</Body>
-            </>
-        )
-    });
 
     return slides;
 }

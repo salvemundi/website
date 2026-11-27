@@ -6,6 +6,7 @@ import { type WrappedBadge, type WrappedPersona } from '@/lib/wrapped/samu-wrapp
 // ── Drempels ────────────────────────────────────────────────────────
 const MIN_FIRST_SIGNUPS = 2; // Snelle Jelle: minstens zo vaak als eerste
 const MIN_SIGNUPS_EARLY_BIRD = 3; // Early Bird: pas meetellen vanaf zoveel aanmeldingen
+const EARLY_BIRD_AVG_HOURS = 24; // Early Bird: gemiddeld binnen zoveel uur na publicatie aangemeld
 const FAST_SIGNUP_MINUTES = 5;
 const LAST_MINUTE_MINUTES = 60;
 const MIN_LAST_MINUTE = 2;
@@ -58,13 +59,13 @@ export interface BadgeContext {
  * De eerste verdiende badge komt op de deelkaart.
  */
 type BadgeId =
-    | 'snelle-jelle' | 'verste-sticker' | 'early-bird' | 'buurtbaas' | 'pionier'
+    | 'snelle-jelle' | 'verste-sticker' | 'buurtbaas' | 'pionier' | 'early-bird'
     | 'binnen-5-minuten' | 'stickeren-3-uur' | 'nachtbraker' | 'last-minute' | 'direct-betaald'
     | 'streak' | 'commissie-hopper' | 'chauffeur' | 'veteraan' | 'extra-bagage' | 'groentje';
 
 const RARITY: BadgeId[] = [
-    'snelle-jelle', 'verste-sticker', 'early-bird', 'buurtbaas', 'pionier',
-    'binnen-5-minuten', 'stickeren-3-uur', 'nachtbraker', 'last-minute', 'direct-betaald',
+    'snelle-jelle', 'verste-sticker', 'buurtbaas', 'pionier',
+    'binnen-5-minuten', 'stickeren-3-uur', 'nachtbraker', 'last-minute', 'early-bird', 'direct-betaald',
     'streak', 'commissie-hopper', 'chauffeur', 'veteraan', 'extra-bagage', 'groentje'
 ];
 
@@ -96,13 +97,20 @@ export async function getWrappedBadgesInternal(ctx: BadgeContext): Promise<{ fea
     ]);
 
     // ── Aanmelden ───────────────────────────────────────────────────
-    if (signupRanking) {
-        if (signupRanking.myFirsts >= MIN_FIRST_SIGNUPS && signupRanking.myFirsts === signupRanking.maxFirsts) {
-            add('snelle-jelle', '🥇', 'Snelle Jelle',
-                `Niemand was zo vaak als eerste aangemeld als jij: ${times(signupRanking.myFirsts)} stond jouw naam bovenaan de lijst.`);
-        }
-        if (signupRanking.myAvgDelay !== null && signupRanking.minAvgDelay !== null && signupRanking.myAvgDelay <= signupRanking.minAvgDelay) {
-            add('early-bird', '🐦', 'Early Bird', 'Gemiddeld meldde jij je het vroegst aan van heel Samu. De vroege vogel vangt het ticket.');
+    if (signupRanking && signupRanking.myFirsts >= MIN_FIRST_SIGNUPS && signupRanking.myFirsts === signupRanking.maxFirsts) {
+        add('snelle-jelle', '🥇', 'Snelle Jelle',
+            `Niemand was zo vaak als eerste aangemeld als jij: ${times(signupRanking.myFirsts)} stond jouw naam bovenaan de lijst.`);
+    }
+
+    const delays = ctx.signups
+        .map((s) => s.minutesAfterPublish)
+        .filter((m): m is number => m !== null && m >= 0);
+    if (delays.length >= MIN_SIGNUPS_EARLY_BIRD) {
+        const avgHours = delays.reduce((sum, m) => sum + m, 0) / delays.length / 60;
+        if (avgHours <= EARLY_BIRD_AVG_HOURS) {
+            const shown = avgHours < 1 ? `${Math.max(1, Math.round(avgHours * 60))} minuten` : `${Math.round(avgHours)} uur`;
+            add('early-bird', '🐦', 'Early Bird',
+                `Gemiddeld meldde je je binnen ${shown} na publicatie aan. De vroege vogel vangt het ticket.`);
         }
     }
 
@@ -197,7 +205,7 @@ export async function getWrappedBadgesInternal(ctx: BadgeContext): Promise<{ fea
 
 /**
  * Vergelijkt aanmeldgedrag met de rest van de vereniging.
- * Geeft alleen maxima/minima en de eigen waarden terug — nooit gegevens van anderen.
+ * Geeft alleen het maximum en de eigen waarde terug — nooit gegevens van anderen.
  */
 async function getSignupRanking(ctx: BadgeContext) {
     const s = schema.event_signups;
@@ -224,35 +232,14 @@ async function getSignupRanking(ctx: BadgeContext) {
         .groupBy(firsts.em)
         .as('first_counts');
 
-    // Gemiddelde tijd tussen publicatie en aanmelding per persoon
-    const delays = db
-        .select({
-            em: sql<string>`LOWER(${s.participant_email})`.as('em'),
-            avg: sql<number>`AVG(EXTRACT(EPOCH FROM (${s.created_at} - COALESCE(${e.publish_date} AT TIME ZONE 'UTC', ${e.created_at}))))`.as('avg_delay')
-        })
-        .from(s)
-        .innerJoin(e, eq(e.id, s.event_id))
-        .where(and(yearFilter, sql`${s.created_at} >= COALESCE(${e.publish_date} AT TIME ZONE 'UTC', ${e.created_at})`))
-        .groupBy(sql`LOWER(${s.participant_email})`)
-        .having(sql`COUNT(*) >= ${MIN_SIGNUPS_EARLY_BIRD}`)
-        .as('delays');
-
-    const [firstRow, delayRow] = await Promise.all([
-        db.select({
-            max: sql<number>`COALESCE(MAX(${firstCounts.c}), 0)::int`,
-            mine: sql<number>`COALESCE(MAX(${firstCounts.c}) FILTER (WHERE ${firstCounts.em} = ${ctx.email}), 0)::int`
-        }).from(firstCounts),
-        db.select({
-            min: sql<number | null>`MIN(${delays.avg})::float8`,
-            mine: sql<number | null>`(MIN(${delays.avg}) FILTER (WHERE ${delays.em} = ${ctx.email}))::float8`
-        }).from(delays)
-    ]);
+    const firstRow = await db.select({
+        max: sql<number>`COALESCE(MAX(${firstCounts.c}), 0)::int`,
+        mine: sql<number>`COALESCE(MAX(${firstCounts.c}) FILTER (WHERE ${firstCounts.em} = ${ctx.email}), 0)::int`
+    }).from(firstCounts);
 
     return {
         maxFirsts: firstRow[0]?.max ?? 0,
-        myFirsts: firstRow[0]?.mine ?? 0,
-        minAvgDelay: delayRow[0]?.min ?? null,
-        myAvgDelay: delayRow[0]?.mine ?? null
+        myFirsts: firstRow[0]?.mine ?? 0
     };
 }
 
@@ -292,10 +279,10 @@ async function getPioneerCounts(ctx: BadgeContext): Promise<{ cities: number; co
 }
 
 /** Langste reeks opeenvolgende gepubliceerde activiteiten van het jaar waarvoor de gebruiker zich aanmeldde. */
-export async function getLongestSignupRunInternal(myEventIds: Set<number>, start: string, end: string): Promise<number> {
-    if (myEventIds.size < 2) return myEventIds.size;
+export async function getLongestSignupRunInternal(myEventIds: Set<number>, start: string, end: string): Promise<{ count: number; events: string[] }> {
+    if (myEventIds.size < 3) return { count: 0, events: [] };
     const events = await db
-        .select({ id: schema.events.id })
+        .select({ id: schema.events.id, name: schema.events.name })
         .from(schema.events)
         .where(and(
             eq(schema.events.status, 'published'),
@@ -304,11 +291,11 @@ export async function getLongestSignupRunInternal(myEventIds: Set<number>, start
         ))
         .orderBy(asc(schema.events.event_date), asc(schema.events.event_time), asc(schema.events.id));
 
-    let best = 0;
-    let run = 0;
+    let best: string[] = [];
+    let run: string[] = [];
     for (const ev of events) {
-        run = myEventIds.has(ev.id) ? run + 1 : 0;
-        best = Math.max(best, run);
+        run = myEventIds.has(ev.id) ? [...run, ev.name] : [];
+        if (run.length > best.length) best = run;
     }
-    return best;
+    return { count: best.length, events: best };
 }
