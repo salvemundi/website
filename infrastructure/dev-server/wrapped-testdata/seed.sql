@@ -131,9 +131,14 @@ BEGIN
         VALUES ('[TEST WRAPPED] Kroegentocht ' || k, 'test-wrapped@example.invalid',
                 CASE k WHEN 1 THEN timestamp '2026-03-12 20:00' ELSE timestamp '2026-10-15 20:00' END)
         RETURNING id INTO v_crawl;
-        INSERT INTO pub_crawl_signups (pub_crawl_event_id, email, name, amount_tickets, payment_status,
-                                       directus_relations, is_member, group_name, created_at)
-        VALUES (v_crawl, v_email, v_name, CASE k WHEN 1 THEN 4 ELSE 1 END, 'paid', v_user, true, 'De Testers',
+        -- association en name_initials (JSON met deelnemers) zijn verplicht in het Zod-schema van de profielpagina
+        INSERT INTO pub_crawl_signups (pub_crawl_event_id, email, name, association, name_initials, amount_tickets,
+                                       payment_status, directus_relations, is_member, group_name, created_at)
+        VALUES (v_crawl, v_email, v_first || ' ' || left(v_last, 1), 'Salve Mundi',
+                (SELECT json_agg(json_build_object('name', CASE WHEN n = 1 THEN v_first ELSE 'Testvriend ' || n END,
+                                                   'initial', CASE WHEN n = 1 THEN left(v_last, 1) ELSE 'T' END))::text
+                   FROM generate_series(1, CASE k WHEN 1 THEN 4 ELSE 1 END) AS n),
+                CASE k WHEN 1 THEN 4 ELSE 1 END, 'paid', v_user, true, 'De Testers',
                 CASE k WHEN 1 THEN timestamptz '2026-02-20 18:00+01' ELSE timestamptz '2026-09-30 18:00+02' END)
         RETURNING id INTO v_crawl_signup;
         INSERT INTO transactions (user_id, email, first_name, last_name, product_name, product_type, amount,
