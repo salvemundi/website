@@ -20,7 +20,8 @@ export class FolderNotFoundError extends Error {}
 
 const MAX_DEPTH = 3;
 const MAX_ITEMS = 300;
-const MAX_USERS = 20;
+// Gebruikers met een eigen cache (LRU: oudste eruit). Begrensd door geheugen (mem_limit in compose): per gebruiker tot ~2 MB.
+const MAX_USERS = 50;
 const MAX_TEXTS = 10;
 const SELECT = '$select=id,name,size,lastModifiedDateTime,webUrl,file,folder&$top=200';
 

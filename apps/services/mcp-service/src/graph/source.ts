@@ -18,7 +18,8 @@ export type SourceFactory = (user: UserContext) => BijbelSource;
 
 const MAX_LIST = 500;
 const PAGE_CONCURRENCY = 5;
-const MAX_USERS = 20;
+// Gebruikers met een eigen cache (LRU: oudste eruit). Begrensd door geheugen (mem_limit in compose): per gebruiker tot ~2 MB.
+const MAX_USERS = 50;
 const GONE = 'Pagina niet (meer) beschikbaar';
 
 const PUBLISHED = z.object({ level: z.string() }).nullish();

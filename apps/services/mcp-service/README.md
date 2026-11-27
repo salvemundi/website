@@ -64,7 +64,7 @@ GitHub Environment (`Acceptance` / `Production`). Zonder `MCP_ENABLED=true` word
 | `MCP_ALLOWED_PATH_PREFIX` | var (optioneel) | bv. `/sites/<site>/SitePages/`; default `/` |
 | `MCP_ALLOWED_ORIGINS` | var (optioneel) | toegestane `Origin`s van browser-clients |
 
-Tuning (env, defaults in `src/config.ts`): `MCP_CACHE_TTL_SECONDS`, `MCP_MAX_STALE_SECONDS`, `MCP_MAX_RESPONSE_CHARS`, `MCP_MAX_RESULTS`, `MCP_MAX_SEARCH_PAGES` (≤50), `MCP_RATE_LIMIT_PER_MINUTE`, `MCP_MAX_CONCURRENT`, `MCP_REQUEST_TIMEOUT_MS`.
+Tuning (env, defaults in `src/config.ts`): `MCP_CACHE_TTL_SECONDS`, `MCP_MAX_STALE_SECONDS`, `MCP_MAX_RESPONSE_CHARS`, `MCP_MAX_RESULTS`, `MCP_MAX_SEARCH_PAGES` (≤50), `MCP_RATE_LIMIT_PER_MINUTE` (per gebruiker), `MCP_IP_RATE_LIMIT_PER_MINUTE` (per IP, alle routes), `MCP_MAX_CONCURRENT`, `MCP_REQUEST_TIMEOUT_MS`.
 
 ### Opgegeven gegevens (identificatoren, geen geheimen; niet door ons geverifieerd)
 - Site: `https://salvemundi.sharepoint.com/sites/bijbel-concept`

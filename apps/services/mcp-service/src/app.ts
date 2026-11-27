@@ -31,9 +31,15 @@ export async function buildApp({ config, verifier, sourceFor, filesFor, logger =
     });
 
     await app.register(rateLimit, {
-        max: config.MCP_RATE_LIMIT_PER_MINUTE,
+        max: config.MCP_IP_RATE_LIMIT_PER_MINUTE,
         timeWindow: '1 minute',
         allowList: (req) => req.url === '/health',
+    });
+    // Per gebruiker, pas na tokenvalidatie: de sleutel komt uit het gevalideerde token, niet uit de client.
+    const userLimit = app.createRateLimit({
+        max: config.MCP_RATE_LIMIT_PER_MINUTE,
+        timeWindow: '1 minute',
+        keyGenerator: (req) => `user:${(req as unknown as { user: UserContext }).user.key}`,
     });
 
     app.get('/health', { logLevel: 'silent' }, () => ({ status: 'ok' }));
@@ -58,6 +64,10 @@ export async function buildApp({ config, verifier, sourceFor, filesFor, logger =
                 const err = e instanceof AuthError ? e : new AuthError(401, 'invalid_token');
                 const hdr = `Bearer resource_metadata="${resourceMetadataUrl(config)}"` + (err.status === 403 ? `, error="insufficient_scope", scope="${config.MCP_REQUIRED_SCOPE}"` : m ? ', error="invalid_token"' : '');
                 return reply.code(err.status).header('WWW-Authenticate', hdr).send({ error: err.code });
+            }
+            const limit = await userLimit(req);
+            if (!limit.isAllowed && limit.isExceeded) {
+                return reply.code(429).header('Retry-After', String(limit.ttlInSeconds)).send({ error: 'rate_limited' });
             }
         },
         handler: async (req, reply) => {

@@ -1,6 +1,6 @@
 import { request } from 'node:http';
 import { describe, expect, it } from 'vitest';
-import { callTool, makeApp, page, rpc, sourceOf } from './helpers.js';
+import { callTool, makeApp, page, rpc, sourceOf, token } from './helpers.js';
 
 type R = { pagina_id: string; titel: string; bron_url: string; gewijzigd: string; inhoud: string; sectie: { nummer: number } };
 const P = page();
@@ -151,5 +151,27 @@ describe('limieten', () => {
         expect(await send()).toBe(429);
         await app.close();
     });
-});
 
+    it('telt de rate limit per gebruiker, niet per IP (Claude/ChatGPT delen egress-IP\'s)', async () => {
+        const app = await makeApp(sourceOf([P]), { MCP_RATE_LIMIT_PER_MINUTE: '2' });
+        const a = await token({ oid: 'oid-a' });
+        const b = await token({ oid: 'oid-b' });
+        const status = async (tok: string) => (await rpc(app, 'tools/list', {}, { tok })).statusCode;
+        expect(await status(a)).toBe(200);
+        expect(await status(a)).toBe(200);
+        expect(await status(a)).toBe(429);
+        // Zelfde IP, andere gebruiker: eigen budget.
+        expect(await status(b)).toBe(200);
+        // Zonder geldig token geen 429 maar 401: de gebruikerslimiet hangt alleen aan gevalideerde tokens.
+        expect((await rpc(app, 'tools/list', {}, { tok: 'garbage' })).statusCode).toBe(401);
+    });
+
+    it('begrenst per IP met een ruime vangrail', async () => {
+        const app = await makeApp(sourceOf([P]), { MCP_IP_RATE_LIMIT_PER_MINUTE: '2', MCP_RATE_LIMIT_PER_MINUTE: '100' });
+        const a = await token({ oid: 'oid-a' });
+        const b = await token({ oid: 'oid-b' });
+        expect((await rpc(app, 'tools/list', {}, { tok: a })).statusCode).toBe(200);
+        expect((await rpc(app, 'tools/list', {}, { tok: b })).statusCode).toBe(200);
+        expect((await rpc(app, 'tools/list', {}, { tok: b })).statusCode).toBe(429);
+    });
+});

@@ -37,7 +37,10 @@ const schema = z.object({
     MCP_MAX_RESPONSE_CHARS: z.coerce.number().int().min(1000).max(50000).default(8000),
     MCP_MAX_SEARCH_PAGES: z.coerce.number().int().min(1).max(50).default(50),
     MCP_MAX_RESULTS: z.coerce.number().int().min(1).max(25).default(10),
+    // Per aangemelde gebruiker (tid:oid) op /mcp. Claude/ChatGPT delen egress-IP's, dus per IP tellen zou alle leden samen begrenzen.
     MCP_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).max(10000).default(60),
+    // Ruime vangrail per client-IP op alle routes, vóór authenticatie (o.a. /register, /authorize, /token).
+    MCP_IP_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).max(100000).default(1200),
     MCP_MAX_CONCURRENT: z.coerce.number().int().min(1).max(100).default(8),
     MCP_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(15000),
 });
