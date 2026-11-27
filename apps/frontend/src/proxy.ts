@@ -103,7 +103,7 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|fonts|map|img|favicon.ico|robots.txt|sw.js|manifest.webmanifest|api/assets).*)']
+    matcher: ['/((?!_next/static|_next/image|fonts|map|img|video|favicon.ico|robots.txt|sw.js|manifest.webmanifest|api/assets).*)']
 };
 
 export { proxy };

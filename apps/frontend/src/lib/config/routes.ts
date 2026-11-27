@@ -21,7 +21,8 @@ export const ROUTES = {
     COBO: '/cobo',
     PIZZA: '/pizza',
     CAMERA: '/camera',
-    QR_GENERATOR: '/qr-generator'
+    QR_GENERATOR: '/qr-generator',
+    PRULLENBAKZAK: '/waarmoetdeprullenbakzak'
 } as const;
 
 export const MIN_VISIBLE_NAV_ITEMS = 5;
@@ -59,6 +60,7 @@ export function getPublicNavRoutes(disabledRoutes: string[] = []): SiteRoute[] {
 export const PUBLIC_ROUTES: string[] = [
     ...SITE_ROUTES.map((route) => route.href),
     ROUTES.INTRO_QR_CODE,
+    ROUTES.PRULLENBAKZAK,
     '/kroegentocht-scanner',
     '/api/assets',
     '/api/intro/planning.ics',
