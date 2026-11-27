@@ -2,6 +2,7 @@ import 'server-only';
 import { db, schema } from '@salvemundi/db';
 import { and, eq, gte, lt, ne, or, sql } from 'drizzle-orm';
 import { type SamuWrappedStats, type WrappedNamedCount, type WrappedPersona } from '@/lib/wrapped/samu-wrapped.types';
+import { getLongestSignupRunInternal, getWrappedBadgesInternal } from './samu-wrapped-badges.queries';
 
 export const SAMU_WRAPPED_FLAG = 'samu_wrapped';
 
@@ -65,8 +66,12 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
 
     const [eventRows, pubCrawlRows, stickerRows, stickerAllTime, tripRows, merchRows, committeeRows, spentRows, userRows, membershipPayments, membershipHistory] = await Promise.all([
         db.select({
+            eventId: schema.events.id,
             name: schema.events.name,
             date: schema.events.event_date,
+            signupHour: sql<number | null>`EXTRACT(HOUR FROM ${schema.event_signups.created_at} AT TIME ZONE 'Europe/Amsterdam')::int`,
+            minutesAfterPublish: sql<number | null>`(EXTRACT(EPOCH FROM (${schema.event_signups.created_at} - COALESCE(${schema.events.publish_date} AT TIME ZONE 'UTC', ${schema.events.created_at}))) / 60)::float8`,
+            minutesBeforeDeadline: sql<number | null>`(EXTRACT(EPOCH FROM (COALESCE(${schema.events.registration_deadline}, (${schema.events.event_date} + COALESCE(${schema.events.event_time}, '00:00'::time)) AT TIME ZONE 'Europe/Amsterdam') - ${schema.event_signups.created_at})) / 60)::float8`,
             location: schema.events.location,
             checkedIn: schema.event_signups.checked_in,
             committee: schema.committees.name
@@ -105,7 +110,8 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
             city: schema.Stickers.city,
             country: schema.Stickers.country,
             lat: schema.Stickers.latitude,
-            lng: schema.Stickers.longitude
+            lng: schema.Stickers.longitude,
+            hour: sql<number | null>`EXTRACT(HOUR FROM ${schema.Stickers.date_created} AT TIME ZONE 'Europe/Amsterdam')::int`
         })
             .from(schema.Stickers)
             .where(and(
@@ -118,7 +124,12 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
             .from(schema.Stickers)
             .where(eq(schema.Stickers.user_created, user.id)),
 
-        db.select({ name: schema.trips.name })
+        db.select({
+            name: schema.trips.name,
+            willingToDrive: schema.trip_signups.willing_to_drive,
+            extraLuggage: schema.trip_signups.extra_luggage,
+            minutesToDeposit: sql<number | null>`(EXTRACT(EPOCH FROM (${schema.trip_signups.deposit_paid_at} AT TIME ZONE 'UTC' - ${schema.trip_signups.created_at})) / 60)::float8`
+        })
             .from(schema.trip_signups)
             .innerJoin(schema.trips, eq(schema.trip_signups.trip_id, schema.trips.id))
             .where(and(
@@ -209,7 +220,10 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
     const committeeNames = sortedEvents.map((e) => e.committee).filter((c): c is string => !!c);
     const locations = new Set(sortedEvents.map((e) => e.location?.trim().toLowerCase()).filter(Boolean));
 
-    const topPercent = await getOverallTopPercent(user.id, start, end);
+    const [topPercent, longestSignupRun] = await Promise.all([
+        getOverallTopPercent(user.id, start, end),
+        getLongestSignupRunInternal(new Set(sortedEvents.map((e) => e.eventId)), start, end)
+    ]);
 
     // ── Stickers ────────────────────────────────────────────────────
     let farthest: SamuWrappedStats['stickers']['farthest'] = null;
@@ -234,7 +248,7 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
         expiry: toDateOnly(userRows[0]?.expiry ?? null)
     });
 
-    const stats: Omit<SamuWrappedStats, 'persona'> = {
+    const stats: Omit<SamuWrappedStats, 'persona' | 'badges'> = {
         year,
         firstName: userRows[0]?.firstName?.trim() || user.firstName,
         activities: {
@@ -246,6 +260,7 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
             busiestMonth: topOf(monthNames),
             favoriteWeekday: topOf(weekdayNames),
             distinctLocations: locations.size,
+            longestSignupRun
         },
         pubCrawls: {
             total: pubCrawlRows.length,
@@ -269,7 +284,29 @@ export async function getSamuWrappedStatsInternal(user: WrappedUserInput, year: 
         totalSpent: Math.round((spentRows[0]?.total ?? 0) * 100) / 100
     };
 
-    return { ...stats, persona: pickPersona(stats) };
+    const persona = pickPersona(stats);
+    const badges = await getWrappedBadgesInternal({
+        userId: user.id,
+        email,
+        year,
+        start,
+        end,
+        signups: sortedEvents.map((e) => ({
+            eventDate: e.date,
+            committee: e.committee,
+            signupHour: e.signupHour,
+            minutesAfterPublish: e.minutesAfterPublish,
+            minutesBeforeDeadline: e.minutesBeforeDeadline
+        })),
+        stickers: stickerRows.map((s) => ({ lat: s.lat, lng: s.lng, hour: s.hour })),
+        trips: tripRows,
+        memberSince: membership.memberSince,
+        daysMember: membership.daysMember,
+        distanceKm: (lat, lng) => haversineKm(HOME_LAT, HOME_LNG, lat, lng),
+        fallback: persona
+    });
+
+    return { ...stats, persona, badges };
 }
 
 /**
@@ -362,7 +399,7 @@ async function getOverallTopPercent(userId: string, start: string, end: string):
     return Math.max(1, Math.ceil((row.at_least / row.total) * 100));
 }
 
-function pickPersona(s: Omit<SamuWrappedStats, 'persona'>): WrappedPersona {
+function pickPersona(s: Omit<SamuWrappedStats, 'persona' | 'badges'>): WrappedPersona {
     const a = s.activities.total;
 
     if (s.committees.leaderOf > 0) {

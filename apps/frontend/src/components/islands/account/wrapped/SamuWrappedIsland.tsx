@@ -171,7 +171,7 @@ export default function SamuWrappedIsland({ stats }: Props) {
             await navigator.share({
                 files: [file],
                 title: `Mijn Samu Wrapped ${stats.year}`,
-                text: `Mijn Samu Wrapped ${stats.year}: ${stats.persona.title}`
+                text: `Mijn Samu Wrapped ${stats.year}: ${stats.badges.featured.title} ${stats.badges.featured.emoji}`
             });
         } else {
             downloadBlob(blob, fileName);

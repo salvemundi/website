@@ -575,6 +575,12 @@ a:hover .mantine-Card-root .mantine-ThemeIcon-root,
 [data-wrapped-defrow] { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--w-ink); }
 [data-wrapped-deflabel] { font-size: 0.9375rem; font-weight: 900; font-style: italic; text-transform: uppercase; color: var(--w-ink); }
 [data-wrapped-defvalue] { font-size: 1.125rem; font-weight: 900; color: var(--w-accent); }
+[data-wrapped-badgelist] { display: flex; flex-direction: column; gap: 0.6rem; margin: 0.75rem 0 0; }
+[data-wrapped-badgerow] { display: flex; align-items: flex-start; gap: 0.75rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--w-ink); }
+[data-wrapped-badge-emoji] { flex: none; font-size: 1.75rem; line-height: 1; }
+[data-wrapped-badge-text] { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+[data-wrapped-badge-desc] { font-size: 0.875rem; font-weight: 300; line-height: 1.4; color: var(--w-ink); }
+[data-wrapped-badge-hero] { margin: 0 0 1.25rem; font-size: 5.5rem; line-height: 1; }
 [data-wrapped-namelist] { display: flex; flex-direction: column; gap: 0.35rem; margin: 0.5rem 0 1.25rem; }
 
 /* Voettekst: haarlijn, sectie links, paginanummer rechts */

@@ -21,6 +21,13 @@ export interface WrappedPersona {
     emoji: string;
 }
 
+export interface WrappedBadge {
+    id: string;
+    emoji: string;
+    title: string;
+    description: string;
+}
+
 export interface SamuWrappedStats {
     year: number;
     firstName: string;
@@ -34,6 +41,8 @@ export interface SamuWrappedStats {
         busiestMonth: WrappedNamedCount | null;
         favoriteWeekday: WrappedNamedCount | null;
         distinctLocations: number;
+        /** Langste reeks opeenvolgende activiteiten (in de agenda) waarvoor je je aanmeldde */
+        longestSignupRun: number;
     };
 
     pubCrawls: {
@@ -78,6 +87,13 @@ export interface SamuWrappedStats {
     topPercent: number | null;
 
     persona: WrappedPersona;
+
+    badges: {
+        /** De zeldzaamste verdiende badge — staat op de deelkaart. Iedereen krijgt er één. */
+        featured: WrappedBadge;
+        /** Overige verdiende badges, zeldzaamste eerst */
+        others: WrappedBadge[];
+    };
 }
 
 export type SamuWrappedResult =

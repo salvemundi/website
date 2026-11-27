@@ -221,6 +221,22 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
         });
     }
 
+    if (a.longestSignupRun > 2) {
+        slides.push({
+            id: 'signup-run',
+            section: 'Op rij',
+            theme: 'yellow',
+            content: (
+                <>
+                    <Kicker>Je meldde je aan voor</Kicker>
+                    <Huge><CountUp value={a.longestSignupRun} /></Huge>
+                    <Title at={400}>activiteiten op rij</Title>
+                    <Body at={600}>Activiteit na activiteit in de agenda stond jouw naam op de lijst, zonder er één over te slaan.</Body>
+                </>
+            )
+        });
+    }
+
     if (a.total >= 2 && a.busiestMonth && a.favoriteWeekday) {
         slides.push({
             id: 'rhythm',
@@ -418,18 +434,43 @@ export function buildWrappedSlides(s: SamuWrappedStats): WrappedSlide[] {
         });
     }
 
+    if (s.badges.others.length > 0) {
+        slides.push({
+            id: 'badges-other',
+            section: 'Badges',
+            theme: 'light',
+            content: (
+                <>
+                    <Kicker>Je verdiende ook</Kicker>
+                    <Title at={100}>
+                        {s.badges.others.length} {plural(s.badges.others.length, 'andere badge', 'andere badges')}
+                    </Title>
+                    <Box mod={{ 'wrapped-badgelist': true, ...rise }} style={delay(300)}>
+                        {s.badges.others.slice(0, 6).map((b) => (
+                            <Box key={b.id} mod={{ 'wrapped-badgerow': true }}>
+                                <Box component="span" mod={{ 'wrapped-badge-emoji': true }} aria-hidden>{b.emoji}</Box>
+                                <Box component="span" mod={{ 'wrapped-badge-text': true }}>
+                                    <Box component="span" mod={{ 'wrapped-deflabel': true }}>{b.title}</Box>
+                                    <Box component="span" mod={{ 'wrapped-badge-desc': true }}>{b.description}</Box>
+                                </Box>
+                            </Box>
+                        ))}
+                    </Box>
+                </>
+            )
+        });
+    }
+
     slides.push({
-        id: 'persona',
-        section: 'Samu-type',
+        id: 'badge-featured',
+        section: 'Badge',
         theme: 'brand',
         content: (
             <>
-                <Box mod={{ 'wrapped-mark': true, ...rise }}>
-                    <Image src={BEELDMERK.brand} alt="" fit="contain" h="100%" w="auto" />
-                </Box>
-                <Kicker at={200}>Jouw Samu-type van {s.year}</Kicker>
-                <Title at={350}>{s.persona.title}</Title>
-                <Body at={550}>{s.persona.description}</Body>
+                <Box component="p" mod={{ 'wrapped-badge-hero': true, ...rise }} aria-hidden>{s.badges.featured.emoji}</Box>
+                <Kicker at={200}>Jouw meest unieke badge van {s.year}</Kicker>
+                <Title at={350}>{s.badges.featured.title}</Title>
+                <Body at={550}>{s.badges.featured.description}</Body>
             </>
         )
     });
@@ -484,7 +525,7 @@ export function WrappedShareCard({ stats: s }: { stats: SamuWrappedStats }) {
             <Box component="p" mod={{ 'wrapped-card-name': true }} style={oneLineFit(s.firstName, 1.5)}>
                 <Name>{s.firstName}</Name>
             </Box>
-            <Box component="p" mod={{ 'wrapped-card-persona': true }}>{s.persona.title}</Box>
+            <Box component="p" mod={{ 'wrapped-card-persona': true }}>{s.badges.featured.emoji} {s.badges.featured.title}</Box>
             <Box mod={{ 'wrapped-rows': true }}>
                 {rows.slice(0, 5).map((r) => (
                     <Box key={r.label} mod={{ 'wrapped-row': r.text ? 'stacked' : true }}>
