@@ -123,6 +123,27 @@ describe('tools', () => {
     });
 });
 
+describe('kwaliteit van antwoorden', () => {
+    it('een treffer op een kop toont ook de tekst eronder', async () => {
+        const kop = page({ secties: [{ nummer: 1, titel: 'Begroting', tekst: 'Begroting\nElke commissie stuurt per semester een begroting.' }] });
+        const app = await makeApp(sourceOf([kop]));
+        const { data } = await callTool(app, 'zoek_in_bijbel', { query: 'begroting' });
+        const r = (data?.resultaten as { inhoud: string }[])[0]!;
+        expect(r.inhoud).toBe('Begroting\nElke commissie stuurt per semester een begroting.');
+    });
+    it('een pagina zonder leesbare tekst geeft een duidelijke melding met bronlink (niet "sectie bestaat niet")', async () => {
+        const leeg = page({ secties: [] });
+        const app = await makeApp(sourceOf([leeg]));
+        const { data } = await callTool(app, 'lees_bijbel_pagina', { pagina_id: leeg.id });
+        expect(data?.status).toBe('niet_gevonden');
+        expect(String(data?.melding)).toContain('geen leesbare tekst');
+        expect(data?.bron_url).toBe(leeg.url);
+        const app2 = await makeApp(sourceOf([P]));
+        const { data: d2 } = await callTool(app2, 'lees_bijbel_pagina', { pagina_id: P.id, sectie: 9 });
+        expect(String(d2?.melding)).toContain('1 t/m 2');
+    });
+});
+
 describe('limieten', () => {
     it('begrenst gelijktijdige verzoeken (503) en rate limit (429)', async () => {
         let release!: () => void;

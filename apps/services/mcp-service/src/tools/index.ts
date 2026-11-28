@@ -27,9 +27,13 @@ export function searchPages(pages: BijbelPage[], tokens: string[]) {
             const matched = tokens.filter((t) => text.includes(t) || titleLc.includes(t));
             if (matched.length === 0) continue;
             const score = matched.length * 1000 + tokens.reduce((n, t) => n + count(text, t) + 3 * count(titleLc, t), 0);
-            // Fragment = letterlijke regel uit de bron met de eerste treffer.
-            const line = sectie.tekst.split('\n').find((l) => tokens.some((t) => l.toLowerCase().includes(t))) ?? sectie.tekst;
-            hits.push({ page, sectie, score, fragment: line.slice(0, FRAGMENT_MAX), afgekapt: line.length > FRAGMENT_MAX });
+            // Fragment = aaneengesloten letterlijke brontekst vanaf de eerste regel met een treffer (max. FRAGMENT_MAX),
+            // zodat een treffer op een kop ook de tekst eronder laat zien. Geen treffer in de tekst (alleen paginatitel):
+            // het begin van de sectie.
+            const lines = sectie.tekst.split('\n');
+            const at = Math.max(0, lines.findIndex((l) => tokens.some((t) => l.toLowerCase().includes(t))));
+            const rest = lines.slice(at).join('\n');
+            hits.push({ page, sectie, score, fragment: rest.slice(0, FRAGMENT_MAX), afgekapt: rest.length > FRAGMENT_MAX });
         }
     }
     return hits.sort((a, b) => b.score - a.score || a.page.id.localeCompare(b.page.id) || a.sectie.nummer - b.sectie.nummer);
@@ -161,8 +165,12 @@ export function createMcpServer(source: BijbelSource, cfg: ToolCfg, files?: File
                 const r = await source.read(pagina_id);
                 if (!r) return notFound('Deze pagina bestaat niet of is niet beschikbaar.');
                 const { page } = r;
+                const plek = { pagina_id: page.id, titel: page.titel, bron_url: page.url };
+                if (page.secties.length === 0) {
+                    return notFound('Deze pagina bevat geen leesbare tekst (alleen tekstwebonderdelen van moderne pagina\'s worden gelezen, geen snelkoppelingen, afbeeldingen of andere webonderdelen); bekijk de pagina via bron_url.', plek);
+                }
                 const secties = sectie === undefined ? page.secties : page.secties.filter((s) => s.nummer === sectie);
-                if (secties.length === 0) return notFound('Deze sectie bestaat niet.');
+                if (secties.length === 0) return notFound(`Deze sectie bestaat niet; de pagina heeft ${page.secties.length} secties (1 t/m ${page.secties.length}).`, plek);
                 const full = secties.map((s) => (s.titel ? `[Sectie ${s.nummer}: ${s.titel}]` : `[Sectie ${s.nummer}]`) + `\n${s.tekst}`).join('\n\n');
                 const start = cursor ? Number(cursor) : 0;
                 if (start >= full.length) return notFound('Cursor ligt voorbij het einde van de tekst.');
