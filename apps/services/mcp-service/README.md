@@ -31,7 +31,7 @@ Prompts bevatten alleen instructies en de door de gebruiker ingevulde argumenten
 
 Een nieuw bestand wordt door de AI-assistent in de chat gemaakt op basis van de gelezen tekst; er wordt **niets naar SharePoint geschreven**. De rechten zijn gelijk aan die voor pagina's (`Sites.Selected`, rol `read`, namens de gebruiker). Het eerste segment van `MCP_FILES_PATH` wordt eerst als **documentbibliotheek** van de site gezocht (op weergavenaam, bv. een eigen bibliotheek `Sjablonen`); de rest is een map daarin. Bestaat zo'n bibliotheek niet, dan is het een map in de standaardbibliotheek. Optionele GitHub-variabelen: `MCP_FILES_PATH` (default `/Sjablonen`) en `MCP_MAX_DOWNLOAD_BYTES` (default 262144; door compose en workflow doorgegeven).
 
-De bewerk- en uploadtools van de bestaande koppeling zijn **bewust niet overgenomen**. Er zijn geen tools of routes voor schrijven, uploaden, commando's of vrije URL's/paden. Bij pagina's worden alleen tekstwebonderdelen van moderne SharePoint-pagina's gelezen: geen bijlagen, afbeeldingen, klassieke pagina's of dynamische webonderdelen. Links in pagina's worden niet gevolgd.
+De bewerk- en uploadtools van de bestaande koppeling zijn **bewust niet overgenomen**. Er zijn geen tools of routes voor schrijven, uploaden, commando's of vrije URL's/paden. Bij pagina's worden alleen tekstwebonderdelen van moderne SharePoint-pagina's gelezen (een pagina zonder tekstwebonderdelen, bv. alleen snelkoppelingen, geeft een melding met bronlink): geen bijlagen, afbeeldingen, klassieke pagina's of dynamische webonderdelen. Links in pagina's worden niet gevolgd.
 
 ## Architectuur: OAuth + On-Behalf-Of
 1. De gebruiker meldt zich aan bij Entra; de MCP-client haalt een token op met scope `api://<MCP_ENTRA_CLIENT_ID>/bijbel.read`.
@@ -41,7 +41,7 @@ De bewerk- en uploadtools van de bestaande koppeling zijn **bewust niet overgeno
 5. Alleen pagina's met `publishingState.level = published` binnen `MCP_ALLOWED_PATH_PREFIX` zijn leesbaar; een ontbrekende status telt als niet gepubliceerd. De status wordt bij het lezen van de pagina nogmaals gecontroleerd. Pagina-ID's buiten die allowlist zijn niet leesbaar.
 6. Cache is in-memory en **per gebruiker** gescheiden (max. 50 gebruikers, TTL 5 min, max. stale 1 uur, expliciet gemarkeerd). Een pagina die Graph als verwijderd meldt (404) wordt nooit uit de cache geserveerd. OBO-Graph-tokens worden per gebruikerstoken bewaard tot 2 min vóór vervallen.
 
-Overig: Host-/Origin-validatie, rate limit **per gebruiker** (`MCP_RATE_LIMIT_PER_MINUTE`, na tokencontrole; Claude/ChatGPT delen egress-IP's) plus een ruime limiet per IP (`MCP_IP_RATE_LIMIT_PER_MINUTE`; 60/min op de browserroutes `/authorize` en `/oauth/callback`), 64 KB body-limiet, time-outs, maximaal aantal gelijktijdige verzoeken totaal (`MCP_MAX_CONCURRENT`) en per gebruiker (`MCP_MAX_CONCURRENT_PER_USER`, default 3). Geen querystrings of headers in de logs.
+Overig: Host-/Origin-validatie, rate limit **per gebruiker** (`MCP_RATE_LIMIT_PER_MINUTE`, na tokencontrole; Claude/ChatGPT delen egress-IP's) plus een ruime limiet per IP (`MCP_IP_RATE_LIMIT_PER_MINUTE`; 60/min op de browserroutes `/authorize` en `/oauth/callback`), 64 KB body-limiet, time-outs, maximaal aantal gelijktijdige verzoeken totaal (`MCP_MAX_CONCURRENT`) en per gebruiker (`MCP_MAX_CONCURRENT_PER_USER`, default 6); verzoeken boven die limiet wachten max. `MCP_QUEUE_WAIT_MS` (default 8 s) in een begrensde wachtrij voordat ze 503 krijgen. Geen querystrings of headers in de logs.
 Bestanden: zips worden vóór het uitpakken gecontroleerd op de *echte* uitgepakte grootte (een zip die over zijn groottes liegt wordt geweigerd); pdf's worden pagina voor pagina gelezen (max. 100) met een deadline van 10 s; geëxtraheerde tekst is begrensd op 1 000 000 tekens; tekstnabewerking is lineair (geen kwadratische regexen).
 Container: non-root, read-only rootfs, `cap_drop: ALL`, `no-new-privileges`, geheugen/CPU/pids-limiet, alleen `proxy-network`, **geen `env_file`**, geen volumes, geen gepubliceerde poort.
 
@@ -65,7 +65,7 @@ GitHub Environment (`Acceptance` / `Production`). Zonder `MCP_ENABLED=true` word
 | `MCP_ALLOWED_PATH_PREFIX` | var (optioneel) | bv. `/sites/<site>/SitePages/`; default `/` |
 | `MCP_ALLOWED_ORIGINS` | var (optioneel) | toegestane `Origin`s van browser-clients |
 
-Tuning (env, defaults in `src/config.ts`): `MCP_CACHE_TTL_SECONDS`, `MCP_MAX_STALE_SECONDS`, `MCP_MAX_RESPONSE_CHARS`, `MCP_MAX_RESULTS`, `MCP_MAX_SEARCH_PAGES` (≤50), `MCP_RATE_LIMIT_PER_MINUTE` (per gebruiker), `MCP_IP_RATE_LIMIT_PER_MINUTE` (per IP, alle routes), `MCP_MAX_CONCURRENT`, `MCP_MAX_CONCURRENT_PER_USER`, `MCP_REQUEST_TIMEOUT_MS`.
+Tuning (env, defaults in `src/config.ts`): `MCP_CACHE_TTL_SECONDS`, `MCP_MAX_STALE_SECONDS`, `MCP_MAX_RESPONSE_CHARS`, `MCP_MAX_RESULTS`, `MCP_MAX_SEARCH_PAGES` (≤50), `MCP_RATE_LIMIT_PER_MINUTE` (per gebruiker), `MCP_IP_RATE_LIMIT_PER_MINUTE` (per IP, alle routes), `MCP_MAX_CONCURRENT`, `MCP_MAX_CONCURRENT_PER_USER`, `MCP_QUEUE_WAIT_MS`, `MCP_REQUEST_TIMEOUT_MS`.
 
 ### Opgegeven gegevens (identificatoren, geen geheimen; niet door ons geverifieerd)
 - Site: `https://salvemundi.sharepoint.com/sites/bijbel-concept`
