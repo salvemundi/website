@@ -8,6 +8,7 @@ import type { Config } from './config.js';
 import type { FileSourceFactory } from './graph/files.js';
 import type { SourceFactory } from './graph/source.js';
 import { registerOAuthRoutes } from './oauth/proxy.js';
+import { Slots } from './slots.js';
 import { createMcpServer } from './tools/index.js';
 
 export interface Deps { config: Config; verifier: TokenVerifier; sourceFor: SourceFactory; filesFor?: FileSourceFactory; logger?: boolean; fetchFn?: typeof fetch }
@@ -25,8 +26,8 @@ export async function buildApp({ config, verifier, sourceFor, filesFor, logger =
     });
 
     const publicHost = new URL(config.MCP_PUBLIC_URL).host;
-    let inFlight = 0;
-    const inFlightPerUser = new Map<string, number>();
+    const slots = new Slots(config.MCP_MAX_CONCURRENT, 100);
+    const userSlots = new Map<string, Slots>();
 
     app.setErrorHandler((err, req, reply) => {
         const e = err as { statusCode?: number; code?: string; name?: string };
@@ -79,24 +80,40 @@ export async function buildApp({ config, verifier, sourceFor, filesFor, logger =
             // Client al weg (bv. geannuleerd tijdens de tokencontrole): niets meer doen.
             if (reply.raw.destroyed || req.raw.socket.destroyed) return reply.hijack();
             const user = (req as unknown as { user: UserContext }).user;
-            const mine = inFlightPerUser.get(user.key) ?? 0;
-            if (inFlight >= config.MCP_MAX_CONCURRENT || mine >= config.MCP_MAX_CONCURRENT_PER_USER) {
+            const mine = userSlots.get(user.key) ?? new Slots(config.MCP_MAX_CONCURRENT_PER_USER, 20);
+            userSlots.set(user.key, mine);
+            const releaseUser = () => {
+                mine.release();
+                if (mine.idle) userSlots.delete(user.key);
+            };
+            if (!(await mine.acquire(config.MCP_QUEUE_WAIT_MS))) {
+                if (mine.idle) userSlots.delete(user.key);
                 return reply.code(503).header('Retry-After', '2').send({ error: 'busy' });
             }
-            inFlight++;
-            inFlightPerUser.set(user.key, mine + 1);
-            let server: ReturnType<typeof createMcpServer> | undefined;
-            let transport: StreamableHTTPServerTransport | undefined;
+            if (!(await slots.acquire(config.MCP_QUEUE_WAIT_MS))) {
+                releaseUser();
+                return reply.code(503).header('Retry-After', '2').send({ error: 'busy' });
+            }
             let released = false;
-            reply.hijack();
-            // finished() vuurt ook als de stream al gesloten is, en precies één keer: de tellers kunnen niet lekken.
-            finished(reply.raw, () => {
+            const release = () => {
                 if (released) return;
                 released = true;
-                inFlight--;
-                const n = (inFlightPerUser.get(user.key) ?? 1) - 1;
-                if (n > 0) inFlightPerUser.set(user.key, n);
-                else inFlightPerUser.delete(user.key);
+                slots.release();
+                releaseUser();
+            };
+            // Tijdens het wachten afgebroken: plek direct teruggeven. (De waarde kan tijdens de awaits hierboven veranderen;
+            // TypeScript vernauwt hem ten onrechte op basis van de eerste controle.)
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            if (reply.raw.destroyed || req.raw.socket.destroyed) {
+                release();
+                return reply.hijack();
+            }
+            let server: ReturnType<typeof createMcpServer> | undefined;
+            let transport: StreamableHTTPServerTransport | undefined;
+            reply.hijack();
+            // finished() vuurt ook als de stream al gesloten is, en precies één keer: de plekken kunnen niet lekken.
+            finished(reply.raw, () => {
+                release();
                 void transport?.close();
                 void server?.close();
             });

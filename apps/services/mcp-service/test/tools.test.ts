@@ -128,7 +128,7 @@ describe('limieten', () => {
         let release!: () => void;
         const gate = new Promise<void>((r) => (release = r));
         const slow = { ...sourceOf([P]), searchSet: async (m: number) => { await gate; return sourceOf([P]).searchSet(m); } };
-        const app = await makeApp(slow, { MCP_MAX_CONCURRENT: '1', MCP_RATE_LIMIT_PER_MINUTE: '3' });
+        const app = await makeApp(slow, { MCP_MAX_CONCURRENT: '1', MCP_RATE_LIMIT_PER_MINUTE: '3', MCP_QUEUE_WAIT_MS: '0' });
         await app.listen({ port: 0, host: '127.0.0.1' });
         const addr = app.server.address() as { port: number };
         const { token: mk } = await import('./helpers.js');
@@ -180,7 +180,7 @@ describe('limieten', () => {
         const { createVerifier } = await import('../src/auth/jwt.js');
         const { audienceOf, loadConfig } = await import('../src/config.js');
         const { baseEnv, getKeys, token: mk } = await import('./helpers.js');
-        const cfg = loadConfig({ ...baseEnv, MCP_MAX_CONCURRENT: '1' });
+        const cfg = loadConfig({ ...baseEnv, MCP_MAX_CONCURRENT: '1', MCP_QUEUE_WAIT_MS: '0' });
         const { publicKey } = await getKeys();
         const real = createVerifier({ tenantId: cfg.MCP_ENTRA_TENANT_ID, audience: audienceOf(cfg), requiredScope: cfg.MCP_REQUIRED_SCOPE, keyResolver: () => Promise.resolve(publicKey) });
         const slow = { verify: async (t: string) => { await new Promise((r) => setTimeout(r, 150)); return real.verify(t); } };
@@ -211,7 +211,7 @@ describe('limieten', () => {
         let release!: () => void;
         const gate = new Promise<void>((r) => (release = r));
         const slow = { ...sourceOf([P]), searchSet: async (m: number) => { await gate; return sourceOf([P]).searchSet(m); } };
-        const app = await makeApp(slow, { MCP_MAX_CONCURRENT_PER_USER: '1' });
+        const app = await makeApp(slow, { MCP_MAX_CONCURRENT_PER_USER: '1', MCP_QUEUE_WAIT_MS: '0' });
         const a = await token({ oid: 'oid-a' });
         const b = await token({ oid: 'oid-b' });
         const first = callToolAs(app, a);
@@ -221,6 +221,29 @@ describe('limieten', () => {
         release();
         expect((await first).statusCode).toBe(200);
         expect((await rpc(app, 'tools/list', {}, { tok: a })).statusCode).toBe(200);
+    });
+});
+
+describe('wachtrij', () => {
+    it('laat parallelle verzoeken boven de limiet wachten op een plek i.p.v. direct 503', async () => {
+        let release!: () => void;
+        const gate = new Promise<void>((r) => (release = r));
+        const slow = { ...sourceOf([P]), searchSet: async (m: number) => { await gate; return sourceOf([P]).searchSet(m); } };
+        const app = await makeApp(slow, { MCP_MAX_CONCURRENT_PER_USER: '1', MCP_QUEUE_WAIT_MS: '2000' });
+        const tok = await token();
+        const first = callToolAs(app, tok);
+        const second = callToolAs(app, tok);
+        await new Promise((r) => setTimeout(r, 50));
+        release();
+        expect((await first).statusCode).toBe(200);
+        expect((await second).statusCode).toBe(200);
+    });
+    it('geeft na de wachttijd alsnog 503', async () => {
+        const app = await makeApp({ ...sourceOf([P]), searchSet: () => new Promise(() => undefined) }, { MCP_MAX_CONCURRENT_PER_USER: '1', MCP_QUEUE_WAIT_MS: '100' });
+        const tok = await token();
+        void callToolAs(app, tok);
+        await new Promise((r) => setTimeout(r, 20));
+        expect((await rpc(app, 'tools/list', {}, { tok })).statusCode).toBe(503);
     });
 });
 

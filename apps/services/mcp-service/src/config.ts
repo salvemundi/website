@@ -49,6 +49,8 @@ const schema = z.object({
     // Eén gebruiker kan niet alle plekken bezetten (bv. veel parallelle zoekopdrachten of trage pdf's). Ruim genoeg
     // voor clients die na initialize tools/prompts/resources tegelijk opvragen of parallelle toolcalls doen.
     MCP_MAX_CONCURRENT_PER_USER: z.coerce.number().int().min(1).max(100).default(6),
+    // Zo lang wacht een verzoek boven de limiet op een vrije plek voordat het 503 krijgt.
+    MCP_QUEUE_WAIT_MS: z.coerce.number().int().min(0).max(30000).default(8000),
     MCP_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(15000),
 });
 
