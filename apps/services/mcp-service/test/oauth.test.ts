@@ -19,19 +19,36 @@ async function register(redirect_uris: string[] = [CLAUDE_CB]) {
 const query = (o: Record<string, string>) => '?' + new URLSearchParams(o).toString();
 const loc = (res: { headers: Record<string, unknown> }) => new URL(String(res.headers.location));
 
+const authorizeUrl = (client_id: string, over: Record<string, string> = {}) =>
+    '/authorize' + query({ client_id, redirect_uri: CLAUDE_CB, response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', state: 'client-state', scope: 'x', resource: `https://${HOST}/mcp`, ...over });
+/** Cookie van de laatst getoonde toestemmingspagina (zoals de browser hem bewaart). */
+let cookie = '';
+const consentPage = (client_id: string, over: Record<string, string> = {}) => app.inject({ method: 'GET', url: authorizeUrl(client_id, over), headers });
+const stateOf = (html: string) => /name="state" value="([^"]+)"/.exec(html)![1]!;
+const approve = (state: string, keuze = 'ja', h: Record<string, string> = {}) =>
+    app.inject({ method: 'POST', url: '/authorize', headers: { ...headers, cookie, origin: `https://${HOST}`, 'content-type': 'application/x-www-form-urlencoded', ...h }, payload: new URLSearchParams({ state, keuze }).toString() });
+/** Zoals een gebruiker: toestemmingspagina tonen en op Doorgaan klikken. Fouten vóór de pagina komen direct terug. */
 async function authorize(client_id: string, over: Record<string, string> = {}) {
-    return app.inject({
-        method: 'GET',
-        url: '/authorize' + query({ client_id, redirect_uri: CLAUDE_CB, response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', state: 'client-state', scope: 'x', resource: `https://${HOST}/mcp`, ...over }),
-        headers,
-    });
+    const page = await consentPage(client_id, over);
+    if (page.statusCode !== 200) return page;
+    cookie = String(page.headers['set-cookie']).split(';')[0]!;
+    return approve(stateOf(page.body));
 }
+const callback = (q: Record<string, string>, c = cookie) => app.inject({ method: 'GET', url: '/oauth/callback' + query(q), headers: { ...headers, cookie: c } });
 async function login() {
     const client_id = (await register()).json<{ client_id: string }>().client_id;
     const entraState = loc(await authorize(client_id)).searchParams.get('state')!;
-    const back = await app.inject({ method: 'GET', url: '/oauth/callback' + query({ code: 'entra-code', state: entraState }), headers });
+    const back = await callback({ code: 'entra-code', state: entraState });
     const code = loc(back).searchParams.get('code')!;
     return { client_id, code, back };
+}
+async function refreshTokenFor(client_id: string): Promise<string> {
+    const page = await consentPage(client_id);
+    cookie = String(page.headers['set-cookie']).split(';')[0]!;
+    const st = stateOf(page.body);
+    const code = loc(await callback({ code: 'entra-code', state: st })).searchParams.get('code')!;
+    entraFetch.mockImplementationOnce(() => entraOk());
+    return (await token({ grant_type: 'authorization_code', code, redirect_uri: CLAUDE_CB, client_id, code_verifier: verifier })).json<{ refresh_token: string }>().refresh_token;
 }
 const token = (payload: Record<string, string>, h: Record<string, string> = headers) =>
     app.inject({ method: 'POST', url: '/token', headers: { ...h, 'content-type': 'application/x-www-form-urlencoded' }, payload: new URLSearchParams(payload).toString() });
@@ -73,7 +90,7 @@ describe('OAuth-voorportaal', () => {
     it('stuurt /authorize door naar Entra met het echte client-ID, eigen callback, vaste scope en zonder resource', async () => {
         const { client_id } = (await register()).json<{ client_id: string }>();
         const res = await authorize(client_id);
-        expect(res.statusCode).toBe(302);
+        expect(res.statusCode).toBe(303);
         const u = loc(res);
         expect(u.origin + u.pathname).toBe(`https://login.microsoftonline.com/${TENANT}/oauth2/v2.0/authorize`);
         expect(u.searchParams.get('client_id')).toBe(CLIENT_ID);
@@ -111,7 +128,8 @@ describe('OAuth-voorportaal', () => {
         const res = await token({ grant_type: 'authorization_code', code, redirect_uri: CLAUDE_CB, client_id, code_verifier: verifier });
         expect(res.statusCode).toBe(200);
         expect(res.headers['cache-control']).toBe('no-store');
-        expect(res.json()).toMatchObject({ access_token: 'entra-at', token_type: 'Bearer', refresh_token: 'entra-rt', expires_in: 3599 });
+        expect(res.json()).toMatchObject({ access_token: 'entra-at', token_type: 'Bearer', expires_in: 3599 });
+        expect(res.json<{ refresh_token: string }>().refresh_token).toMatch(/^[A-Za-z0-9_-]{40,}$/);
 
         const [url, init] = entraFetch.mock.calls[0]!;
         expect(String(url)).toBe(`https://login.microsoftonline.com/${TENANT}/oauth2/v2.0/token`);
@@ -138,7 +156,7 @@ describe('OAuth-voorportaal', () => {
             expect(res.statusCode).toBe(400);
             expect(res.json<{ error: string }>().error).toMatch(/invalid_grant|invalid_client|invalid_request/);
         }
-        expect((await token({ ...good, client_id: 'garbage' })).statusCode).toBe(400);
+        expect((await token({ ...good, client_id: 'garbage' })).statusCode).toBe(401);
         expect(entraFetch).not.toHaveBeenCalled();
     });
 
@@ -147,11 +165,11 @@ describe('OAuth-voorportaal', () => {
         const client_id = (await register()).json<{ client_id: string }>().client_id;
         const st = loc(await authorize(client_id)).searchParams.get('state')!;
         vi.setSystemTime(Date.now() + 11 * 60 * 1000);
-        expect((await app.inject({ method: 'GET', url: '/oauth/callback' + query({ code: 'c', state: st }), headers })).statusCode).toBe(400);
+        expect((await callback({ code: 'c', state: st })).statusCode).toBe(400);
 
         vi.setSystemTime(Date.now());
         const fresh = loc(await authorize(client_id)).searchParams.get('state')!;
-        const code = loc(await app.inject({ method: 'GET', url: '/oauth/callback' + query({ code: 'c', state: fresh }), headers })).searchParams.get('code')!;
+        const code = loc(await callback({ code: 'c', state: fresh })).searchParams.get('code')!;
         vi.setSystemTime(Date.now() + 3 * 60 * 1000);
         expect((await token({ grant_type: 'authorization_code', code, redirect_uri: CLAUDE_CB, client_id, code_verifier: verifier })).statusCode).toBe(400);
         expect(entraFetch).not.toHaveBeenCalled();
@@ -163,30 +181,85 @@ describe('OAuth-voorportaal', () => {
         const res = await token({ grant_type: 'authorization_code', code, redirect_uri: CLAUDE_CB, client_id, code_verifier: verifier });
         expect(res.statusCode).toBe(400);
         expect(res.json()).toEqual({ error: 'invalid_grant' });
+        const rt = await refreshTokenFor(client_id);
         entraFetch.mockRejectedValueOnce(new Error('network'));
-        const down = await token({ grant_type: 'refresh_token', refresh_token: 'rt', client_id });
-        expect(down.statusCode).toBe(503);
+        expect((await token({ grant_type: 'refresh_token', refresh_token: rt, client_id })).statusCode).toBe(503);
+        // Storing/throttling bij Entra: 503 (opnieuw proberen), niet invalid_grant (dan gooit de client het token weg).
+        for (const status of [500, 503, 429]) {
+            entraFetch.mockResolvedValueOnce(new Response('{}', { status }));
+            const res = await token({ grant_type: 'refresh_token', refresh_token: rt, client_id });
+            expect(res.statusCode).toBe(503);
+            expect(res.json()).toEqual({ error: 'temporarily_unavailable' });
+        }
     });
 
-    it('ondersteunt refresh_token via Entra met het server-side secret', async () => {
+    it('ondersteunt refresh_token via Entra met het server-side secret; het token is gebonden aan de client', async () => {
         const { client_id } = await login();
+        const rt = await refreshTokenFor(client_id);
+        expect(rt).not.toContain('entra-rt');
         entraFetch.mockImplementationOnce(() => entraOk({ refresh_token: 'entra-rt-2' }));
-        const res = await token({ grant_type: 'refresh_token', refresh_token: 'entra-rt', client_id });
+        const res = await token({ grant_type: 'refresh_token', refresh_token: rt, client_id });
         expect(res.statusCode).toBe(200);
-        expect(res.json<{ refresh_token: string }>().refresh_token).toBe('entra-rt-2');
-        const sent = new URLSearchParams(String((entraFetch.mock.calls[0]![1] as RequestInit).body));
+        const next = res.json<{ refresh_token: string }>().refresh_token;
+        expect(next).not.toContain('entra-rt-2');
+        const sent = new URLSearchParams(String((entraFetch.mock.calls.at(-1)![1] as RequestInit).body));
         expect(sent.get('grant_type')).toBe('refresh_token');
+        expect(sent.get('refresh_token')).toBe('entra-rt');
         expect(sent.get('client_secret')).toBe(baseEnv.MCP_ENTRA_CLIENT_SECRET);
-        expect((await token({ grant_type: 'refresh_token', refresh_token: 'x', client_id: 'garbage' })).statusCode).toBe(400);
+        entraFetch.mockReset();
+        // Kaal Entra-token, token van een andere client, of onbekende client: geweigerd zonder Entra aan te roepen.
+        const other = (await register()).json<{ client_id: string }>().client_id;
+        expect((await token({ grant_type: 'refresh_token', refresh_token: 'entra-rt', client_id })).statusCode).toBe(400);
+        expect((await token({ grant_type: 'refresh_token', refresh_token: next, client_id: other })).json()).toEqual({ error: 'invalid_grant' });
+        expect((await token({ grant_type: 'refresh_token', refresh_token: next, client_id: 'garbage' })).statusCode).toBe(401);
+        expect(entraFetch).not.toHaveBeenCalled();
+    });
+
+    it('toont een toestemmingspagina met de client, zonder framing, en bindt de flow aan deze browser', async () => {
+        const { client_id } = (await register()).json<{ client_id: string }>();
+        const page = await consentPage(client_id);
+        expect(page.statusCode).toBe(200);
+        expect(page.headers['content-type']).toContain('text/html');
+        expect(page.body).toContain('Claude');
+        expect(page.body).toContain('claude.ai');
+        expect(page.body).toContain('zelf');
+        expect(page.headers['x-frame-options']).toBe('DENY');
+        expect(String(page.headers['content-security-policy'])).toContain("frame-ancestors 'none'");
+        const setCookie = String(page.headers['set-cookie']);
+        expect(setCookie).toMatch(/^__Host-samu_mcp_auth=[A-Za-z0-9_-]+; Path=\/;/);
+        expect(setCookie).toContain('HttpOnly');
+        expect(setCookie).toContain('Secure');
+        expect(setCookie).toContain('SameSite=Lax');
+        expect(page.body).not.toContain('client-state');
+        cookie = setCookie.split(';')[0]!;
+        const state = stateOf(page.body);
+        // Zonder (of met andere) cookie: geweigerd. Dit blokkeert een doorgestuurde link die de toestemming overslaat.
+        expect((await approve(state, 'ja', { cookie: '' })).statusCode).toBe(400);
+        expect((await approve(state, 'ja', { cookie: '__Host-samu_mcp_auth=ander' })).statusCode).toBe(400);
+        expect((await approve(state, 'ja', { origin: 'https://evil.example' })).statusCode).toBe(403);
+        expect((await callback({ code: 'c', state }, '')).statusCode).toBe(400);
+        // Annuleren: foutredirect naar de client met zijn state.
+        const deny = await approve(state, 'nee');
+        expect(loc(deny).origin + loc(deny).pathname).toBe(CLAUDE_CB);
+        expect(loc(deny).searchParams.get('error')).toBe('access_denied');
+        expect(loc(deny).searchParams.get('state')).toBe('client-state');
+    });
+
+    it('weigert een resource-parameter die niet deze MCP-server is (RFC 8707)', async () => {
+        const { client_id } = (await register()).json<{ client_id: string }>();
+        const bad = await consentPage(client_id, { resource: 'https://andere-dienst.example/mcp' });
+        expect(loc(bad).searchParams.get('error')).toBe('invalid_target');
+        expect((await consentPage(client_id, { resource: `https://${HOST}/mcp/` })).statusCode).toBe(200);
+        expect((await consentPage(client_id, { resource: `https://${HOST}` })).statusCode).toBe(200);
     });
 
     it('stuurt een Entra-fout (bv. access_denied) als foutredirect met de client-state', async () => {
         const client_id = (await register()).json<{ client_id: string }>().client_id;
         const st = loc(await authorize(client_id)).searchParams.get('state')!;
-        const res = await app.inject({ method: 'GET', url: '/oauth/callback' + query({ error: 'access_denied', state: st }), headers });
+        const res = await callback({ error: 'access_denied', state: st });
         expect(loc(res).searchParams.get('error')).toBe('access_denied');
         expect(loc(res).searchParams.get('state')).toBe('client-state');
-        expect((await app.inject({ method: 'GET', url: '/oauth/callback' + query({ code: 'c', state: 'forged' }), headers })).statusCode).toBe(400);
+        expect((await callback({ code: 'c', state: 'forged' })).statusCode).toBe(400);
     });
 
     it('valideert de Host op alle OAuth-routes', async () => {

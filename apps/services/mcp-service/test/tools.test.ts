@@ -174,4 +174,55 @@ describe('limieten', () => {
         expect((await rpc(app, 'tools/list', {}, { tok: b })).statusCode).toBe(200);
         expect((await rpc(app, 'tools/list', {}, { tok: b })).statusCode).toBe(429);
     });
+
+    it('lekt geen plek als de client afbreekt tijdens de tokencontrole (anders na N keer permanent 503)', async () => {
+        const { buildApp } = await import('../src/app.js');
+        const { createVerifier } = await import('../src/auth/jwt.js');
+        const { audienceOf, loadConfig } = await import('../src/config.js');
+        const { baseEnv, getKeys, token: mk } = await import('./helpers.js');
+        const cfg = loadConfig({ ...baseEnv, MCP_MAX_CONCURRENT: '1' });
+        const { publicKey } = await getKeys();
+        const real = createVerifier({ tenantId: cfg.MCP_ENTRA_TENANT_ID, audience: audienceOf(cfg), requiredScope: cfg.MCP_REQUIRED_SCOPE, keyResolver: () => Promise.resolve(publicKey) });
+        const slow = { verify: async (t: string) => { await new Promise((r) => setTimeout(r, 150)); return real.verify(t); } };
+        const app = await buildApp({ config: cfg, verifier: slow, sourceFor: () => sourceOf([P]), logger: false });
+        await app.listen({ port: 0, host: '127.0.0.1' });
+        const { port } = app.server.address() as { port: number };
+        const tok = await mk();
+        const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} });
+        const opts = { port, host: '127.0.0.1', method: 'POST', path: '/mcp', headers: { host: 'mcp.acc.example.nl', 'content-type': 'application/json', accept: 'application/json, text/event-stream', authorization: `Bearer ${tok}` } };
+        for (let i = 0; i < 3; i++) {
+            const req = request(opts);
+            req.on('error', () => undefined);
+            req.end(body);
+            await new Promise((r) => setTimeout(r, 50));
+            req.destroy();
+        }
+        await new Promise((r) => setTimeout(r, 400));
+        const status = await new Promise<number>((resolve, reject) => {
+            const req = request(opts, (res) => { res.resume(); res.on('end', () => resolve(res.statusCode ?? 0)); });
+            req.on('error', reject);
+            req.end(body);
+        });
+        expect(status).toBe(200);
+        await app.close();
+    });
+
+    it('begrenst gelijktijdige verzoeken per gebruiker; een andere gebruiker kan gewoon door', async () => {
+        let release!: () => void;
+        const gate = new Promise<void>((r) => (release = r));
+        const slow = { ...sourceOf([P]), searchSet: async (m: number) => { await gate; return sourceOf([P]).searchSet(m); } };
+        const app = await makeApp(slow, { MCP_MAX_CONCURRENT_PER_USER: '1' });
+        const a = await token({ oid: 'oid-a' });
+        const b = await token({ oid: 'oid-b' });
+        const first = callToolAs(app, a);
+        await new Promise((r) => setTimeout(r, 50));
+        expect((await rpc(app, 'tools/list', {}, { tok: a })).statusCode).toBe(503);
+        expect((await rpc(app, 'tools/list', {}, { tok: b })).statusCode).toBe(200);
+        release();
+        expect((await first).statusCode).toBe(200);
+        expect((await rpc(app, 'tools/list', {}, { tok: a })).statusCode).toBe(200);
+    });
 });
+
+const callToolAs = (app: Awaited<ReturnType<typeof makeApp>>, tok: string) =>
+    rpc(app, 'tools/call', { name: 'zoek_in_bijbel', arguments: { query: 'alcohol' } }, { tok });

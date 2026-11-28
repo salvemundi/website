@@ -1,3 +1,4 @@
+import { finished } from 'node:stream';
 import rateLimit from '@fastify/rate-limit';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import Fastify, { type FastifyInstance } from 'fastify';
@@ -13,7 +14,10 @@ export interface Deps { config: Config; verifier: TokenVerifier; sourceFor: Sour
 
 export async function buildApp({ config, verifier, sourceFor, filesFor, logger = true, fetchFn }: Deps): Promise<FastifyInstance> {
     const app = Fastify({
-        logger: logger ? { redact: ['req.headers.authorization', 'req.headers.cookie'] } : false,
+        // Geen querystring in de logs: /oauth/callback?code=… bevat een Entra-autorisatiecode. Geen headers (tokens/cookies).
+        logger: logger
+            ? { serializers: { req: (r: { method: string; url: string; ip?: string }) => ({ method: r.method, url: r.url.split('?')[0], remoteAddress: r.ip }) } }
+            : false,
         trustProxy: ['127.0.0.1', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10'],
         bodyLimit: 64 * 1024,
         requestTimeout: config.MCP_REQUEST_TIMEOUT_MS,
@@ -22,6 +26,7 @@ export async function buildApp({ config, verifier, sourceFor, filesFor, logger =
 
     const publicHost = new URL(config.MCP_PUBLIC_URL).host;
     let inFlight = 0;
+    const inFlightPerUser = new Map<string, number>();
 
     app.setErrorHandler((err, req, reply) => {
         const e = err as { statusCode?: number; code?: string; name?: string };
@@ -62,7 +67,7 @@ export async function buildApp({ config, verifier, sourceFor, filesFor, logger =
                 (req as unknown as { user: UserContext }).user = await verifier.verify(m[1]);
             } catch (e) {
                 const err = e instanceof AuthError ? e : new AuthError(401, 'invalid_token');
-                const hdr = `Bearer resource_metadata="${resourceMetadataUrl(config)}"` + (err.status === 403 ? `, error="insufficient_scope", scope="${config.MCP_REQUIRED_SCOPE}"` : m ? ', error="invalid_token"' : '');
+                const hdr = `Bearer resource_metadata="${resourceMetadataUrl(config)}", scope="${config.MCP_REQUIRED_SCOPE}"` + (err.code === 'insufficient_scope' ? ', error="insufficient_scope"' : err.code === 'forbidden' ? '' : m ? ', error="invalid_token"' : '');
                 return reply.code(err.status).header('WWW-Authenticate', hdr).send({ error: err.code });
             }
             const limit = await userLimit(req);
@@ -71,19 +76,34 @@ export async function buildApp({ config, verifier, sourceFor, filesFor, logger =
             }
         },
         handler: async (req, reply) => {
-            if (inFlight >= config.MCP_MAX_CONCURRENT) return reply.code(503).header('Retry-After', '2').send({ error: 'busy' });
-            inFlight++;
-            // Stateless: per verzoek een eigen server+transport, geen sessiedata.
+            // Client al weg (bv. geannuleerd tijdens de tokencontrole): niets meer doen.
+            if (reply.raw.destroyed || req.raw.socket.destroyed) return reply.hijack();
             const user = (req as unknown as { user: UserContext }).user;
-            const server = createMcpServer(sourceFor(user), config, filesFor?.(user));
-            const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
+            const mine = inFlightPerUser.get(user.key) ?? 0;
+            if (inFlight >= config.MCP_MAX_CONCURRENT || mine >= config.MCP_MAX_CONCURRENT_PER_USER) {
+                return reply.code(503).header('Retry-After', '2').send({ error: 'busy' });
+            }
+            inFlight++;
+            inFlightPerUser.set(user.key, mine + 1);
+            let server: ReturnType<typeof createMcpServer> | undefined;
+            let transport: StreamableHTTPServerTransport | undefined;
+            let released = false;
             reply.hijack();
-            reply.raw.on('close', () => {
+            // finished() vuurt ook als de stream al gesloten is, en precies één keer: de tellers kunnen niet lekken.
+            finished(reply.raw, () => {
+                if (released) return;
+                released = true;
                 inFlight--;
-                void transport.close();
-                void server.close();
+                const n = (inFlightPerUser.get(user.key) ?? 1) - 1;
+                if (n > 0) inFlightPerUser.set(user.key, n);
+                else inFlightPerUser.delete(user.key);
+                void transport?.close();
+                void server?.close();
             });
             try {
+                // Stateless: per verzoek een eigen server+transport, geen sessiedata.
+                server = createMcpServer(sourceFor(user), config, filesFor?.(user));
+                transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
                 await server.connect(transport);
                 await transport.handleRequest(req.raw, reply.raw, req.body);
             } catch (e) {

@@ -31,6 +31,25 @@ describe('authenticatie en autorisatie', () => {
         expect((await rpc(app, 'tools/list', {}, { tok: await token({ scp: undefined, roles: ['bijbel.read'] }) })).statusCode).toBe(403);
         expect((await rpc(app, 'tools/list', {})).statusCode).toBe(200);
     });
+    it('accepteert alleen leden van de eigen tenant: gasten (idp/acct) en andere tenants worden geweigerd', async () => {
+        const guest = await rpc(app, 'tools/list', {}, { tok: await token({ idp: 'https://sts.windows.net/99999999-9999-4999-8999-999999999999/' }) });
+        expect(guest.statusCode).toBe(403);
+        expect(guest.json()).toEqual({ error: 'forbidden' });
+        // Geen insufficient_scope: dat zou de client laten herinloggen (lus) terwijl een gast nooit toegang krijgt.
+        expect(guest.headers['www-authenticate']).not.toContain('error=');
+        expect((await rpc(app, 'tools/list', {}, { tok: await token({ idp: 'live.com' }) })).statusCode).toBe(403);
+        expect((await rpc(app, 'tools/list', {}, { tok: await token({ acct: 1 }) })).statusCode).toBe(403);
+        expect((await rpc(app, 'tools/list', {}, { tok: await token({ tid: '99999999-9999-4999-8999-999999999999' }) })).statusCode).toBe(401);
+        expect((await rpc(app, 'tools/list', {}, { tok: await token({ tid: undefined }) })).statusCode).toBe(401);
+        expect((await rpc(app, 'tools/list', {}, { tok: await token({ oid: undefined }) })).statusCode).toBe(401);
+        // Lid met idp van de eigen tenant of acct=0: toegestaan.
+        expect((await rpc(app, 'tools/list', {}, { tok: await token({ idp: `https://sts.windows.net/${TENANT}/`, acct: 0 }) })).statusCode).toBe(200);
+    });
+    it('noemt de vereiste scope ook in de 401 (MCP 2025-11-25)', async () => {
+        const res = await rpc(app, 'tools/list', {}, { tok: null });
+        expect(res.headers['www-authenticate']).toContain('scope="bijbel.read"');
+        expect(res.headers['www-authenticate']).not.toContain('error=');
+    });
     it('valideert Host en Origin', async () => {
         expect((await rpc(app, 'tools/list', {}, { headers: { host: 'evil.example' } })).statusCode).toBe(403);
         expect((await rpc(app, 'tools/list', {}, { headers: { origin: 'https://evil.example' } })).statusCode).toBe(403);

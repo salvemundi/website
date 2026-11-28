@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { UserContext } from '../src/auth/jwt.js';
-import { AccessDeniedError, createGraphReader, resolveGraphUrl, SourceUnavailableError, type GraphReader } from '../src/graph/client.js';
+import { AccessDeniedError, createGraphReader, GraphNotFoundError, resolveGraphUrl, SourceUnavailableError, type GraphReader } from '../src/graph/client.js';
 import { createGraphBijbelSources, htmlToText, splitSections } from '../src/graph/source.js';
 import { baseEnv, config } from './helpers.js';
 
@@ -23,13 +23,14 @@ const listing = [
 function fakeGraph(items = listing) {
     const g = {
         calls: [] as { url: string; token: string }[],
-        mode: 'ok' as 'ok' | 'down' | 'denied',
+        mode: 'ok' as 'ok' | 'down' | 'denied' | 'deleted',
         draftNow: false,
         get(u: string, token: string) {
             g.calls.push({ url: u, token });
             if (g.mode === 'down') return Promise.reject(new SourceUnavailableError('down'));
             if (g.mode === 'denied') return Promise.reject(new AccessDeniedError('403'));
             if (u.includes('?$select')) return Promise.resolve({ value: items });
+            if (g.mode === 'deleted') return Promise.reject(new GraphNotFoundError('Graph status 404'));
             const m = items.find((x) => u.includes(x.id))!;
             return Promise.resolve(detail(g.draftNow ? { ...m, publishingState: { level: 'draft' } } : m, HTML));
         },
@@ -52,6 +53,16 @@ describe('bron: alleen gepubliceerde, toegestane inhoud', () => {
         for (const n of [2, 3, 4]) expect(g.calls.some((c) => c.url.includes(id(n)))).toBe(false);
         expect(await src.read(id(2))).toBeNull();
         expect(await src.read(id(4))).toBeNull();
+    });
+
+    it('serveert een verwijderde pagina (Graph 404) niet uit de cache', async () => {
+        const g = fakeGraph();
+        let t = 0;
+        const src = createGraphBijbelSources(g, opts({ now: () => t }))(user('u1'));
+        expect(await src.read(id(1))).not.toBeNull();
+        t = 2000; // na TTL, binnen maxStale
+        g.mode = 'deleted';
+        expect(await src.read(id(1))).toBeNull();
     });
 
     it('controleert publicatiestatus opnieuw op de detailrespons (concept geworden = niet leesbaar)', async () => {

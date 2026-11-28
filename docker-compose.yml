@@ -289,6 +289,8 @@ services:
       - MCP_ALLOWED_ORIGINS=${MCP_ALLOWED_ORIGINS:-}
       - MCP_FILES_PATH=${MCP_FILES_PATH:-/Sjablonen}
       - MCP_MAX_DOWNLOAD_BYTES=${MCP_MAX_DOWNLOAD_BYTES:-262144}
+      # Heap onder mem_limit: bij te veel geheugen een nette fout/herstart i.p.v. een OOM-kill van de container.
+      - NODE_OPTIONS=--max-old-space-size=384
     read_only: true
     tmpfs:
       - /tmp

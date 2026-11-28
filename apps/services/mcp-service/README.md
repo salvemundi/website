@@ -35,13 +35,14 @@ De bewerk- en uploadtools van de bestaande koppeling zijn **bewust niet overgeno
 
 ## Architectuur: OAuth + On-Behalf-Of
 1. De gebruiker meldt zich aan bij Entra; de MCP-client haalt een token op met scope `api://<MCP_ENTRA_CLIENT_ID>/bijbel.read`.
-2. De server valideert dat token (handtekening via tenant-JWKS, RS256, issuer, **audience = eigen app**, expiry, scope `bijbel.read`). Alleen gedelegeerde tokens (`scp`) zijn geldig; app-only tokens en tokens voor andere diensten (ook voor de bestaande bewerk-app) worden geweigerd.
+2. De server valideert dat token (handtekening via tenant-JWKS, RS256, issuer, **audience = eigen app**, expiry, scope `bijbel.read`, `tid` = eigen tenant). Alleen gedelegeerde tokens (`scp`) zijn geldig; app-only tokens en tokens voor andere diensten (ook voor de bestaande bewerk-app) worden geweigerd. **Alleen leden**: tokens van gastaccounts (B2B; `idp` van een andere tenant/provider, of optionele claim `acct` ≠ 0) krijgen 403 `forbidden`, los van de gebruikerstoewijzing in Entra.
 3. De server wisselt het token via On-Behalf-Of om voor een Graph-token (`OnBehalfOfCredential`) en doet uitsluitend `GET` naar `graph.microsoft.com/v1.0/sites/{vast site-ID}/pages…` (strikt gevalideerd, `redirect: error`).
 4. Microsoft vereist dat zowel de app (`Sites.Selected` gedelegeerd + expliciete site-grant) als de gebruiker toegang heeft. Bij 401/403 geeft de tool een generieke "geen toegang"-fout, wordt de cache van die gebruiker gewist en wordt **nooit** automatisch een bredere permissie geprobeerd of stale data getoond.
 5. Alleen pagina's met `publishingState.level = published` binnen `MCP_ALLOWED_PATH_PREFIX` zijn leesbaar; een ontbrekende status telt als niet gepubliceerd. De status wordt bij het lezen van de pagina nogmaals gecontroleerd. Pagina-ID's buiten die allowlist zijn niet leesbaar.
-6. Cache is in-memory en **per gebruiker** gescheiden (max. 20 gebruikers, TTL 5 min, max. stale 1 uur, expliciet gemarkeerd).
+6. Cache is in-memory en **per gebruiker** gescheiden (max. 50 gebruikers, TTL 5 min, max. stale 1 uur, expliciet gemarkeerd). Een pagina die Graph als verwijderd meldt (404) wordt nooit uit de cache geserveerd. OBO-Graph-tokens worden per gebruikerstoken bewaard tot 2 min vóór vervallen.
 
-Overig: Host-/Origin-validatie, rate limit, 64 KB body-limiet, time-outs en maximaal aantal gelijktijdige verzoeken.
+Overig: Host-/Origin-validatie, rate limit **per gebruiker** (`MCP_RATE_LIMIT_PER_MINUTE`, na tokencontrole; Claude/ChatGPT delen egress-IP's) plus een ruime limiet per IP (`MCP_IP_RATE_LIMIT_PER_MINUTE`; 60/min op de browserroutes `/authorize` en `/oauth/callback`), 64 KB body-limiet, time-outs, maximaal aantal gelijktijdige verzoeken totaal (`MCP_MAX_CONCURRENT`) en per gebruiker (`MCP_MAX_CONCURRENT_PER_USER`, default 3). Geen querystrings of headers in de logs.
+Bestanden: zips worden vóór het uitpakken gecontroleerd op de *echte* uitgepakte grootte (een zip die over zijn groottes liegt wordt geweigerd); pdf's worden pagina voor pagina gelezen (max. 100) met een deadline van 10 s; geëxtraheerde tekst is begrensd op 1 000 000 tekens; tekstnabewerking is lineair (geen kwadratische regexen).
 Container: non-root, read-only rootfs, `cap_drop: ALL`, `no-new-privileges`, geheugen/CPU/pids-limiet, alleen `proxy-network`, **geen `env_file`**, geen volumes, geen gepubliceerde poort.
 
 ## Alleen-lezen, op meerdere niveaus
@@ -64,7 +65,7 @@ GitHub Environment (`Acceptance` / `Production`). Zonder `MCP_ENABLED=true` word
 | `MCP_ALLOWED_PATH_PREFIX` | var (optioneel) | bv. `/sites/<site>/SitePages/`; default `/` |
 | `MCP_ALLOWED_ORIGINS` | var (optioneel) | toegestane `Origin`s van browser-clients |
 
-Tuning (env, defaults in `src/config.ts`): `MCP_CACHE_TTL_SECONDS`, `MCP_MAX_STALE_SECONDS`, `MCP_MAX_RESPONSE_CHARS`, `MCP_MAX_RESULTS`, `MCP_MAX_SEARCH_PAGES` (≤50), `MCP_RATE_LIMIT_PER_MINUTE` (per gebruiker), `MCP_IP_RATE_LIMIT_PER_MINUTE` (per IP, alle routes), `MCP_MAX_CONCURRENT`, `MCP_REQUEST_TIMEOUT_MS`.
+Tuning (env, defaults in `src/config.ts`): `MCP_CACHE_TTL_SECONDS`, `MCP_MAX_STALE_SECONDS`, `MCP_MAX_RESPONSE_CHARS`, `MCP_MAX_RESULTS`, `MCP_MAX_SEARCH_PAGES` (≤50), `MCP_RATE_LIMIT_PER_MINUTE` (per gebruiker), `MCP_IP_RATE_LIMIT_PER_MINUTE` (per IP, alle routes), `MCP_MAX_CONCURRENT`, `MCP_MAX_CONCURRENT_PER_USER`, `MCP_REQUEST_TIMEOUT_MS`.
 
 ### Opgegeven gegevens (identificatoren, geen geheimen; niet door ons geverifieerd)
 - Site: `https://salvemundi.sharepoint.com/sites/bijbel-concept`
@@ -84,15 +85,15 @@ Omdat de bestaande app (`39a7165e-…`) ook bewerken/uploaden mogelijk maakt, kr
 ## OAuth-voorportaal (gebruikers vullen geen client-ID/secret in)
 Entra ondersteunt geen dynamic client registration. Daarom is deze dienst zelf de autorisatieserver richting MCP-clients (`/.well-known/oauth-authorization-server`, `/register`, `/authorize`, `/oauth/callback`, `/token`; zie `src/oauth/proxy.ts`). Gebruikers plakken alleen `https://<host>/mcp` in Claude en melden zich aan met hun Microsoft-account.
 - `/register` geeft een stateless client_id (versleuteld, bevat de toegestane redirect-URI's). Toegestaan: `MCP_ALLOWED_REDIRECT_URIS` (default `https://claude.ai/api/mcp/auth_callback` en `https://claude.com/api/mcp/auth_callback`) en http-loopback.
-- `/authorize` stuurt door naar Entra met het echte client-ID, vaste scope `api://<client-id>/bijbel.read offline_access`, PKCE S256 verplicht naar de client, en **zonder** `resource`-parameter (voorkomt AADSTS9010010).
-- `/token` wisselt codes en refresh tokens uitsluitend server-side in met het Entra client secret; Entra-tokens worden doorgegeven en door de bestaande validatie (audience, scope, OBO) gecontroleerd. Het secret verlaat de server nooit.
+- `/authorize` toont eerst een **toestemmingspagina** (welke client, welke redirect-host, "ga alleen door als je dit zelf startte"). Dit is verplicht voor een proxy met dynamische registratie en een vast upstream-client-ID (MCP security best practices, *confused deputy*): Entra meldt stil aan via SSO, dus een doorgestuurde link zou anders ongemerkt een code voor andermans connector opleveren. Een `__Host-`-cookie met nonce (ook in de versleutelde state) bindt de flow aan deze browser; de callback zonder bijbehorende cookie wordt geweigerd. Pas na "Doorgaan" (POST, same-origin) volgt de doorverwijzing naar Entra met het echte client-ID, vaste scope `api://<client-id>/bijbel.read offline_access`, PKCE S256 verplicht naar de client, en **zonder** `resource`-parameter (voorkomt AADSTS9010010). Een `resource` van de client die niet deze server is, geeft `invalid_target`.
+- `/token` wisselt codes en refresh tokens uitsluitend server-side in met het Entra client secret; access tokens van Entra worden doorgegeven en door de bestaande validatie (audience, scope, OBO) gecontroleerd. Het secret verlaat de server nooit. **Refresh tokens** gaan versleuteld en gebonden aan het client_id naar de client; een kaal Entra-refresh-token of dat van een andere client wordt geweigerd. Storing of throttling bij Entra (5xx/429) geeft 503 `temporarily_unavailable` (client probeert later opnieuw) in plaats van `invalid_grant`.
 - Geen opslag: state en codes zijn versleuteld/geauthenticeerd (AES-GCM, sleutel afgeleid van het client secret), state 10 min, code 2 min. Entra dwingt eenmalig gebruik van de code af. Na roteren van het secret moeten gebruikers opnieuw inloggen.
 - Entra-app: voeg bij **Authentication → Web** de redirect-URI `https://<host>/oauth/callback` toe. De **Application ID URI** blijft `api://<client-id>` (geen https-URL). Er is geen aparte client-app of publieke client nodig.
 
 ## Redirect URI en hosting
 De enige redirect-URI in Entra is de eigen callback `https://<host>/oauth/callback` (zie hierboven). Claude's eigen callback hoeft niet in Entra. De lokale testserver met tunnel uit de bestaande documentatie wordt niet hergebruikt; er is nog geen vast productieadres aangetoond.
 
-Nginx Proxy Manager (config staat niet in de repo, handmatig): `mcp.acc.salvemundi.nl` → `http://v7-acc-mcp:3005`; `mcp.salvemundi.nl` → `http://v7-prod-mcp:3005` (hostnamen zijn een voorstel). TLS (Let's Encrypt), Force SSL, `Host`-header ongewijzigd doorsturen, `/health` niet extern ontsluiten.
+Nginx Proxy Manager (config staat niet in de repo, handmatig): `mcp.acc.salvemundi.nl` → `http://v7-acc-mcp:3005`; `mcp.salvemundi.nl` → `http://v7-prod-mcp:3005` (hostnamen zijn een voorstel). TLS (Let's Encrypt), Force SSL, `Host`-header ongewijzigd doorsturen. `/health` mag extern bereikbaar zijn (alleen `{"status":"ok"}`, handig voor een uptime-check).
 
 ## Clientconfiguratie
 Remote MCP-server-URL `https://<MCP_PUBLIC_URL host>/mcp`; OAuth authorization code + PKCE; scope `api://<client-id>/bijbel.read`. De autorisatieserver staat in `/.well-known/oauth-protected-resource`.

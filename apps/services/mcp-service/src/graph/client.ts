@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { OnBehalfOfCredential } from '@azure/identity';
 
 const GRAPH_ORIGIN = 'https://graph.microsoft.com';
@@ -14,6 +15,8 @@ export type TokenExchanger = (userToken: string) => Promise<string>;
 export class SourceUnavailableError extends Error {}
 /** Graph/Entra weigert de combinatie app + gebruiker (401/403, OBO-fout). Nooit automatisch met bredere rechten herproberen. */
 export class AccessDeniedError extends Error {}
+/** Graph 404: het object bestaat (niet meer). Geen storing, dus nooit uit de cache serveren. */
+export class GraphNotFoundError extends SourceUnavailableError {}
 
 const SITE_ID = /^[A-Za-z0-9.,-]+$/;
 const PAGE_ID = /^[0-9a-fA-F-]{36}$/;
@@ -74,8 +77,20 @@ export function resolveGraphUrl(input: string): URL {
     return url;
 }
 
-export function createOboExchanger(opts: { tenantId: string; clientId: string; clientSecret: string }): TokenExchanger {
+const OBO_CACHE_MAX = 1000;
+const OBO_MARGIN_MS = 2 * 60 * 1000;
+
+/**
+ * Graph-tokens worden per gebruikerstoken (hash) bewaard tot kort voor hun vervaldatum: elk MCP-verzoek is stateless,
+ * dus zonder cache kost elk verzoek met een cache-miss een extra rondgang naar Entra. Een Graph-token hoort bij precies
+ * één gebruikerstoken (OBO), dus er kan nooit een token van een andere gebruiker worden teruggegeven.
+ */
+export function createOboExchanger(opts: { tenantId: string; clientId: string; clientSecret: string }, now: () => number = Date.now): TokenExchanger {
+    const cache = new Map<string, { token: string; exp: number }>();
     return async (userToken) => {
+        const key = createHash('sha256').update(userToken).digest('base64url');
+        const hit = cache.get(key);
+        if (hit && hit.exp > now()) return hit.token;
         try {
             const credential = new OnBehalfOfCredential({
                 tenantId: opts.tenantId,
@@ -83,7 +98,11 @@ export function createOboExchanger(opts: { tenantId: string; clientId: string; c
                 clientSecret: opts.clientSecret,
                 userAssertionToken: userToken,
             });
-            return (await credential.getToken('https://graph.microsoft.com/.default')).token;
+            const t = await credential.getToken('https://graph.microsoft.com/.default');
+            for (const [k, v] of cache) if (v.exp <= now()) cache.delete(k);
+            while (cache.size >= OBO_CACHE_MAX) cache.delete(cache.keys().next().value as string);
+            cache.set(key, { token: t.token, exp: t.expiresOnTimestamp - OBO_MARGIN_MS });
+            return t.token;
         } catch (e) {
             // Entra weigert (consent/toegang) vs. netwerkprobleem: alleen eerste telt als "geen toegang". Geen details doorgeven.
             throw (e as Error).name === 'AuthenticationError' ? new AccessDeniedError('OBO geweigerd') : new SourceUnavailableError('OBO niet bereikbaar');
@@ -103,6 +122,7 @@ export function createGraphReader(opts: { timeoutMs: number }, fetchImpl: typeof
                     signal: AbortSignal.timeout(opts.timeoutMs),
                 });
                 if (res.status === 401 || res.status === 403) throw new AccessDeniedError(`Graph status ${res.status}`);
+                if (res.status === 404) throw new GraphNotFoundError('Graph status 404');
                 if (!res.ok) throw new SourceUnavailableError(`Graph status ${res.status}`);
                 return (await res.json()) as unknown;
             } catch (e) {

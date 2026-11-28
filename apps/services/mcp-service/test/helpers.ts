@@ -30,7 +30,7 @@ export async function getKeys() {
 
 export async function token(claims: Record<string, unknown> = {}, o: { iss?: string; aud?: string; exp?: string; key?: CryptoKey } = {}) {
     const { privateKey } = await getKeys();
-    return new SignJWT({ scp: 'bijbel.read', oid: 'oid-1', ...claims })
+    return new SignJWT({ scp: 'bijbel.read', oid: 'oid-1', tid: TENANT, ...claims })
         .setProtectedHeader({ alg: 'RS256' })
         .setSubject('user-1')
         .setIssuer(o.iss ?? `https://login.microsoftonline.com/${TENANT}/v2.0`)

@@ -15,7 +15,10 @@ function isSafeFolderPath(v: string): boolean {
 const schema = z.object({
     PORT: z.coerce.number().int().min(1).max(65535).default(3005),
     APP_ENV: z.string().default('unknown'),
-    MCP_PUBLIC_URL: z.url().refine((u) => u.startsWith('https://') || u.startsWith('http://localhost'), 'MCP_PUBLIC_URL moet https zijn'),
+    MCP_PUBLIC_URL: z.url().refine((u) => {
+        const url = new URL(u);
+        return url.protocol === 'https:' || (url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname));
+    }, 'MCP_PUBLIC_URL moet https zijn'),
     MCP_ENTRA_TENANT_ID: z.uuid(),
     // Identiteit van DEZE dienst (resource-app + OBO-client). Moet een eigen, alleen-lezen app zijn; zie README.
     MCP_ENTRA_CLIENT_ID: z.uuid(),
@@ -24,7 +27,8 @@ const schema = z.object({
     BIJBEL_WRITE_ENABLED: z.string().default('false').refine((v) => v === 'false', 'BIJBEL_WRITE_ENABLED moet false zijn: deze dienst is alleen-lezen'),
     MCP_REQUIRED_SCOPE: z.string().min(1).default('bijbel.read'),
     MCP_SHAREPOINT_SITE_ID: z.string().regex(/^[A-Za-z0-9.,-]{3,200}$/, 'ongeldig site-ID'),
-    MCP_ALLOWED_PATH_PREFIX: z.string().regex(/^\/[A-Za-z0-9\-_./]*$/).default('/'),
+    // Met afsluitende '/': anders zou '/sites/bijbel' ook '/sites/bijbel-concept' toelaten.
+    MCP_ALLOWED_PATH_PREFIX: z.string().regex(/^\/[A-Za-z0-9\-_./]*$/).refine((v) => v.endsWith('/'), 'MCP_ALLOWED_PATH_PREFIX moet eindigen op /').default('/'),
     MCP_ALLOWED_ORIGINS: csv,
     // Redirect-URI's die MCP-clients mogen registreren (exacte match; http-loopback is altijd toegestaan).
     MCP_ALLOWED_REDIRECT_URIS: z.string().default('https://claude.ai/api/mcp/auth_callback,https://claude.com/api/mcp/auth_callback,https://chatgpt.com/connector_platform_oauth_redirect,https://platform.openai.com/apps-manage/oauth').transform((v) => v.split(',').map((s) => s.trim()).filter(Boolean)),
@@ -42,6 +46,8 @@ const schema = z.object({
     // Ruime vangrail per client-IP op alle routes, vóór authenticatie (o.a. /register, /authorize, /token).
     MCP_IP_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).max(100000).default(1200),
     MCP_MAX_CONCURRENT: z.coerce.number().int().min(1).max(100).default(8),
+    // Eén gebruiker kan niet alle plekken bezetten (bv. veel parallelle zoekopdrachten of trage pdf's).
+    MCP_MAX_CONCURRENT_PER_USER: z.coerce.number().int().min(1).max(100).default(3),
     MCP_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(15000),
 });
 

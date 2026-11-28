@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { UserContext } from '../auth/jwt.js';
-import { AccessDeniedError, type GraphReader, SourceUnavailableError, type TokenExchanger } from './client.js';
+import { AccessDeniedError, GraphNotFoundError, type GraphReader, SourceUnavailableError, type TokenExchanger } from './client.js';
 
 export interface BijbelSection { nummer: number; titel: string | null; tekst: string }
 export interface PageMeta { id: string; titel: string; url: string; gewijzigd: string | null }
@@ -178,7 +178,15 @@ export function createGraphBijbelSources(graph: GraphReader, opts: SourceOptions
         }
 
         async function fetchPage(meta: PageMeta): Promise<BijbelPage> {
-            const d = detailSchema.parse(await get(`/sites/${opts.siteId}/pages/${meta.id}/microsoft.graph.sitePage?$expand=canvasLayout`));
+            let raw: unknown;
+            try {
+                raw = await get(`/sites/${opts.siteId}/pages/${meta.id}/microsoft.graph.sitePage?$expand=canvasLayout`);
+            } catch (e) {
+                // Verwijderd sinds de lijst: niet uit de cache serveren (dat zou een verwijderde pagina tot een uur tonen).
+                if (e instanceof GraphNotFoundError) throw new SourceUnavailableError(GONE);
+                throw e;
+            }
+            const d = detailSchema.parse(raw);
             // Opnieuw controleren op de detailrespons: concept geworden of verplaatst sinds de lijst = niet leesbaar.
             if (d.id.toLowerCase() !== meta.id || !allowed(d.webUrl, d.publishingState?.level)) throw new SourceUnavailableError(GONE);
             const html = (d.canvasLayout?.horizontalSections ?? [])

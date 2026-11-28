@@ -70,6 +70,51 @@ describe('tekstextractie', () => {
     });
 });
 
+/** Zet in de centrale directory van entry `name` een kleinere uitgepakte grootte dan de echte (liegende zip). */
+function lieAboutSize(zip: Buffer, name: string, declared: number): Buffer {
+    const buf = Buffer.from(zip);
+    let off = buf.indexOf(Buffer.from([0x50, 0x4b, 0x01, 0x02]));
+    while (off >= 0) {
+        const n = buf.readUInt16LE(off + 28);
+        if (buf.toString('utf8', off + 46, off + 46 + n) === name) { buf.writeUInt32LE(declared, off + 24); return buf; }
+        off = buf.indexOf(Buffer.from([0x50, 0x4b, 0x01, 0x02]), off + 46);
+    }
+    throw new Error('entry niet gevonden');
+}
+
+describe('extractie is begrensd (geheugen en rekentijd)', () => {
+    it('weigert een zip die liegt over de uitgepakte grootte, zonder alles uit te pakken', async () => {
+        const honest = await docx('x', { 'word/media/groot.bin': Buffer.alloc(5 * 1024 * 1024) });
+        const lying = lieAboutSize(honest, 'word/media/groot.bin', 1024);
+        expect(zipUncompressedSize(lying)).toBeLessThan(30 * 1024 * 1024);
+        await expect(extractText('a.docx', lying)).rejects.toThrow(/niet veilig/);
+        await expect(extractText('a.pptx', lying)).rejects.toThrow(/niet veilig/);
+        // De eerlijke versie blijft gewoon leesbaar.
+        expect(await extractText('a.docx', honest)).toContain('Tweede alinea');
+    });
+    it('blijft snel bij extreem lange spatiereeksen (geen kwadratische regex)', async () => {
+        const t0 = Date.now();
+        const out = await extractText('a.txt', Buffer.from('begin' + ' \t'.repeat(1_000_000) + 'eind\n' + ' '.repeat(500_000)));
+        expect(Date.now() - t0).toBeLessThan(2000);
+        expect(out.startsWith('begin')).toBe(true);
+    });
+    it('kapt zeer lange tekst af met een melding', async () => {
+        const out = await extractText('a.txt', Buffer.from('a'.repeat(1_500_000)));
+        expect(out.length).toBeLessThan(1_000_100);
+        expect(out).toMatch(/afgekapt na 1000000 tekens/);
+    });
+    it('leest pptx-tekst lineair, ook bij xml zonder afsluitende >', async () => {
+        const z = new JSZip();
+        z.file('ppt/slides/slide1.xml', '<p:sld><a:p><a:r><a:t>Hallo &amp; welkom</a:t></a:r></a:p><a:p><a:t xml:space="preserve">Tweede</a:t></a:p></p:sld>');
+        z.file('ppt/slides/slide2.xml', '<a:p>' + '<a:t '.repeat(300_000) + '</a:p>');
+        const pptx = await z.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+        const t0 = Date.now();
+        const out = await extractText('a.pptx', pptx);
+        expect(Date.now() - t0).toBeLessThan(2000);
+        expect(out).toBe('[Dia 1]\nHallo & welkom\nTweede');
+    });
+});
+
 describe('downloader', () => {
     const body = (b: string) => new Response(new Blob([b]).stream(), { status: 200 });
     it('volgt de voorgetekende link zonder Graph-token en alleen op SharePoint', async () => {
