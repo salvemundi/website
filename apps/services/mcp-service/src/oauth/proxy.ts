@@ -26,12 +26,13 @@ interface CodeBlob { ec: string; cid: string; ru: string; cc: string; exp: numbe
 interface RefreshBlob { rt: string; cid: string }
 
 const sha256url = (s: string) => createHash('sha256').update(s).digest('base64url');
-const COOKIE = '__Host-samu_mcp_auth';
+/** Cookienaam per flow (afgeleid van de nonce), zodat twee gelijktijdige koppelingen in één browser elkaar niet breken. */
+const cookieName = (nonce: string) => `__Host-samu_mcp_${sha256url(nonce).slice(0, 12)}`;
 const sameSecret = (a: string, b: string) => a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));
-const readCookie = (header: string | undefined): string | undefined => {
+const readCookie = (header: string | undefined, name: string): string | undefined => {
     for (const part of (header ?? '').split(';')) {
         const [k, ...v] = part.trim().split('=');
-        if (k === COOKIE) return v.join('=');
+        if (k === name) return v.join('=');
     }
     return undefined;
 };
@@ -58,7 +59,15 @@ export function registerOAuthRoutes(app: FastifyInstance, config: Config, fetchF
     const entra = `https://login.microsoftonline.com/${config.MCP_ENTRA_TENANT_ID}/oauth2/v2.0`;
     const scope = `api://${config.MCP_ENTRA_CLIENT_ID}/${config.MCP_REQUIRED_SCOPE}`;
     const sealer = createSealer(config.MCP_ENTRA_CLIENT_SECRET);
-    const resource = `${base}/mcp`;
+    const resourceOk = (raw: string) => {
+        try {
+            const u = new URL(raw);
+            const path = u.pathname.replace(/\/+$/, '');
+            return u.origin === base && (path === '' || path === '/mcp') && !u.hash;
+        } catch {
+            return false;
+        }
+    };
     // Lagere limiet voor routes die alleen browsers van gebruikers aanroepen (niet de gedeelde servers van Claude/ChatGPT).
     const browserLimit = { config: { rateLimit: { max: 60, timeWindow: '1 minute' } } };
 
@@ -138,7 +147,7 @@ export function registerOAuthRoutes(app: FastifyInstance, config: Config, fetchF
         const parsed = authorizeSchema.safeParse(q);
         if (!parsed.success) return redirectTo(reply, q.redirect_uri, { error: 'invalid_request', state: q.state?.slice(0, 512) });
         const p = parsed.data;
-        if (p.resource !== undefined && p.resource.replace(/\/$/, '') !== resource && p.resource.replace(/\/$/, '') !== base) {
+        if (p.resource !== undefined && !resourceOk(p.resource)) {
             return redirectTo(reply, p.redirect_uri, { error: 'invalid_target', state: p.state });
         }
         // Toestemmingsstap (MCP security best practices, "confused deputy"): Entra is vooraf goedgekeurd en meldt
@@ -155,12 +164,14 @@ export function registerOAuthRoutes(app: FastifyInstance, config: Config, fetchF
 <div class="box warn">Ga alleen door als je deze koppeling <strong>zelf</strong> net hebt gestart. Heb je deze link van iemand anders gekregen, kies dan Annuleren.</div>
 <form method="post" action="/authorize"><input type="hidden" name="state" value="${esc(state)}"><button class="go" name="keuze" value="ja" type="submit">Doorgaan</button><button name="keuze" value="nee" type="submit">Annuleren</button></form>
 </body></html>`;
-        const ruOrigin = new URL(p.redirect_uri).origin;
         return noStore(reply)
-            .header('Set-Cookie', `${COOKIE}=${nonce}; Path=/; Max-Age=${STATE_TTL_MS / 1000}; Secure; HttpOnly; SameSite=Lax`)
-            .header('Content-Security-Policy', `default-src 'none'; style-src 'unsafe-inline'; form-action 'self' https://login.microsoftonline.com ${ruOrigin}; frame-ancestors 'none'; base-uri 'none'`)
+            .header('Set-Cookie', `${cookieName(nonce)}=${nonce}; Path=/; Max-Age=${STATE_TTL_MS / 1000}; Secure; HttpOnly; SameSite=Lax`)
+            // Geen form-action: browsers toetsen die ook op elke redirect na het versturen (Entra kan via andere
+            // Microsoft-hosts lopen, bv. seamless SSO), en het formulier staat vast in deze pagina.
+            .header('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'")
             .header('X-Frame-Options', 'DENY')
-            .header('Referrer-Policy', 'no-referrer')
+            // same-origin (niet no-referrer): bij no-referrer sturen browsers bij een POST `Origin: null`.
+            .header('Referrer-Policy', 'same-origin')
             .type('text/html; charset=utf-8')
             .send(html);
     });
@@ -168,11 +179,11 @@ export function registerOAuthRoutes(app: FastifyInstance, config: Config, fetchF
     /** Opent de state alleen als hij geldig is én bij de cookie van deze browser hoort. */
     const browserState = (raw: unknown, cookieHeader: string | undefined): StateBlob | null => {
         const st = typeof raw === 'string' ? sealer.open<StateBlob>('state', raw) : null;
-        const nonce = readCookie(cookieHeader);
-        if (!st || st.exp < Date.now() || !nonce || !sameSecret(nonce, st.n)) return null;
-        return st;
+        if (!st || st.exp < Date.now()) return null;
+        const nonce = readCookie(cookieHeader, cookieName(st.n));
+        return nonce && sameSecret(nonce, st.n) ? st : null;
     };
-    const clearCookie = (reply: FastifyReply) => reply.header('Set-Cookie', `${COOKIE}=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax`);
+    const clearCookie = (reply: FastifyReply, st: StateBlob) => reply.header('Set-Cookie', `${cookieName(st.n)}=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax`);
     const stateError = (reply: FastifyReply) =>
         noStore(reply).code(400).type('text/html; charset=utf-8')
             .send('<!doctype html><html lang="nl"><meta charset="utf-8"><title>Koppeling verlopen</title><body style="font-family:system-ui,sans-serif;max-width:32rem;margin:3rem auto;padding:0 1rem"><h1>Koppeling verlopen of ongeldig</h1><p>Start het koppelen opnieuw vanuit Claude of ChatGPT, in dezelfde browser.</p></body></html>');
@@ -180,12 +191,14 @@ export function registerOAuthRoutes(app: FastifyInstance, config: Config, fetchF
     app.post('/authorize', browserLimit, async (req, reply) => {
         if (!hostOk(req.headers.host)) return reply.code(403).send({ error: 'forbidden_host' });
         // Alleen vanaf onze eigen toestemmingspagina (de SameSite-cookie wordt bij cross-site POST niet meegestuurd).
-        if (req.headers.origin && req.headers.origin !== base) return reply.code(403).send({ error: 'forbidden_origin' });
+        // `null` komt voor bij privacy-instellingen; de CSRF-bescherming zit in de SameSite-nonce-cookie.
+        const origin = req.headers.origin;
+        if (origin && origin !== 'null' && origin !== base) return reply.code(403).send({ error: 'forbidden_origin' });
         const body = (req.body ?? {}) as Record<string, unknown>;
         const st = browserState(body.state, req.headers.cookie);
         if (!st) return stateError(reply);
         if (body.keuze !== 'ja') {
-            clearCookie(reply);
+            clearCookie(reply, st);
             return redirectTo(reply, st.ru, { error: 'access_denied', state: st.st });
         }
         const url = new URL(`${entra}/authorize`);
@@ -205,7 +218,7 @@ export function registerOAuthRoutes(app: FastifyInstance, config: Config, fetchF
         const q = (req.query ?? {}) as Record<string, string | undefined>;
         const st = browserState(q.state, req.headers.cookie);
         if (!st) return stateError(reply);
-        clearCookie(reply);
+        clearCookie(reply, st);
         if (q.error || !q.code) {
             req.log.warn({ error: q.error?.slice(0, 64) }, 'entra authorization failed');
             return redirectTo(reply, st.ru, { error: q.error === 'access_denied' ? 'access_denied' : 'server_error', state: st.st });

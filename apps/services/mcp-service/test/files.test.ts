@@ -92,6 +92,14 @@ describe('extractie is begrensd (geheugen en rekentijd)', () => {
         // De eerlijke versie blijft gewoon leesbaar.
         expect(await extractText('a.docx', honest)).toContain('Tweede alinea');
     });
+    it('accepteert lege entries (stored en deflate) in een geldige zip', async () => {
+        const z = new JSZip();
+        z.file('ppt/slides/slide1.xml', '<a:p><a:t>Hoi</a:t></a:p>');
+        z.file('leeg.txt', '');
+        z.folder('map');
+        const buf = await z.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+        expect(await extractText('a.pptx', buf)).toBe('[Dia 1]\nHoi');
+    });
     it('blijft snel bij extreem lange spatiereeksen (geen kwadratische regex)', async () => {
         const t0 = Date.now();
         const out = await extractText('a.txt', Buffer.from('begin' + ' \t'.repeat(1_000_000) + 'eind\n' + ' '.repeat(500_000)));

@@ -226,7 +226,10 @@ describe('OAuth-voorportaal', () => {
         expect(page.headers['x-frame-options']).toBe('DENY');
         expect(String(page.headers['content-security-policy'])).toContain("frame-ancestors 'none'");
         const setCookie = String(page.headers['set-cookie']);
-        expect(setCookie).toMatch(/^__Host-samu_mcp_auth=[A-Za-z0-9_-]+; Path=\/;/);
+        expect(setCookie).toMatch(/^__Host-samu_mcp_[A-Za-z0-9_-]{12}=[A-Za-z0-9_-]+; Path=\/;/);
+        expect(setCookie).not.toContain('Domain');
+        expect(page.headers['referrer-policy']).toBe('same-origin');
+        expect(String(page.headers['content-security-policy'])).not.toContain('form-action');
         expect(setCookie).toContain('HttpOnly');
         expect(setCookie).toContain('Secure');
         expect(setCookie).toContain('SameSite=Lax');
@@ -235,8 +238,10 @@ describe('OAuth-voorportaal', () => {
         const state = stateOf(page.body);
         // Zonder (of met andere) cookie: geweigerd. Dit blokkeert een doorgestuurde link die de toestemming overslaat.
         expect((await approve(state, 'ja', { cookie: '' })).statusCode).toBe(400);
-        expect((await approve(state, 'ja', { cookie: '__Host-samu_mcp_auth=ander' })).statusCode).toBe(400);
+        expect((await approve(state, 'ja', { cookie: cookie.replace(/=.*/, '=ander') })).statusCode).toBe(400);
         expect((await approve(state, 'ja', { origin: 'https://evil.example' })).statusCode).toBe(403);
+        // Browsers sturen bij sommige privacy-instellingen `Origin: null`: toegestaan, de nonce-cookie beschermt.
+        expect((await approve(state, 'ja', { origin: 'null' })).statusCode).toBe(303);
         expect((await callback({ code: 'c', state }, '')).statusCode).toBe(400);
         // Annuleren: foutredirect naar de client met zijn state.
         const deny = await approve(state, 'nee');
@@ -245,12 +250,29 @@ describe('OAuth-voorportaal', () => {
         expect(loc(deny).searchParams.get('state')).toBe('client-state');
     });
 
+    it('twee koppelingen tegelijk in één browser breken elkaar niet (cookie per flow)', async () => {
+        const { client_id } = (await register()).json<{ client_id: string }>();
+        const p1 = await consentPage(client_id);
+        const p2 = await consentPage(client_id);
+        const c1 = String(p1.headers['set-cookie']).split(';')[0]!;
+        const c2 = String(p2.headers['set-cookie']).split(';')[0]!;
+        expect(c1.split('=')[0]).not.toBe(c2.split('=')[0]);
+        const jar = `${c1}; ${c2}`;
+        expect((await approve(stateOf(p1.body), 'ja', { cookie: jar })).statusCode).toBe(303);
+        expect((await approve(stateOf(p2.body), 'ja', { cookie: jar })).statusCode).toBe(303);
+        expect((await approve(stateOf(p1.body), 'ja', { cookie: c2 })).statusCode).toBe(400);
+    });
+
     it('weigert een resource-parameter die niet deze MCP-server is (RFC 8707)', async () => {
         const { client_id } = (await register()).json<{ client_id: string }>();
         const bad = await consentPage(client_id, { resource: 'https://andere-dienst.example/mcp' });
         expect(loc(bad).searchParams.get('error')).toBe('invalid_target');
         expect((await consentPage(client_id, { resource: `https://${HOST}/mcp/` })).statusCode).toBe(200);
         expect((await consentPage(client_id, { resource: `https://${HOST}` })).statusCode).toBe(200);
+        expect((await consentPage(client_id, { resource: `https://${HOST}:443/mcp` })).statusCode).toBe(200);
+        for (const bad of [`https://${HOST}/andere`, `http://${HOST}/mcp`, `https://${HOST}.evil.example/mcp`, 'geen-url']) {
+            expect(loc(await consentPage(client_id, { resource: bad })).searchParams.get('error')).toBe('invalid_target');
+        }
     });
 
     it('stuurt een Entra-fout (bv. access_denied) als foutredirect met de client-state', async () => {

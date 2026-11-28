@@ -46,8 +46,9 @@ const schema = z.object({
     // Ruime vangrail per client-IP op alle routes, vóór authenticatie (o.a. /register, /authorize, /token).
     MCP_IP_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).max(100000).default(1200),
     MCP_MAX_CONCURRENT: z.coerce.number().int().min(1).max(100).default(8),
-    // Eén gebruiker kan niet alle plekken bezetten (bv. veel parallelle zoekopdrachten of trage pdf's).
-    MCP_MAX_CONCURRENT_PER_USER: z.coerce.number().int().min(1).max(100).default(3),
+    // Eén gebruiker kan niet alle plekken bezetten (bv. veel parallelle zoekopdrachten of trage pdf's). Ruim genoeg
+    // voor clients die na initialize tools/prompts/resources tegelijk opvragen of parallelle toolcalls doen.
+    MCP_MAX_CONCURRENT_PER_USER: z.coerce.number().int().min(1).max(100).default(6),
     MCP_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(15000),
 });
 

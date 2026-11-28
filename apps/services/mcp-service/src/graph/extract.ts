@@ -77,6 +77,7 @@ export function assertSafeZip(buf: Buffer, label: string): void {
             continue;
         }
         if (method !== 8) throw invalid();
+        if (size === 0 && compSize === 0) continue; // lege deflate-entry: niets uit te pakken
         let out: Buffer;
         try {
             out = inflateRawSync(data, { maxOutputLength: Math.max(1, size) });
